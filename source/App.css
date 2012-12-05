@@ -1,0 +1,53 @@
+/*
+	Put anything you reference with "url()" in ../assets/
+	This way, you can minify your application, and just remove the "source" folder for production
+*/
+#app {
+	background-color: #000000;
+}
+
+#app > * {
+	background-color: #555;
+}
+
+.onyx-toolbar {
+	height: 64px;
+}
+
+.list-header {
+	width: inherit;
+	height: 14px;
+	line-height: 14px;
+	padding: 10px;
+	color: white;
+	background-color: #555;
+	border-top: 0px;
+	border-left: 0px;
+	border-right: 0px;
+	border-bottom: 1px solid #0E0E0E;
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.list-item {
+	width: inherit;
+	height: 42px;
+	padding: 10px;
+	color: white;
+	background-color: #333333;
+	border-bottom: 1px solid #0E0E0E;
+	font-size: 18px;
+}
+
+.list-item.onyx-selected {
+	background-color: MidnightBlue;
+}
+
+.onyx-groupbox {
+	margin-bottom: 10px;
+}
+
+.group-item {
+	padding: 10px;
+	min-height: 32px;
+}
