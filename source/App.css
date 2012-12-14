@@ -50,4 +50,7 @@
 .group-item {
 	padding: 10px;
 	min-height: 32px;
+	line-height: 32px;
+	color: white;
+	border-bottom: 1px solid #333333;
 }

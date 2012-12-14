@@ -16,7 +16,8 @@ enyo.kind({
 				"For all your tinkering needs.",
 				"Customizable? Customizable.",
 				"E pluribus unum.",
-				"Schmettings."
+				"Schmettings.",
+				"This is where the options live, get you some!"
 			]},
 			{kind: "Scroller",
 			horizontal: "hidden",
@@ -24,14 +25,27 @@ enyo.kind({
 			fit: true,
 			touch: true,
 			components:[
-				//Core Settings
-				{kind: "onyx.Toolbar", classes: "list-header", content: "Core"},
-				{kind: "ListItem", icon: "icon.png", title: "Screen & Lock", ontap: "openScreenLock"},
-				{kind: "ListItem", icon: "icon.png", title: "Sounds & Ringtones"},
-				{kind: "ListItem", icon: "icon.png", title: "Date & Time"},
-				{kind: "ListItem", icon: "icon.png", title: "Regional Settings"},
-				{kind: "ListItem", icon: "icon.png", title: "Location Services"},
-				{kind: "ListItem", icon: "icon.png", title: "Device Info"},
+				//Connectivity
+				{kind: "onyx.Toolbar", classes: "list-header", content: "Connectivity"},
+				{kind: "ListItem",
+				icon: "icon.png",
+				title: "Wi-Fi",
+				components:[
+					{kind: "onyx.ToggleButton", style: "height:32px; float: right;"}
+				]},
+				//{kind: "ListItem", icon: "icon.png", title: "Mobile Hotspot"}, //NOTE: Integrate into Wi-Fi
+				{kind: "ListItem",
+				icon: "icon.png",
+				title: "Bluetooth",
+				components:[
+					{kind: "onyx.ToggleButton", style: "height:32px; float: right;"}
+				]},
+				{kind: "ListItem",
+				icon: "icon.png",
+				title: "VPN",
+				components:[
+					{kind: "onyx.ToggleButton", style: "height:32px; float: right;"}
+				]},
 				
 				//Services
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Services"},
@@ -43,12 +57,14 @@ enyo.kind({
 				{kind: "ListItem", icon: "icon.png", title: "Software Manager"},
 				{kind: "ListItem", icon: "icon.png", title: "System Updates"},
 				
-				//Connectivity
-				{kind: "onyx.Toolbar", classes: "list-header", content: "Connectivity"},
-				{kind: "ListItem", icon: "icon.png", title: "Wi-Fi"},
-				//{kind: "ListItem", icon: "icon.png", title: "Mobile Hotspot"}, //NOTE: Integrate into Wi-Fi
-				{kind: "ListItem", icon: "icon.png", title: "Bluetooth"},
-				{kind: "ListItem", icon: "icon.png", title: "VPN"},
+				//Core Settings
+				{kind: "onyx.Toolbar", classes: "list-header", content: "Core"},
+				{kind: "ListItem", icon: "icon.png", title: "Screen & Lock", ontap: "openScreenLock"},
+				{kind: "ListItem", icon: "icon.png", title: "Sounds & Ringtones"},
+				{kind: "ListItem", icon: "icon.png", title: "Date & Time"},
+				{kind: "ListItem", icon: "icon.png", title: "Regional Settings"},
+				{kind: "ListItem", icon: "icon.png", title: "Location Services"},
+				{kind: "ListItem", icon: "icon.png", title: "Device Info"},
 			]},
 		]},
 		{name: "ContentPanels",
@@ -56,13 +72,10 @@ enyo.kind({
 		arrangerKind: "CardArranger",
 		draggable: false,
 		components:[
-			{kind: "EmptyPanel"},
-			{kind: "ScreenLock"},
-		//	{kind: "SoundRingtones"},
-		//	{kind: "DateTime"},
-		//	{kind: "RegionalSettings"},
-		//	{kind: "LocationServices"},
-		//	{kind: "DeviceInfo"},
+		//	{kind: "EmptyPanel"},
+			{kind: "WiFi"},
+		//	{kind: "Bluetooth"},
+		//	{kind: "VPN"},
 		//	{kind: "Accounts"},
 		//	{kind: "Backup"},
 		//	{kind: "TextAssist"},
@@ -70,9 +83,12 @@ enyo.kind({
 		//	{kind: "SIM"},
 		//	{kind: "SoftwareManager"},
 		//	{kind: "SystemUpdates"},
-		//	{kind: "WiFi"},
-		//	{kind: "Bluetooth"},
-		//	{kind: "VPN"},
+		//	{kind: "ScreenLock"},
+		//	{kind: "SoundRingtones"},
+		//	{kind: "DateTime"},
+		//	{kind: "RegionalSettings"},
+		//	{kind: "LocationServices"},
+		//	{kind: "DeviceInfo"},
 		]},
 	],
 	reflow: function(inSender) {
