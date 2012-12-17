@@ -1,7 +1,7 @@
 {
 	"title": "Settings",
 	"id": "org.webosports.app.settings",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"vendor": "WebOS Ports",
 	"vendor_url": "https://github.com/webOS-ports/com.palm.app.settings",
 	"type": "web",
@@ -9,3 +9,4 @@
 	"icon": "icon.png",
 	"uiRevision": "2"
 }
+
