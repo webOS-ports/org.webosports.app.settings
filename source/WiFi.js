@@ -371,17 +371,17 @@ enyo.kind({
 		return isInHex;
 	},
 	//Service Callbacks
-	handleWiFiConnectionStatus: function(inSender, inEvent) {
-		this.$.WiFiToggle.setValue(inEvent.status == "serviceEnabled" ? true : false);
+	handleWiFiConnectionStatus: function(inSender, inResponse) {
+		this.$.WiFiToggle.setValue(inResponse.status == "serviceEnabled" ? true : false);
 		this.$.RescanButton.setDisabled(!this.$.WiFiToggle.value);
 		
 		if(this.$.WiFiToggle.value == true)
 			this.rescan();
 	},
-	handleFindNetworksResponse: function(inSender, inEvent) {
-		this.foundNetworks = inEvent.foundNetworks;
+	handleFindNetworksResponse: function(inSender, inResponse) {
+		this.foundNetworks = inResponse.foundNetworks;
 		this.$.SearchRepeater.setCount(this.foundNetworks.length);
 	},
-	handleConnectResponse: function(inSender, inEvent) {
+	handleConnectResponse: function(inSender, inResponse) {
 	}
 });
