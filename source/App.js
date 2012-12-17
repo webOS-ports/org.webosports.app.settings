@@ -1,4 +1,44 @@
 enyo.kind({
+	name: "ListItem",
+	classes: "list-item",
+	layoutKind: "FittableColumnsLayout",
+	handlers: {
+		onmousedown: "pressed",
+		ondragstart: "released",
+		onmouseup: "released",
+	},
+	published: {
+		icon: "",
+		title: ""
+	},
+	components:[
+		{name: "ItemIcon", kind: "Image", style: "width: 42px"},
+		{name: "ItemTitle", style: "padding-left: 10px; line-height: 42px"},
+	],
+	create: function() {
+		this.inherited(arguments);
+		this.$.ItemIcon.setSrc(this.icon);
+		this.$.ItemTitle.setContent(this.title);
+	},
+	pressed: function() {
+		this.addClass("onyx-selected");
+	},
+	released: function() {
+		this.removeClass("onyx-selected");
+	}
+});
+
+enyo.kind({
+	name: "EmptyPanel",
+	layoutKind: "FittableRowsLayout",
+	style: "background-color: #555;",
+	components:[
+		{kind: "onyx.Toolbar"},
+		{fit: true}
+	]
+});
+
+enyo.kind({
 	name: "App",
 	kind: "Panels",
 	realtimeFit: true,
@@ -32,7 +72,7 @@ enyo.kind({
 				title: "Wi-Fi",
 				ontap: "openWiFi",
 				components:[
-					{kind: "onyx.ToggleButton", style: "height:32px; float: right;"}
+					{name: "WiFiToggle", kind: "onyx.ToggleButton", style: "height:32px; float: right;", onChange: "wifiToggleChanged"}
 				]},
 				//{kind: "ListItem", icon: "icon.png", title: "Mobile Hotspot"}, //NOTE: Integrate into Wi-Fi
 				{kind: "ListItem",
@@ -77,7 +117,7 @@ enyo.kind({
 		index: 1,
 		components:[
 			{kind: "EmptyPanel"},
-			{kind: "WiFi"},
+			{name: "WiFiPanel", kind: "WiFi", onActiveChanged: "wifiActiveChanged"},
 			{}, //	{kind: "Bluetooth"},
 			{}, //	{kind: "VPN"},
 			{}, //	{kind: "Accounts"},
@@ -95,6 +135,7 @@ enyo.kind({
 			{}, //	{kind: "DeviceInfo"},
 		]},
 	],
+	//Handlers
 	reflow: function(inSender) {
 		this.inherited(arguments);
 		if(enyo.Panels.isScreenNarrow()) {
@@ -106,61 +147,108 @@ enyo.kind({
 			this.$.ContentPanels.addStyles("box-shadow: -4px 0px 4px rgba(0,0,0,0.3)");
 		}
 	},
-	openWiFi: function(inSender) { this.$.ContentPanels.setIndex(1); },
-	openBluetooth: function(inSender) { this.$.ContentPanels.setIndex(2); },
-	openVPN: function(inSender) { this.$.ContentPanels.setIndex(3); },
-	openAccounts: function(inSender) { this.$.ContentPanels.setIndex(4); },
-	openBackup: function(inSender) { this.$.ContentPanels.setIndex(5); },
-	openTextAssist: function(inSender) { this.$.ContentPanels.setIndex(6); },
-	openExhibition: function(inSender) { this.$.ContentPanels.setIndex(7); },
-	openSIM: function(inSender) { this.$.ContentPanels.setIndex(8); },
-	openSoftwareManager: function(inSender) { this.$.ContentPanels.setIndex(9); },
-	openSystemUpdates: function(inSender) { this.$.ContentPanels.setIndex(10); },
-	openScreenLock: function(inSender) { this.$.ContentPanels.setIndex(11); },
-	openSoundRingtones: function(inSender) { this.$.ContentPanels.setIndex(12); },
-	openDateTime: function(inSender) { this.$.ContentPanels.setIndex(13); },
-	openRegionalSettings: function(inSender) { this.$.ContentPanels.setIndex(14); },
-	openLocationServices: function(inSender) { this.$.ContentPanels.setIndex(15); },
-	openDeviceInfo: function(inSender) { this.$.ContentPanels.setIndex(16); }
-});
-
-
-enyo.kind({
-	name: "ListItem",
-	classes: "list-item",
-	layoutKind: "FittableColumnsLayout",
-	handlers: {
-		onmousedown: "pressed",
-		ondragstart: "released",
-		onmouseup: "released",
+	//Action Functions
+	wifiActiveChanged: function(inSender, inEvent) {
+		this.$.WiFiToggle.setValue(inEvent.value);
 	},
-	published: {
-		icon: "",
-		title: ""
+	wifiToggleChanged: function(inSender) {
+		this.$.WiFiPanel.setToggleValue(inSender.value);
 	},
-	components:[
-		{name: "ItemIcon", kind: "Image", style: "width: 42px"},
-		{name: "ItemTitle", style: "padding-left: 10px; line-height: 42px"},
-	],
-	create: function() {
-		this.inherited(arguments);
-		this.$.ItemIcon.setSrc(this.icon);
-		this.$.ItemTitle.setContent(this.title);
+	//Panel selection functions
+	openWiFi: function(inSender) {
+		this.$.ContentPanels.setIndex(1);
+		
+		if(enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
 	},
-	pressed: function() {
-		this.addClass("onyx-selected");
+	openBluetooth: function(inSender) {
+		this.$.ContentPanels.setIndex(2);
+		
+		if(enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
 	},
-	released: function() {
-		this.removeClass("onyx-selected");
-	}
-});
-
-enyo.kind({
-	name: "EmptyPanel",
-	layoutKind: "FittableRowsLayout",
-	style: "background-color: #555;",
-	components:[
-		{kind: "onyx.Toolbar"},
-		{fit: true}
-	]
+	openVPN: function(inSender) {
+		this.$.ContentPanels.setIndex(3);
+		
+		if(enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
+	},
+	openAccounts: function(inSender) {
+		this.$.ContentPanels.setIndex(4);
+		
+		if(enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
+	},
+	openBackup: function(inSender) {
+		this.$.ContentPanels.setIndex(5);
+		
+		if(enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
+	},
+	openTextAssist: function(inSender) {
+		this.$.ContentPanels.setIndex(6);
+		
+		if(enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
+	},
+	openExhibition: function(inSender) {
+		this.$.ContentPanels.setIndex(7);
+		
+		if(enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
+	},
+	openSIM: function(inSender) {
+		this.$.ContentPanels.setIndex(8);
+		
+		if(enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
+	},
+	openSoftwareManager: function(inSender) {
+		this.$.ContentPanels.setIndex(9);
+		
+		if(enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
+	},
+	openSystemUpdates: function(inSender) {
+		this.$.ContentPanels.setIndex(10);
+		
+		if(enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
+	},
+	openScreenLock: function(inSender) {
+		this.$.ContentPanels.setIndex(11);
+		
+		if(enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
+	},
+	openSoundRingtones: function(inSender) {
+		this.$.ContentPanels.setIndex(12);
+		
+		if(enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
+	},
+	openDateTime: function(inSender) {
+		this.$.ContentPanels.setIndex(13);
+		
+		if(enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
+	},
+	openRegionalSettings: function(inSender) {
+		this.$.ContentPanels.setIndex(14);
+		
+		if(enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
+	},
+	openLocationServices: function(inSender) {
+		this.$.ContentPanels.setIndex(15);
+		
+		if(enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
+	},
+	openDeviceInfo: function(inSender) {
+		this.$.ContentPanels.setIndex(16);
+		
+		if(enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
+	},
 });

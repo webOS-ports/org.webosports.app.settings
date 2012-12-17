@@ -78,6 +78,9 @@ enyo.kind({
 		"returnValue": true
 	},
 	foundNetworks: [],
+	events: {
+		onActiveChanged: ""
+	},
 	currentSSID: "",
 	currentSecurity: "",
 	palm: false,
@@ -89,12 +92,12 @@ enyo.kind({
 		onShow: "popupShown",
 		components:[
 			{content: "Enter password for", style: "display: inline;"},
-			{name: "SSID", content: "SSID", style: "margin-left: 4px; display: inline;"},
+			{name: "PopupSSID", content: "SSID", style: "margin-left: 4px; display: inline;"},
 			{kind: "onyx.InputDecorator", style: "display: block; margin-top: 16px;", components:[
 				{name: "PasswordInput", kind: "onyx.Input", type: "password", style: "width: 100%", onkeypress: "passwordKeyPress"}
 			]},
 		]},
-	
+		
 		{kind: "onyx.Toolbar",
 		style: "line-height: 36px;",
 		components:[
@@ -146,6 +149,7 @@ enyo.kind({
 				{ /* Workaround for HFlipArranger incorrectly displaying with 2 panels*/ }
 		]},
 		{kind: "onyx.Toolbar", components:[
+			{kind: "onyx.Grabber", style: "margin-top: 8px; margin-bottom: 8px;"},
 			{kind: "onyx.RadioGroup",
 			style: "position: absolute; left: 50%; margin-left: -76px;",
 			components:[
@@ -185,13 +189,16 @@ enyo.kind({
 		else {
 			this.deactivateWiFi();
 		}
+		this.doActiveChanged(inEvent);
 	},
 	listItemTapped: function(inSender, inEvent) {
 		this.currentSSID = inSender.$.SSID.content;
 		this.currentSecurity = inSender.$.Padlock.content;
 		
-		if(this.currentSecurity != undefined)
+		if(this.currentSecurity != undefined) {
+			this.$.PopupSSID.setContent(this.currentSSID);
 			this.$.PasswordPopup.show();
+		}
 		else
 			this.connect(this, {ssid: inSender.$.SSID.content});
 	},
@@ -219,6 +226,9 @@ enyo.kind({
 	},
 	showKnown: function(inSender, inEvent) {
 		this.$.WiFiPanels.setIndex(1);
+	},
+	setToggleValue: function(value) {
+		this.$.WiFiToggle.setValue(value);
 	},
 	activateWiFi: function(inSender, inEvent) {
 		if(this.palm) {
