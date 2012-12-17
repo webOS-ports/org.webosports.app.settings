@@ -149,7 +149,7 @@ enyo.kind({
 				{ /* Workaround for HFlipArranger incorrectly displaying with 2 panels*/ }
 		]},
 		{kind: "onyx.Toolbar", components:[
-			{kind: "onyx.Grabber", style: "margin-top: 8px; margin-bottom: 8px;"},
+			{name: "Grabber", kind: "onyx.Grabber", style: "margin-top: 8px; margin-bottom: 8px;"},
 			{kind: "onyx.RadioGroup",
 			style: "position: absolute; left: 50%; margin-left: -76px;",
 			components:[
@@ -182,6 +182,16 @@ enyo.kind({
 			enyo.log("Non-palm platform, service requests disabled.");
 		}
 	},
+	reflow: function(inSender) {
+		this.inherited(arguments);
+		if(enyo.Panels.isScreenNarrow()) {
+			this.$.Grabber.applyStyle("visibility", "hidden");
+		}
+		else {
+			this.$.Grabber.applyStyle("visibility", "visible");
+		}
+	},
+	//Action Handlers
 	toggleButtonChanged: function(inSender, inEvent) {
 		if(inEvent.value == true) {
 			this.activateWiFi();

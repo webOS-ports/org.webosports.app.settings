@@ -73,42 +73,49 @@ enyo.kind({
 				title: "Wi-Fi",
 				ontap: "openWiFi",
 				components:[
-					{name: "WiFiToggle", kind: "onyx.ToggleButton", style: "height:32px; float: right;", onChange: "wifiToggleChanged"}
+					{name: "WiFiToggle",
+					kind: "onyx.ToggleButton",
+					style: "height: 32px; float: right;",
+					onChange: "wifiToggleChanged"}
 				]},
 				//{kind: "ListItem", icon: "icon.png", title: "Mobile Hotspot"}, //NOTE: Integrate into Wi-Fi
+				/* No service implementation yet
 				{kind: "ListItem",
 				icon: "icon.png",
 				title: "Bluetooth",
 				ontap: "openBluetooth",
 				components:[
-					{kind: "onyx.ToggleButton", style: "height:32px; float: right;"}
+					{kind: "onyx.ToggleButton",
+					style: "height:32px; float: right;"}
 				]},
 				{kind: "ListItem",
 				icon: "icon.png",
 				title: "VPN",
 				ontap: "openVPN",
 				components:[
-					{kind: "onyx.ToggleButton", style: "height:32px; float: right;"}
+					{kind: "onyx.ToggleButton",
+					style: "height:32px; float: right;"}
 				]},
+				*/
 				
 				//Services
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Services"},
-				{kind: "ListItem", icon: "icon.png", title: "Accounts", ontap: "openAccounts"},
-				{kind: "ListItem", icon: "icon.png", title: "Backup", ontap: "openBackup"},
-				{kind: "ListItem", icon: "icon.png", title: "Text Assist", ontap: "openTextAssist"},
+				//{kind: "ListItem", icon: "icon.png", title: "Accounts", ontap: "openAccounts"},
+				//{kind: "ListItem", icon: "icon.png", title: "Backup", ontap: "openBackup"},
+				//{kind: "ListItem", icon: "icon.png", title: "Text Assist", ontap: "openTextAssist"},
 				{kind: "ListItem", icon: "icon.png", title: "Exhibition", ontap: "openExhibition"},
-				{kind: "ListItem", icon: "icon.png", title: "SIM", ontap: "openSIM"},
-				{kind: "ListItem", icon: "icon.png", title: "Software Manager", ontap: "openSoftwareManager"},
-				{kind: "ListItem", icon: "icon.png", title: "System Updates", ontap: "openSystemUpdates"},
+				//{kind: "ListItem", icon: "icon.png", title: "SIM", ontap: "openSIM"},
+				//{kind: "ListItem", icon: "icon.png", title: "Software Manager", ontap: "openSoftwareManager"},
+				//{kind: "ListItem", icon: "icon.png", title: "System Updates", ontap: "openSystemUpdates"},
 				
 				//Core Settings
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Core"},
 				{kind: "ListItem", icon: "icon.png", title: "Screen & Lock", ontap: "openScreenLock"},
-				{kind: "ListItem", icon: "icon.png", title: "Sounds & Ringtones", ontap: "openSoundRingtones"},
+				//{kind: "ListItem", icon: "icon.png", title: "Sounds & Ringtones", ontap: "openSoundRingtones"},
 				{kind: "ListItem", icon: "icon.png", title: "Date & Time", ontap: "openDateTime"},
-				{kind: "ListItem", icon: "icon.png", title: "Regional Settings", ontap: "openRegionalSettings"},
-				{kind: "ListItem", icon: "icon.png", title: "Location Services", ontap: "openLocationServices"},
-				{kind: "ListItem", icon: "icon.png", title: "Device Info", ontap: "openDeviceInfo"},
+				//{kind: "ListItem", icon: "icon.png", title: "Regional Settings", ontap: "openRegionalSettings"},
+				//{kind: "ListItem", icon: "icon.png", title: "Location Services", ontap: "openLocationServices"},
+				//{kind: "ListItem", icon: "icon.png", title: "Device Info", ontap: "openDeviceInfo"},
 			]},
 		]},
 		{name: "ContentPanels",
@@ -130,7 +137,7 @@ enyo.kind({
 			{}, //	{kind: "SystemUpdates"},
 				{kind: "ScreenLock"},
 			{}, //	{kind: "SoundRingtones"},
-			{}, //	{kind: "DateTime"},
+			{kind: "DateTime"},
 			{}, //	{kind: "RegionalSettings"},
 			{}, //	{kind: "LocationServices"},
 			{}, //	{kind: "DeviceInfo"},
@@ -141,10 +148,12 @@ enyo.kind({
 		this.inherited(arguments);
 		if(enyo.Panels.isScreenNarrow()) {
 			this.setArrangerKind("PushPopArranger");
+			this.setDraggable(false);
 			this.$.ContentPanels.addStyles("box-shadow: 0");
 		}
 		else {
 			this.setArrangerKind("CollapsingArranger");
+			this.setDraggable(true);
 			this.$.ContentPanels.addStyles("box-shadow: -4px 0px 4px rgba(0,0,0,0.3)");
 		}
 	},

@@ -15,13 +15,24 @@ enyo.kind({
 		]},
 		{fit: true},
 		{kind: "onyx.Toolbar", components:[
-			{kind: "onyx.Grabber", style: "margin-top: 8px; margin-bottom: 8px;"},
+			{name: "Grabber", kind: "onyx.Grabber", style: "margin-top: 8px; margin-bottom: 8px;"},
 			{kind: "onyx.Button",
 			style: "position: absolute; left: 50%; margin-top: 4px; margin-left: -73px;",
 			content: "Start Exhibition",
 			ontap: "startExhibitionTapped"}
 		]}
 	],
+	//Handlers
+	reflow: function(inSender) {
+		this.inherited(arguments);
+		if(enyo.Panels.isScreenNarrow()) {
+			this.$.Grabber.applyStyle("visibility", "hidden");
+		}
+		else {
+			this.$.Grabber.applyStyle("visibility", "visible");
+		}
+	},
+	//Action Handlers
 	startExhibitionTapped: function(inSender, inEvent) {
 		try {
 			var startExhibition = new ExhibitionService({method:"setState"});

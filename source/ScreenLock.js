@@ -1,5 +1,5 @@
 enyo.kind({
-	name: "PropertyService",
+	name: "DisplayControlService",
 	kind: "enyo.webOS.ServiceRequest",
 	service: "palm://com.palm.display/control/"
 });
@@ -116,7 +116,7 @@ enyo.kind({
 			]},
 		]},
 		{kind: "onyx.Toolbar", components:[
-			{kind: "onyx.Grabber", style: "margin-top: 8px; margin-bottom: 8px;"}
+			{name: "Grabber", kind: "onyx.Grabber", style: "margin-top: 8px; margin-bottom: 8px;"}
 		]}
 	],
 	//Handlers
@@ -124,13 +124,13 @@ enyo.kind({
 		this.inherited(arguments);
 		try {
 			//Subscribe to the connection status service
-			var getProperty = new PropertyService({method: "getProperty"});
-			getProperty.response(this, "handleGetPropertiesResponse");
-			getProperty.go({properties: ["maximumBrightness", "timeout"]});
+			var getProperties = new DisplayControlService({method: "getProperty"});
+			getProperties.response(this, "handleGetPropertiesResponse");
+			getProperties.go({properties: ["maximumBrightness", "timeout"]});
 			
-			var getPreference = new PreferenceService({method: "getPreferences"});
-			getPreference.response(this, "handleGetPreferencesResponse");
-			getPreference.go({keys: ["showAlertsWhenLocked", "BlinkNotifications"]});
+			var getPreferences = new PreferenceService({method: "getPreferences"});
+			getPreferences.response(this, "handleGetPreferencesResponse");
+			getPreferences.go({keys: ["showAlertsWhenLocked", "BlinkNotifications"]});
 			
 			this.palm = true;
 		}
@@ -138,31 +138,19 @@ enyo.kind({
 			enyo.log("Non-palm platform, service requests disabled.");
 		}
 	},
-	handleGetPropertiesResponse: function(inSender, inResponse) {
-		if(inResponse.maximumBrightness != undefined)
-			this.$.BrightnessSlider.setValue(inResponse.maximumBrightness);
-			
-		if(inResponse.timeout != undefined) {
-			if(inResponse.timeout == 30)
-				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[0]);
-			if(inResponse.timeout == 60)
-				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[1]);
-			if(inResponse.timeout == 120)
-				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[2]);
-			if(inResponse.timeout == 180)
-				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[3]);
+	reflow: function(inSender) {
+		this.inherited(arguments);
+		if(enyo.Panels.isScreenNarrow()) {
+			this.$.Grabber.applyStyle("visibility", "hidden");
+		}
+		else {
+			this.$.Grabber.applyStyle("visibility", "visible");
 		}
 	},
-	handleGetPreferencesResponse: function(inSender, inResponse) {
-		if(inResponse.showAlertsWhenLocked != undefined)
-			this.$.AlertsToggle.setValue(inResponse.showAlertsWhenLocked);
-			
-		if(inResponse.BlinkNotifications != undefined)
-			this.$.BlinkToggle.setValue(inResponse.BlinkNotifications);
-	},
+	//Action Handlers
 	brightnessChanged: function(inSender, inEvent) {
 		if(this.palm) {
-			var setProperty = new PropertyService({method: "setProperty"});
+			var setProperty = new DisplayControlService({method: "setProperty"});
 			//setProperty.response(this, "handleSetPropertyResponse");
 			setProperty.go({maximumBrightness: parseInt(this.$.BrightnessSlider.value)});
 		}
@@ -189,7 +177,7 @@ enyo.kind({
 		}
 		
 		if(this.palm) {
-			var setProperty = new PropertyService({method: "setProperty"});
+			var setProperty = new DisplayControlService({method: "setProperty"});
 			//setProperty.response(this, "handleSetPropertyResponse");
 			setProperty.go({timeout: t});
 		}
@@ -216,5 +204,28 @@ enyo.kind({
 		else {
 			enyo.log(inSender.value);
 		}
-	}
+	},
+	//Service Callbacks
+	handleGetPropertiesResponse: function(inSender, inResponse) {
+		if(inResponse.maximumBrightness != undefined)
+			this.$.BrightnessSlider.setValue(inResponse.maximumBrightness);
+			
+		if(inResponse.timeout != undefined) {
+			if(inResponse.timeout == 30)
+				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[0]);
+			if(inResponse.timeout == 60)
+				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[1]);
+			if(inResponse.timeout == 120)
+				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[2]);
+			if(inResponse.timeout == 180)
+				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[3]);
+		}
+	},
+	handleGetPreferencesResponse: function(inSender, inResponse) {
+		if(inResponse.showAlertsWhenLocked != undefined)
+			this.$.AlertsToggle.setValue(inResponse.showAlertsWhenLocked);
+			
+		if(inResponse.BlinkNotifications != undefined)
+			this.$.BlinkToggle.setValue(inResponse.BlinkNotifications);
+	},
 });
