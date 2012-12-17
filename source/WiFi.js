@@ -184,21 +184,18 @@ enyo.kind({
 	},
 	reflow: function(inSender) {
 		this.inherited(arguments);
-		if(enyo.Panels.isScreenNarrow()) {
+		if(enyo.Panels.isScreenNarrow())
 			this.$.Grabber.applyStyle("visibility", "hidden");
-		}
-		else {
+		else
 			this.$.Grabber.applyStyle("visibility", "visible");
-		}
 	},
 	//Action Handlers
 	toggleButtonChanged: function(inSender, inEvent) {
-		if(inEvent.value == true) {
+		if(inEvent.value == true)
 			this.activateWiFi();
-		}
-		else {
+		else
 			this.deactivateWiFi();
-		}
+			
 		this.doActiveChanged(inEvent);
 	},
 	listItemTapped: function(inSender, inEvent) {
@@ -223,7 +220,7 @@ enyo.kind({
 	passwordKeyPress: function(inSender, inEvent) {
 		//If return pressed
 		if(inEvent.keyCode == 13) {
-			var p = inSender.value;
+			var p = inSender.getValue();
 			inSender.setValue("");
 			this.$.PasswordPopup.hide();
 			this.connect(this, {ssid: this.currentSSID, security: this.currentSecurity, password: p});
@@ -260,16 +257,15 @@ enyo.kind({
 			findNetworks.response(this, "handleFindNetworksResponse");
 			findNetworks.go();
 		}
-		else {
+		else
 			this.handleFindNetworksResponse(this, this.phonyFoundNetworks);
-		}
 	},
 	connect: function(inSender, inEvent) {
 		if(!this.palm)
 			return;
 
-		var ssid = inEvent.ssid;
-		var security = inEvent.security;
+		var ssid = this.currentSSID;
+		var security = this.currentSecurity;
 		var password = inEvent.password;
 		var hidden = true;
 		
@@ -382,8 +378,14 @@ enyo.kind({
 	},
 	//Service Callbacks
 	handleWiFiConnectionStatus: function(inSender, inResponse) {
-		this.$.WiFiToggle.setValue(inResponse.status == "serviceEnabled" ? true : false);
-		this.$.RescanButton.setDisabled(!this.$.WiFiToggle.value);
+		if(inResponse.status == "serviceDisabled") {
+			this.$.WiFiToggle.setValue(false);
+			this.$.RescanButton.setDisabled(true);
+		}
+		else {
+			this.$.WiFiToggle.setValue(true);
+			this.$.RescanButton.setDisabled(false);
+		}
 		
 		if(this.$.WiFiToggle.value == true)
 			this.rescan();
