@@ -9,6 +9,7 @@ enyo.depends(
 	"App.css",
 	"App.js",
 	//Settings Panels
+	"Exhibition.js",
 	"ScreenLock.js",
 	"WiFi.js"
 );

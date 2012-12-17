@@ -124,7 +124,7 @@ enyo.kind({
 			{}, //	{kind: "Accounts"},
 			{}, //	{kind: "Backup"},
 			{}, //	{kind: "TextAssist"},
-			{}, //	{kind: "Exhibition"},
+			{kind: "Exhibition"},
 			{}, //	{kind: "SIM"},
 			{}, //	{kind: "SoftwareManager"},
 			{}, //	{kind: "SystemUpdates"},
