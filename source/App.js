@@ -12,8 +12,8 @@ enyo.kind({
 		title: ""
 	},
 	components:[
-		{name: "ItemIcon", kind: "Image", style: "width: 42px"},
-		{name: "ItemTitle", style: "padding-left: 10px; line-height: 42px"},
+		{name: "ItemIcon", kind: "Image", style: "height: 100%"},
+		{name: "ItemTitle", style: "padding-left: 10px;"},
 	],
 	create: function() {
 		this.inherited(arguments);
@@ -75,7 +75,7 @@ enyo.kind({
 				components:[
 					{name: "WiFiToggle",
 					kind: "onyx.ToggleButton",
-					style: "height: 32px; float: right;",
+					style: "position: absolute; top: 11px; right: 9px; height: 31px;",
 					onChange: "wifiToggleChanged"}
 				]},
 				//{kind: "ListItem", icon: "icon.png", title: "Mobile Hotspot"}, //NOTE: Integrate into Wi-Fi

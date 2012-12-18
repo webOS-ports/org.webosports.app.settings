@@ -15,9 +15,9 @@ enyo.kind({
 		]},
 		{fit: true},
 		{kind: "onyx.Toolbar", components:[
-			{name: "Grabber", kind: "onyx.Grabber", style: "margin-top: 8px; margin-bottom: 8px;"},
+			{name: "Grabber", kind: "onyx.Grabber"},
 			{kind: "onyx.Button",
-			style: "position: absolute; left: 50%; margin-top: 4px; margin-left: -73px;",
+			style: "position: absolute; left: 50%; margin-left: -73px;",
 			content: "Start Exhibition",
 			ontap: "startExhibitionTapped"}
 		]}

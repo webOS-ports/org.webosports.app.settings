@@ -79,7 +79,7 @@ enyo.kind({
 			]},
 		]},
 		{kind: "onyx.Toolbar", components:[
-			{name: "Grabber", kind: "onyx.Grabber", style: "margin-top: 8px; margin-bottom: 8px;"},
+			{name: "Grabber", kind: "onyx.Grabber"},
 		]}
 	],
 	//Handlers

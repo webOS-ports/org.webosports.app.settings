@@ -99,10 +99,10 @@ enyo.kind({
 		]},
 		
 		{kind: "onyx.Toolbar",
-		style: "line-height: 36px;",
+		style: "line-height: 28px;",
 		components:[
 				{content: "Wi-Fi"},
-				{name: "WiFiToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "toggleButtonChanged"}
+				{name: "WiFiToggle", kind: "onyx.ToggleButton", style: "position: absolute; top: 8px; right: 6px; height: 31px;", onChange: "toggleButtonChanged"}
 		]},
 		{name: "WiFiPanels",
 		kind: "Panels",
@@ -149,9 +149,9 @@ enyo.kind({
 				{ /* Workaround for HFlipArranger incorrectly displaying with 2 panels*/ }
 		]},
 		{kind: "onyx.Toolbar", components:[
-			{name: "Grabber", kind: "onyx.Grabber", style: "margin-top: 8px; margin-bottom: 8px;"},
+			{name: "Grabber", kind: "onyx.Grabber"},
 			{kind: "onyx.RadioGroup",
-			style: "position: absolute; left: 50%; margin-left: -76px;",
+			style: "position: absolute; bottom: 3px; left: 50%; margin-left: -76px;",
 			components:[
 				{content: "Search", active: true, ontap: "showSearch"},
 				{content: "Known", ontap: "showKnown"}
@@ -159,12 +159,12 @@ enyo.kind({
 			{name: "NewButton",
 			kind: "onyx.IconButton",
 			src: "assets/icon-new.png",
-			style: "float: right; margin-top: 6px;",
+			style: "float: right;",
 			ontap: ""},
 			{name: "RescanButton",
 			kind: "onyx.Button",
 			content: "Rescan",
-			style: "float: right; margin-top: 5px;",
+			style: "float: right;",
 			ontap: "rescan"},
 		]}
 	],

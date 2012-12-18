@@ -11,7 +11,7 @@
 }
 
 .onyx-toolbar {
-	height: 64px;
+	height: 54px;
 }
 
 .list-header {
@@ -31,11 +31,12 @@
 
 .list-item {
 	width: inherit;
-	height: 42px;
-	padding: 10px;
+	height: 44px;
+	padding: 4px;
 	color: white;
 	background-color: #333333;
 	border-bottom: 1px solid #0E0E0E;
+	line-height: 44px;
 	font-size: 18px;
 }
 
