@@ -44,7 +44,7 @@ enyo.kind({
 	realtimeFit: true,
 	arrangerKind: "CollapsingArranger",
 	components:[
-		{kind: "Signals", onkeyup: "handleKeyUp"},
+		{kind: "BackGesture", onBack: "handleBackGesture"},
 		{name: "MenuPanel",
 		style: "width: 33%",
 		layoutKind: "FittableRowsLayout",
@@ -157,10 +157,8 @@ enyo.kind({
 			this.$.ContentPanels.addStyles("box-shadow: -4px 0px 4px rgba(0,0,0,0.3)");
 		}
 	},
-	handleKeyUp: function(inSender, inEvent) {
-		//Handle back gesture
-		if(inEvent.keyIdentifier == "U+1200001")
-			return this.setIndex(0);
+	handleBackGesture: function(inSender, inEvent) {
+			this.setIndex(0);
 	},
 	//Action Functions
 	wifiActiveChanged: function(inSender, inEvent) {
