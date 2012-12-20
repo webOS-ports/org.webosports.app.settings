@@ -70,10 +70,47 @@ enyo.kind({
 	layoutKind: "FittableRowsLayout",
 	phonyFoundNetworks: {
 		"foundNetworks": [
-			{ "networkInfo": { "ssid": "SKY13476", "securityType": "wpa-personal", "signalBars": 2, "signalLevel": 80 } },
-			{ "networkInfo": { "ssid": "BTWiFi", "signalBars": 2, "signalLevel": 79 } },
-			{ "networkInfo": { "ssid": "BTWiFi-with-FON", "signalBars": 2, "signalLevel": 79 } },
-			{ "networkInfo": { "ssid": "BTHub3-8MP5", "securityType": "wpa-personal", "signalBars": 2, "signalLevel": 78 } }
+			{
+			    "networkInfo": {
+				"ssid": "BTWiFi",
+				"availableSecurityTypes": [
+				    "none"
+				],
+				"signalBars": 2,
+				"signalLevel": 77,
+				"connectState": "ipConfigured"
+			    }
+			},
+			{
+			    "networkInfo": {
+				"ssid": "BTWiFi-with-FON",
+				"availableSecurityTypes": [
+				    "none"
+				],
+				"signalBars": 2,
+				"signalLevel": 69
+			    }
+			},
+			{
+			    "networkInfo": {
+				"ssid": "SKY13476",
+				"availableSecurityTypes": [
+				    "psk"
+				],
+				"signalBars": 2,
+				"signalLevel": 86
+			    }
+			},
+			{
+			    "networkInfo": {
+				"ssid": "BTHub3-8MP5",
+				"availableSecurityTypes": [
+				    "psk"
+				],
+				"signalBars": 1,
+				"signalLevel": 64
+			    }
+			}
 		],
 		"returnValue": true
 	},
@@ -202,16 +239,17 @@ enyo.kind({
 		this.currentSSID = inSender.$.SSID.content;
 		this.currentSecurity = inSender.$.Padlock.content;
 		
-		if(this.currentSecurity != undefined) {
+		if(this.currentSecurity != "none") {
 			this.$.PopupSSID.setContent(this.currentSSID);
 			this.$.PasswordPopup.show();
 		}
-		else
+		else {
 			this.connect(this, {ssid: inSender.$.SSID.content});
+		}
 	},
 	setupSearchRow: function(inSender, inEvent) {
 		inEvent.item.$.wiFiListItem.$.SSID.setContent(this.foundNetworks[inEvent.index].networkInfo.ssid);
-		inEvent.item.$.wiFiListItem.$.Padlock.setContent(this.foundNetworks[inEvent.index].networkInfo.securityType);
+		inEvent.item.$.wiFiListItem.$.Padlock.setContent(this.foundNetworks[inEvent.index].networkInfo.availableSecurityTypes);
 		inEvent.item.$.wiFiListItem.$.Signal.setContent(this.foundNetworks[inEvent.index].networkInfo.signalBars);
 	},
 	popupShown: function(inSender, inEvent) {
@@ -267,95 +305,91 @@ enyo.kind({
 		var ssid = this.currentSSID;
 		var security = this.currentSecurity;
 		var password = inEvent.password;
-		var hidden = true;
+		var hidden = false;
 		
 		var connect = new WiFiService({method: "connect"});
 		connect.response(this, "handleConnectResponse");
 		
 		//Unsecured
-		switch(security) {
-			case "wpa-personal":
-				connect.go({
-					"ssid": ssid,
-					"wasCreatedWithJoinOther": hidden,
-					"security": {
-						"securityType": security,
-						"simpleSecurity": {
-							"passKey": password,
-							"isInHex": this.isKeyInHex(security, password)
-						}
+		if(security.indexOf('psk') > -1) {
+			enyo.log("Connecting to PSK network");
+			var obj = {
+				"ssid": ssid,
+				"wasCreatedWithJoinOther": hidden,
+				"security": {
+					"securityType": security,
+					"simpleSecurity": {
+						"passKey": password,
+						"isInHex": this.isKeyInHex(security, password)
 					}
-				});
-				break;
-			case "wep":
-				connect.go({
-					"ssid": ssid,
-					"wasCreatedWithJoinOther": hidden,
-					"security": {
-						"securityType": security,
-						"simpleSecurity": {
-							"passKey": password,
-							"keyIndex": 0, //Ranges from 0-3, hardcoded to 0 for now
-							"isInHex": this.isKeyInHex(security, password)
-						}
-					}
-				});
-				break;
-			/* No certificate management yet
-			case "enterprise":
-				if ("eapTls" === this.$.eapTypeList.getValue() &&
-						undefined !== this.$.certificateList.getValue()) {
-					this.$.Connect.call({"ssid": ssid,
-						"wasCreatedWithJoinOther": hidden,
-						"security": {"securityType": security,
-							"enterpriseSecurity": {"userId": username,
-								"password": password,
-								"eapType": this.$.eapTypeList.getValue(),
-								"verifyServerCert": this.$.certVerifyCheckbox.getChecked(),
-								"clientCertificatePath": this.certItems[this.$.certificateList.getValue()].path}}});
-				} else {
-					this.$.Connect.call({"ssid": ssid,
-						"wasCreatedWithJoinOther": hidden,
-						"security": {"securityType": security,
-							"enterpriseSecurity": {"userId": username,
-								"password": password,
-								"eapType": this.$.eapTypeList.getValue(),
-								"verifyServerCert": this.$.certVerifyCheckbox.getChecked()}}});
 				}
-				break;
-			*/
-			case "wapi-psk":
-				connect.go({
-					"ssid": ssid,
-					"wasCreatedWithJoinOther": hidden,
-					"security": {
-						"securityType": security,
-						"simpleSecurity": {
-							"passKey": password,
-							"isInHex": this.isKeyInHex(security, password) //this.$.isInHexCheckbox.getChecked()
-						}
-					}
-				});
-				break;
-			/* No certificate management yet
-			case "wapi-cert":
-				connect.go({
-					"ssid": ssid,
-					"wasCreatedWithJoinOther": hidden,
-					"security": {
-						"securityType": security,
-						"simpleSecurity": {
-							"rootCert": this.certItems[this.$.wapiRootCertificateList.getValue()].path,
-							"userCert": this.certItems[this.$.wapiUserCertificateList.getValue()].path
-						}
-					}
-				});
-				break;
-			*/
-			default:
-				connect.go({"ssid": ssid, "wasCreatedWithJoinOther": hidden});
-				break;
+			};
+			enyo.log(JSON.stringify(obj));
+			connect.go(obj);
 		}
+		else if(security.indexOf('wep') > -1) {
+			enyo.log("Connecting to WEP network");
+			var obj = {
+				"ssid": ssid,
+				"wasCreatedWithJoinOther": hidden,
+				"security": {
+					"securityType": security,
+					"simpleSecurity": {
+						"passKey": password,
+						"keyIndex": 0, //Ranges from 0-3, hardcoded to 0 for now
+						"isInHex": this.isKeyInHex(security, password)
+					}
+				}
+			};
+			enyo.log(JSON.stringify(obj));
+			connect.go(obj);
+		}
+		else {
+			enyo.log("Connecting to unsecured network");
+			var obj = {
+				"ssid": ssid,
+				"wasCreatedWithJoinOther": hidden
+			};
+			enyo.log(obj);
+			connect.go(obj);
+		}
+		/* No certificate management yet
+		else if(security.indexOf('enterprise') > -1) {
+			if ("eapTls" === this.$.eapTypeList.getValue() &&
+					undefined !== this.$.certificateList.getValue()) {
+				this.$.Connect.call({"ssid": ssid,
+					"wasCreatedWithJoinOther": hidden,
+					"security": {"securityType": security,
+						"enterpriseSecurity": {"userId": username,
+							"password": password,
+							"eapType": this.$.eapTypeList.getValue(),
+							"verifyServerCert": this.$.certVerifyCheckbox.getChecked(),
+							"clientCertificatePath": this.certItems[this.$.certificateList.getValue()].path}}});
+			} else {
+				this.$.Connect.call({"ssid": ssid,
+					"wasCreatedWithJoinOther": hidden,
+					"security": {"securityType": security,
+						"enterpriseSecurity": {"userId": username,
+							"password": password,
+							"eapType": this.$.eapTypeList.getValue(),
+							"verifyServerCert": this.$.certVerifyCheckbox.getChecked()}}});
+			}
+		}
+			
+		else if(security.indexOf('wapi-cert') > -1) {
+			connect.go({
+				"ssid": ssid,
+				"wasCreatedWithJoinOther": hidden,
+				"security": {
+					"securityType": security,
+					"simpleSecurity": {
+						"rootCert": this.certItems[this.$.wapiRootCertificateList.getValue()].path,
+						"userCert": this.certItems[this.$.wapiUserCertificateList.getValue()].path
+					}
+				}
+			});
+		}
+		*/
 	},
 	//Utility Functions
 	isKeyInHex: function (type, key) {
@@ -366,10 +400,8 @@ enyo.kind({
 			if ("wep" === type &&
 					(10 === key.length || 26 === key.length)) {
 				isInHex = true;
-			} else if ("wpa-personal" === type &&
+			} else if ("psk" === type &&
 					64 === key.length) {
-				isInHex = true;
-			} else if ("wapi-psk" === type) {
 				isInHex = true;
 			}
 		}
@@ -378,6 +410,7 @@ enyo.kind({
 	},
 	//Service Callbacks
 	handleWiFiConnectionStatus: function(inSender, inResponse) {
+		enyo.log(JSON.stringify(inResponse));
 		if(inResponse.status == "serviceDisabled") {
 			this.$.WiFiToggle.setValue(false);
 			this.$.RescanButton.setDisabled(true);
@@ -391,9 +424,11 @@ enyo.kind({
 			this.rescan();
 	},
 	handleFindNetworksResponse: function(inSender, inResponse) {
+		enyo.log(JSON.stringify(inResponse));
 		this.foundNetworks = inResponse.foundNetworks;
 		this.$.SearchRepeater.setCount(this.foundNetworks.length);
 	},
 	handleConnectResponse: function(inSender, inResponse) {
+		enyo.log(JSON.stringify(inResponse));
 	}
 });
