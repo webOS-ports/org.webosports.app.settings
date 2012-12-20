@@ -116,6 +116,7 @@ enyo.kind({
 				//{kind: "ListItem", icon: "icon.png", title: "Regional Settings", ontap: "openRegionalSettings"},
 				//{kind: "ListItem", icon: "icon.png", title: "Location Services", ontap: "openLocationServices"},
 				//{kind: "ListItem", icon: "icon.png", title: "Device Info", ontap: "openDeviceInfo"},
+				{kind: "ListItem", icon: "icon.png", title: "Developer Mode", ontap: "openDevMode"},
 			]},
 		]},
 		{name: "ContentPanels",
@@ -135,12 +136,13 @@ enyo.kind({
 			{}, //	{kind: "SIM"},
 			{}, //	{kind: "SoftwareManager"},
 			{}, //	{kind: "SystemUpdates"},
-				{kind: "ScreenLock"},
+			{kind: "ScreenLock"},
 			{}, //	{kind: "SoundRingtones"},
 			{kind: "DateTime"},
 			{}, //	{kind: "RegionalSettings"},
 			{}, //	{kind: "LocationServices"},
 			{}, //	{kind: "DeviceInfo"},
+			{kind: "DevMode"},
 		]},
 	],
 	//Handlers
@@ -264,4 +266,10 @@ enyo.kind({
 		if(enyo.Panels.isScreenNarrow())
 			this.setIndex(1);
 	},
+	openDevMode: function(inSender) {
+		this.$.ContentPanels.setIndex(17);
+
+		if (enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
+	}
 });
