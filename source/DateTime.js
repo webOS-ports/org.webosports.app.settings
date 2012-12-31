@@ -85,7 +85,7 @@ enyo.kind({
 	//Handlers
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
-		try {
+		if(window.PalmSystem) {
 			var getPreferences = new PreferenceService({method: "getPreferences"});
 			getPreferences.response(this, "handleGetPreferencesResponse");
 			getPreferences.go({keys: ["timeFormat", "timeZone", "useNetworkTime"]});
@@ -96,7 +96,7 @@ enyo.kind({
 			
 			this.palm = true;
 		}
-		catch(e) {
+		else {
 			enyo.log("Non-palm platform, service requests disabled.");
 		}
 	},

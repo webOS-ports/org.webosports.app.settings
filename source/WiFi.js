@@ -119,7 +119,6 @@ enyo.kind({
 		onActiveChanged: ""
 	},
 	currentSSID: "",
-	currentSecurity: "",
 	palm: false,
 	components: [
 		{name: "PasswordPopup",
@@ -208,14 +207,20 @@ enyo.kind({
 	//Handlers
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
-		try {
+		if(window.PalmSystem) {
+			//Query the initial connection status
+			var getConnectionStatus = new WiFiService({method: "getstatus"});
+			getConnectionStatus.response(this, "handleInitWiFiConnectionStatus");
+			getConnectionStatus.go();
+			
 			//Subscribe to the connection status service
 			var getConnectionStatus = new WiFiService({method: "getstatus", subscribe: true, resubscribe: true});
 			getConnectionStatus.response(this, "handleWiFiConnectionStatus");
 			getConnectionStatus.go();
+			
 			this.palm = true;
 		}
-		catch(e) {
+		else {
 			enyo.log("Non-palm platform, service requests disabled.");
 		}
 	},
@@ -228,18 +233,18 @@ enyo.kind({
 	},
 	//Action Handlers
 	toggleButtonChanged: function(inSender, inEvent) {
+		//enyo.log("Toggle Button Changed, value:" + inEvent.value);
 		if(inEvent.value == true)
-			this.activateWiFi();
+			this.activateWiFi(this);
 		else
-			this.deactivateWiFi();
+			this.deactivateWiFi(this);
 			
 		this.doActiveChanged(inEvent);
 	},
 	listItemTapped: function(inSender, inEvent) {
 		this.currentSSID = inSender.$.SSID.content;
-		this.currentSecurity = inSender.$.Padlock.content;
 		
-		if(this.currentSecurity != "none") {
+		if(inSender.$.Padlock.content != "none") {
 			this.$.PopupSSID.setContent(this.currentSSID);
 			this.$.PasswordPopup.show();
 		}
@@ -258,10 +263,12 @@ enyo.kind({
 	passwordKeyPress: function(inSender, inEvent) {
 		//If return pressed
 		if(inEvent.keyCode == 13) {
-			var p = inSender.getValue();
-			inSender.setValue("");
 			this.$.PasswordPopup.hide();
-			this.connect(this, {ssid: this.currentSSID, security: this.currentSecurity, password: p});
+			
+			var p = inSender.getValue();
+			this.connect(this, {ssid: this.currentSSID, password: p});
+			
+			inSender.setValue("");
 			delete p;
 		}
 	},
@@ -303,132 +310,81 @@ enyo.kind({
 			return;
 
 		var ssid = this.currentSSID;
-		var security = this.currentSecurity;
 		var password = inEvent.password;
 		var hidden = false;
 		
 		var connect = new WiFiService({method: "connect"});
 		connect.response(this, "handleConnectResponse");
 		
-		//Unsecured
-		if(security.indexOf('psk') > -1) {
+		if(security.indexOf('psk') > -1 || security.indexOf('wep') > -1) {
 			enyo.log("Connecting to PSK network");
 			var obj = {
 				"ssid": ssid,
-				"wasCreatedWithJoinOther": hidden,
 				"security": {
-					"securityType": security,
+					"securityType": "",
 					"simpleSecurity": {
-						"passKey": password,
-						"isInHex": this.isKeyInHex(security, password)
+						"passKey": password
 					}
 				}
 			};
 			enyo.log(JSON.stringify(obj));
 			connect.go(obj);
 		}
-		else if(security.indexOf('wep') > -1) {
-			enyo.log("Connecting to WEP network");
-			var obj = {
-				"ssid": ssid,
-				"wasCreatedWithJoinOther": hidden,
-				"security": {
-					"securityType": security,
-					"simpleSecurity": {
-						"passKey": password,
-						"keyIndex": 0, //Ranges from 0-3, hardcoded to 0 for now
-						"isInHex": this.isKeyInHex(security, password)
-					}
-				}
-			};
-			enyo.log(JSON.stringify(obj));
-			connect.go(obj);
+		else if(security.indexOf('enterprise') > -1) {
+			enyo.log("Not implemented.");
 		}
 		else {
 			enyo.log("Connecting to unsecured network");
 			var obj = {
-				"ssid": ssid,
-				"wasCreatedWithJoinOther": hidden
+				"ssid": ssid
 			};
-			enyo.log(obj);
+			enyo.log(JSON.stringify(obj));
 			connect.go(obj);
 		}
-		/* No certificate management yet
-		else if(security.indexOf('enterprise') > -1) {
-			if ("eapTls" === this.$.eapTypeList.getValue() &&
-					undefined !== this.$.certificateList.getValue()) {
-				this.$.Connect.call({"ssid": ssid,
-					"wasCreatedWithJoinOther": hidden,
-					"security": {"securityType": security,
-						"enterpriseSecurity": {"userId": username,
-							"password": password,
-							"eapType": this.$.eapTypeList.getValue(),
-							"verifyServerCert": this.$.certVerifyCheckbox.getChecked(),
-							"clientCertificatePath": this.certItems[this.$.certificateList.getValue()].path}}});
-			} else {
-				this.$.Connect.call({"ssid": ssid,
-					"wasCreatedWithJoinOther": hidden,
-					"security": {"securityType": security,
-						"enterpriseSecurity": {"userId": username,
-							"password": password,
-							"eapType": this.$.eapTypeList.getValue(),
-							"verifyServerCert": this.$.certVerifyCheckbox.getChecked()}}});
-			}
-		}
-			
-		else if(security.indexOf('wapi-cert') > -1) {
-			connect.go({
-				"ssid": ssid,
-				"wasCreatedWithJoinOther": hidden,
-				"security": {
-					"securityType": security,
-					"simpleSecurity": {
-						"rootCert": this.certItems[this.$.wapiRootCertificateList.getValue()].path,
-						"userCert": this.certItems[this.$.wapiUserCertificateList.getValue()].path
-					}
-				}
-			});
-		}
-		*/
 	},
 	//Utility Functions
-	isKeyInHex: function (type, key) {
-		var hexPattern = new RegExp('^[A-Fa-f0-9]*$'),
-			isInHex = false;
-
-		if (hexPattern.test(key)) {
-			if ("wep" === type &&
-					(10 === key.length || 26 === key.length)) {
-				isInHex = true;
-			} else if ("psk" === type &&
-					64 === key.length) {
-				isInHex = true;
-			}
-		}
-
-		return isInHex;
+	clearFoundNetworks: function() {
+		this.foundNetworks = [];
+		this.$.SearchRepeater.setCount(this.foundNetworks.length);
 	},
 	//Service Callbacks
+	handleInitWiFiConnectionStatus: function(inSender, inResponse) {
+		//enyo.log(JSON.stringify(inResponse));
+		
+		this.$.WiFiToggle.setValue(true);
+		this.$.RescanButton.setDisabled(false);
+		//Rescanning won't work immediately, so wait a couple of seconds before calling it
+		var storedThis = this;
+		setTimeout(function() { storedThis.rescan(); }, 2000);
+	},
 	handleWiFiConnectionStatus: function(inSender, inResponse) {
-		enyo.log(JSON.stringify(inResponse));
+		//enyo.log(JSON.stringify(inResponse));
+		
 		if(inResponse.status == "serviceDisabled") {
 			this.$.WiFiToggle.setValue(false);
 			this.$.RescanButton.setDisabled(true);
+			this.clearFoundNetworks();
 		}
-		else {
+		else if(inResponse.status == "serviceEnabled") {
 			this.$.WiFiToggle.setValue(true);
 			this.$.RescanButton.setDisabled(false);
+		//Rescanning won't work immediately, so wait a couple of seconds before calling it
+			var storedThis = this;
+			setTimeout(function() { storedThis.rescan(); }, 2000);
 		}
-		
-		if(this.$.WiFiToggle.value == true)
-			this.rescan();
 	},
 	handleFindNetworksResponse: function(inSender, inResponse) {
-		enyo.log(JSON.stringify(inResponse));
-		this.foundNetworks = inResponse.foundNetworks;
-		this.$.SearchRepeater.setCount(this.foundNetworks.length);
+		//enyo.log(JSON.stringify(inResponse));
+		
+		if(inResponse.foundNetworks) {
+			this.foundNetworks = inResponse.foundNetworks;
+			this.$.SearchRepeater.setCount(this.foundNetworks.length);
+		}
+		else {
+			this.clearFoundNetworks();
+		}
 	},
 	handleConnectResponse: function(inSender, inResponse) {
-		enyo.log(JSON.stringify(inResponse));
+		//enyo.log(JSON.stringify(inResponse));
 	}
 });

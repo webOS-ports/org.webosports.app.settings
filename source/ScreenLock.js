@@ -122,7 +122,7 @@ enyo.kind({
 	//Handlers
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
-		try {
+		if(window.PalmSystem) {
 			//Subscribe to the connection status service
 			var getProperties = new DisplayControlService({method: "getProperty"});
 			getProperties.response(this, "handleGetPropertiesResponse");
@@ -134,7 +134,7 @@ enyo.kind({
 			
 			this.palm = true;
 		}
-		catch(e) {
+		else {
 			enyo.log("Non-palm platform, service requests disabled.");
 		}
 	},
@@ -207,6 +207,8 @@ enyo.kind({
 	},
 	//Service Callbacks
 	handleGetPropertiesResponse: function(inSender, inResponse) {
+		enyo.log("Handling Get Properties Response");
+		enyo.log(JSON.stringify(inResponse));
 		if(inResponse.maximumBrightness != undefined)
 			this.$.BrightnessSlider.setValue(inResponse.maximumBrightness);
 			

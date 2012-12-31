@@ -34,11 +34,11 @@ enyo.kind({
 	},
 	//Action Handlers
 	startExhibitionTapped: function(inSender, inEvent) {
-		try {
+		if(window.PalmSystem) {
 			var startExhibition = new ExhibitionService({method:"setState"});
 			startExhibition.go({state:"dock"});
 		}
-		catch(e) {
+		else {
 			enyo.log("Starting Exhibition");
 		}
 	}

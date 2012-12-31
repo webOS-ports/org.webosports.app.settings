@@ -27,13 +27,13 @@ enyo.kind({
 	],
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
-		try {
+		if(window.PalmSystem) {
 			getDevModeState = new CustomizationService({"method": "getDevModeState", "subscribe": true, "resubscribe": true});
 			getDevModeState.response(this, "onGetDevModeStateResponse");
 			getDevModeState.go();
 			this.palm = true;
 		}
-		catch (e) {
+		else {
 			enyo.log("Non-palm platform, service requests disabled.");
 		}
 	},
