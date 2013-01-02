@@ -316,7 +316,7 @@ enyo.kind({
 		var connect = new WiFiService({method: "connect"});
 		connect.response(this, "handleConnectResponse");
 		
-		if(security.indexOf('psk') > -1 || security.indexOf('wep') > -1) {
+		if(password != "") {
 			enyo.log("Connecting to PSK network");
 			var obj = {
 				"ssid": ssid,
@@ -330,9 +330,9 @@ enyo.kind({
 			enyo.log(JSON.stringify(obj));
 			connect.go(obj);
 		}
-		else if(security.indexOf('enterprise') > -1) {
-			enyo.log("Not implemented.");
-		}
+		/*
+			TODO: Enterprise support when it becomes available
+		*/
 		else {
 			enyo.log("Connecting to unsecured network");
 			var obj = {
