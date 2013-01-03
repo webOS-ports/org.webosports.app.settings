@@ -1,10 +1,4 @@
 enyo.kind({
-	name: "WiFiService",
-	kind: "enyo.webOS.ServiceRequest",
-	service: "palm://com.palm.wifi/"
-});
-
-enyo.kind({
 	name: "WiFiListItem",
 	classes: "group-item",
 	layoutKind: "FittableColumnsLayout",
@@ -121,6 +115,7 @@ enyo.kind({
 	currentSSID: "",
 	palm: false,
 	components: [
+		{kind: "Signals", ondeviceready: "deviceready"},
 		{name: "PasswordPopup",
 		kind: "onyx.Popup",
 		modal: true,
@@ -207,22 +202,28 @@ enyo.kind({
 	//Handlers
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
-		if(window.PalmSystem) {
-			//Query the initial connection status
-			var getConnectionStatus = new WiFiService({method: "getstatus"});
-			getConnectionStatus.response(this, "handleInitWiFiConnectionStatus");
-			getConnectionStatus.go();
-			
-			//Subscribe to the connection status service
-			var getConnectionStatus = new WiFiService({method: "getstatus", subscribe: true, resubscribe: true});
-			getConnectionStatus.response(this, "handleWiFiConnectionStatus");
-			getConnectionStatus.go();
-			
-			this.palm = true;
-		}
-		else {
+		if(!window.PalmSystem)
 			enyo.log("Non-palm platform, service requests disabled.");
-		}
+	},
+	deviceready: function(inSender, inEvent) {
+		this.inherited(arguments);
+		//Query the initial connection status
+	        var request = navigator.service.Request("luna://com.palm.wifi/",
+		{
+			method: 'getstatus',
+			onSuccess: enyo.bind(this, "handleInitWiFiConnectionStatus")
+		});
+		
+		//Subscribe to the connection status service
+	        var request = navigator.service.Request("luna://com.palm.wifi/",
+		{
+			method: 'getstatus',
+			subscribe: true,
+			resubscribe: true,
+			onSuccess: enyo.bind(this, "handleWiFiConnectionStatus")
+		});
+		
+		this.palm = true;
 	},
 	reflow: function(inSender) {
 		this.inherited(arguments);
@@ -284,23 +285,29 @@ enyo.kind({
 	},
 	activateWiFi: function(inSender, inEvent) {
 		if(this.palm) {
-			var setRadioState = new WiFiService({method: "setstate"});
-			//setRadioState.error(this, "handleSetStateFailure");
-			setRadioState.go({"state": "enabled"});
+			var request = navigator.service.Request("luna://com.palm.wifi/",
+			{
+				method: 'setstate',
+				parameters: {"state": "enabled"},
+			});
 		}
 	},
 	deactivateWiFi: function(inSender, inEvent) {
 		if(this.palm) {
-			var setRadioState = new WiFiService({method: "setstate"});
-			//setRadioState.error(this, "handleSetStateFailure");
-			setRadioState.go({"state": "disabled"});
+			var request = navigator.service.Request("luna://com.palm.wifi/",
+			{
+				method: 'setstate',
+				parameters: {"state": "disabled"},
+			});
 		}
 	},
 	rescan: function(inSender, inEvent) {
 		if(this.palm) {
-			var findNetworks = new WiFiService({method: "findnetworks"});
-			findNetworks.response(this, "handleFindNetworksResponse");
-			findNetworks.go();
+			var request = navigator.service.Request("luna://com.palm.wifi/",
+			{
+				method: 'findnetworks',
+				onSuccess: enyo.bind(this, "handleFindNetworksResponse")
+			});
 		}
 		else
 			this.handleFindNetworksResponse(this, this.phonyFoundNetworks);
@@ -313,12 +320,11 @@ enyo.kind({
 		var password = inEvent.password;
 		var hidden = false;
 		
-		var connect = new WiFiService({method: "connect"});
-		connect.response(this, "handleConnectResponse");
+		var obj = {};
 		
 		if(password != "") {
 			enyo.log("Connecting to PSK network");
-			var obj = {
+			obj = {
 				"ssid": ssid,
 				"security": {
 					"securityType": "",
@@ -327,20 +333,25 @@ enyo.kind({
 					}
 				}
 			};
-			enyo.log(JSON.stringify(obj));
-			connect.go(obj);
 		}
 		/*
 			TODO: Enterprise support when it becomes available
 		*/
 		else {
 			enyo.log("Connecting to unsecured network");
-			var obj = {
+			obj = {
 				"ssid": ssid
 			};
-			enyo.log(JSON.stringify(obj));
-			connect.go(obj);
 		}
+		
+		//enyo.log(JSON.stringify(obj));
+		
+		var request = navigator.service.Request("luna://com.palm.wifi/",
+		{
+			method: 'connect',
+			parameters: obj,
+			onSuccess: enyo.bind(this, "handleConnectResponse")
+		});
 	},
 	//Utility Functions
 	clearFoundNetworks: function() {
@@ -348,7 +359,7 @@ enyo.kind({
 		this.$.SearchRepeater.setCount(this.foundNetworks.length);
 	},
 	//Service Callbacks
-	handleInitWiFiConnectionStatus: function(inSender, inResponse) {
+	handleInitWiFiConnectionStatus: function(inResponse) {
 		//enyo.log(JSON.stringify(inResponse));
 		
 		this.$.WiFiToggle.setValue(true);
@@ -357,7 +368,7 @@ enyo.kind({
 		var storedThis = this;
 		setTimeout(function() { storedThis.rescan(); }, 2000);
 	},
-	handleWiFiConnectionStatus: function(inSender, inResponse) {
+	handleWiFiConnectionStatus: function(inResponse) {
 		//enyo.log(JSON.stringify(inResponse));
 		
 		if(inResponse.status == "serviceDisabled") {
@@ -373,7 +384,7 @@ enyo.kind({
 			setTimeout(function() { storedThis.rescan(); }, 2000);
 		}
 	},
-	handleFindNetworksResponse: function(inSender, inResponse) {
+	handleFindNetworksResponse: function(inResponse) {
 		//enyo.log(JSON.stringify(inResponse));
 		
 		if(inResponse.foundNetworks) {
@@ -384,7 +395,7 @@ enyo.kind({
 			this.clearFoundNetworks();
 		}
 	},
-	handleConnectResponse: function(inSender, inResponse) {
+	handleConnectResponse: function(inResponse) {
 		//enyo.log(JSON.stringify(inResponse));
 	}
 });

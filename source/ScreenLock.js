@@ -1,20 +1,9 @@
 enyo.kind({
-	name: "DisplayControlService",
-	kind: "enyo.webOS.ServiceRequest",
-	service: "palm://com.palm.display/control/"
-});
-
-enyo.kind({
-	name: "PreferenceService",
-	kind: "enyo.webOS.ServiceRequest",
-	service: "palm://com.palm.systemservice/"
-});
-
-enyo.kind({
 	name: "ScreenLock",
 	layoutKind: "FittableRowsLayout",
 	palm: false,
 	components:[
+		{kind: "Signals", ondeviceready: "deviceready"},
 		{kind: "onyx.Toolbar",
 		style: "line-height: 36px;",
 		components:[
@@ -122,21 +111,27 @@ enyo.kind({
 	//Handlers
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
-		if(window.PalmSystem) {
-			//Subscribe to the connection status service
-			var getProperties = new DisplayControlService({method: "getProperty"});
-			getProperties.response(this, "handleGetPropertiesResponse");
-			getProperties.go({properties: ["maximumBrightness", "timeout"]});
-			
-			var getPreferences = new PreferenceService({method: "getPreferences"});
-			getPreferences.response(this, "handleGetPreferencesResponse");
-			getPreferences.go({keys: ["showAlertsWhenLocked", "BlinkNotifications"]});
-			
-			this.palm = true;
-		}
-		else {
+		if(!window.PalmSystem)
 			enyo.log("Non-palm platform, service requests disabled.");
-		}
+	},
+	deviceready: function(inSender, inEvent) {
+		this.inherited(arguments);
+		
+		var request = navigator.service.Request("luna://com.palm.display/control/",
+		{
+			method: 'getProperty',
+			parameters: {properties: ["maximumBrightness", "timeout"]},
+			onSuccess: enyo.bind(this, "handleGetPropertiesResponse")
+		});
+		
+		var request = navigator.service.Request("palm://com.palm.systemservice/",
+		{
+			method: 'getPreferences',
+			parameters: {keys: ["showAlertsWhenLocked", "BlinkNotifications"]},
+			onSuccess: enyo.bind(this, "handleGetPreferencesResponse")
+		});
+		
+		this.palm = true;
 	},
 	reflow: function(inSender) {
 		this.inherited(arguments);
@@ -150,9 +145,11 @@ enyo.kind({
 	//Action Handlers
 	brightnessChanged: function(inSender, inEvent) {
 		if(this.palm) {
-			var setProperty = new DisplayControlService({method: "setProperty"});
-			//setProperty.response(this, "handleSetPropertyResponse");
-			setProperty.go({maximumBrightness: parseInt(this.$.BrightnessSlider.value)});
+			var request = navigator.service.Request("luna://com.palm.display/control/",
+			{
+				method: 'setProperty',
+				parameters: {maximumBrightness: parseInt(this.$.BrightnessSlider.value)},
+			});
 		}
 		else {
 			enyo.log(parseInt(this.$.BrightnessSlider.value));
@@ -177,9 +174,11 @@ enyo.kind({
 		}
 		
 		if(this.palm) {
-			var setProperty = new DisplayControlService({method: "setProperty"});
-			//setProperty.response(this, "handleSetPropertyResponse");
-			setProperty.go({timeout: t});
+			var request = navigator.service.Request("luna://com.palm.display/control/",
+			{
+				method: 'setProperty',
+				parameters: {timeout: t},
+			});
 		}
 		else {
 			enyo.log(t);
@@ -187,9 +186,11 @@ enyo.kind({
 	},
 	lockAlertsChanged: function(inSender, inEvent) {
 		if(this.palm) {
-			var setProperty = new PreferenceService({method: "setPreferences"});
-			//setProperty.response(this, "handleSetPropertyResponse");
-			setProperty.go({showAlertsWhenLocked: inSender.value});
+			var request = navigator.service.Request("palm://com.palm.systemservice/",
+			{
+				method: 'setPreferences',
+				parameters: {showAlertsWhenLocked: inSender.value}
+			});
 		}
 		else {
 			enyo.log(inSender.value);
@@ -197,16 +198,18 @@ enyo.kind({
 	},
 	blinkNotificationsChanged: function(inSender, inEvent) {
 		if(this.palm) {
-			var setProperty = new PreferenceService({method: "setPreferences"});
-			//setProperty.response(this, "handleSetPropertyResponse");
-			setProperty.go({BlinkNotifications: inSender.value});
+			var request = navigator.service.Request("palm://com.palm.systemservice/",
+			{
+				method: 'setPreferences',
+				parameters: {BlinkNotifications: inSender.value}
+			});
 		}
 		else {
 			enyo.log(inSender.value);
 		}
 	},
 	//Service Callbacks
-	handleGetPropertiesResponse: function(inSender, inResponse) {
+	handleGetPropertiesResponse: function(inResponse) {
 		enyo.log("Handling Get Properties Response");
 		enyo.log(JSON.stringify(inResponse));
 		if(inResponse.maximumBrightness != undefined)
@@ -223,7 +226,7 @@ enyo.kind({
 				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[3]);
 		}
 	},
-	handleGetPreferencesResponse: function(inSender, inResponse) {
+	handleGetPreferencesResponse: function(inResponse) {
 		if(inResponse.showAlertsWhenLocked != undefined)
 			this.$.AlertsToggle.setValue(inResponse.showAlertsWhenLocked);
 			

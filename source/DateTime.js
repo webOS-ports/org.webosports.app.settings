@@ -1,20 +1,9 @@
 enyo.kind({
-	name: "PreferenceService",
-	kind: "enyo.webOS.ServiceRequest",
-	service: "palm://com.palm.systemservice/"
-});
-
-enyo.kind({
-	name: "TimeService",
-	kind: "enyo.webOS.ServiceRequest",
-	service: "palm://com.palm.systemservice/time/"
-});
-
-enyo.kind({
 	name: "DateTime",
 	layoutKind: "FittableRowsLayout",
 	palm: false,
 	components:[
+		{kind: "Signals", ondeviceready: "deviceready"},
 		{kind: "onyx.Toolbar",
 		style: "line-height: 36px;",
 		components:[
@@ -85,20 +74,27 @@ enyo.kind({
 	//Handlers
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
-		if(window.PalmSystem) {
-			var getPreferences = new PreferenceService({method: "getPreferences"});
-			getPreferences.response(this, "handleGetPreferencesResponse");
-			getPreferences.go({keys: ["timeFormat", "timeZone", "useNetworkTime"]});
-			
-			//DEBUG: No network time functionality yet, so don't use it
-			var setPreference = new PreferenceService({method: "setPreferences"});
-			setPreference.go({useNetworkTime: false, receiveNetworkTimeUpdates: false});
-			
-			this.palm = true;
-		}
-		else {
+		if(!window.PalmSystem)
 			enyo.log("Non-palm platform, service requests disabled.");
-		}
+	},
+	deviceready: function(inSender, inEvent) {
+		this.inherited(arguments);
+		
+	        var request = navigator.service.Request("luna://com.palm.systemservice/",
+		{
+			method: 'getPreferences',
+			parameters: {keys: ["timeFormat", "timeZone", "useNetworkTime"]},
+			onSuccess: enyo.bind(this, "handleGetPreferencesResponse")
+		});
+		
+		//DEBUG: No network time functionality yet, so don't use it
+	        var request = navigator.service.Request("luna://com.palm.systemservice/",
+		{
+			method: 'setPreferences',
+			parameters: {useNetworkTime: false, receiveNetworkTimeUpdates: false}
+		});
+		
+		this.palm = true;
 	},
 	reflow: function(inSender) {
 		this.inherited(arguments);
@@ -112,9 +108,11 @@ enyo.kind({
 	//Action Handlers
 	timeFormatChanged: function(inSender, inEvent) {
 		if(this.palm) {
-			var setPreference = new PreferenceService({method: "setPreferences"});
-			//setPreference.response(this, "handleSetPreferencesResponse");
-			setPreference.go({timeFormat: inSender.selected.content == "12 Hour" ? "HH12" : "HH24"});
+			var request = navigator.service.Request("luna://com.palm.systemservice/",
+			{
+				method: 'setPreferences',
+				parameters: {timeFormat: inSender.selected.content == "12 Hour" ? "HH12" : "HH24"}
+			});
 		}
 		else {
 			enyo.log(inSender);
@@ -124,9 +122,11 @@ enyo.kind({
 	},
 	networkTimeChanged: function(inSender, inEvent) {
 		if(this.palm) {
-			var setPreference = new PreferenceService({method: "setPreferences"});
-			//setPreference.response(this, "handleSetPreferencesResponse");
-			setPreference.go({useNetworkTime: inSender.value, receiveNetworkTimeUpdates: inSender.value});
+			var request = navigator.service.Request("luna://com.palm.systemservice/",
+			{
+				method: 'setPreferences',
+				parameters: {useNetworkTime: inSender.value, receiveNetworkTimeUpdates: inSender.value}
+			});
 		}
 		else {
 			enyo.log(inSender.value);
@@ -138,18 +138,24 @@ enyo.kind({
 		var timeObj = {};
 		timeObj.utc = inEvent.value.getTime()/1000;
 		if(this.palm) {
-			setSystemTime = new TimeService({method: "setSystemTime"});
-			setSystemTime.go(timeObj);
+			var request = navigator.service.Request("luna://com.palm.systemservice/time/",
+			{
+				method: 'setSystemTime',
+				parameters: timeObj
+			});
 			
-			var setPreference = new PreferenceService({method: "setPreferences"});
-			setPreference.go({useNetworkTime: false, receiveNetworkTimeUpdates: false});
+			var request = navigator.service.Request("luna://com.palm.systemservice/",
+			{
+				method: 'setPreferences',
+				parameters: {useNetworkTime: false, receiveNetworkTimeUpdates: false}
+			});
 		}
 		else {
 			enyo.log(timeObj);
 		}
 	},
 	//Service Callbacks
-	handleGetPreferencesResponse: function(inSender, inResponse) {
+	handleGetPreferencesResponse: function(inResponse) {
 		if(inResponse.timeFormat != undefined) {
 			this.$.TimeFormatPicker.setSelected(this.$.TimeFormatPicker.getClientControls()[inResponse.timeFormat == "HH12" ? 0 : 1]);
 		}

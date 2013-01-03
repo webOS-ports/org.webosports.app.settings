@@ -1,14 +1,9 @@
 enyo.kind({
-	name: "CustomizationService",
-	kind: "enyo.webOS.ServiceRequest",
-	service: "palm://org.webosports.service.customization"
-});
-
-enyo.kind({
 	name: "DevMode",
 	layoutKind: "FittableRowsLayout",
 	palm: false,
 	components:[
+		{kind: "Signals", ondeviceready: "deviceready"},
 		{
 			kind: "onyx.Toolbar",
 			style: "line-height: 36px;",
@@ -27,31 +22,28 @@ enyo.kind({
 	],
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
-		if(window.PalmSystem) {
-			getDevModeState = new CustomizationService({"method": "getDevModeState", "subscribe": true, "resubscribe": true});
-			getDevModeState.response(this, "onGetDevModeStateResponse");
-			getDevModeState.go();
-			this.palm = true;
-		}
-		else {
+		if(!window.PalmSystem)
 			enyo.log("Non-palm platform, service requests disabled.");
-		}
+	},
+	deviceready: function(inSender, inEvent) {
+		this.inherited(arguments);
+		var request = navigator.service.Request("luna://org.webosports.service.customization",
+		{
+			method: 'getDevModeState',
+			subscribe: true,
+			resubscribe: true,
+			onSuccess: enyo.bind(this, "onGetDevModeStateResponse")
+		});
+		this.palm = true;
 	},
 	onDevModeChanged: function(inSender, inEvent) {
-		setDevModeState = new CustomizationService({"method": "setDevModeState"});
-		if (inEvent.value) {
-			setDevModeState.go({"state":"enabled"});
-		}
-		else {
-			setDevModeState.go({"state":"disabled"});
-		}
+		var request = navigator.service.Request("luna://org.webosports.service.customization",
+		{
+			method: 'setDevModeState',
+			parameters: {"state": inEvent.value ? "enabled" : "disabled"}
+		});
 	},
-	onGetDevModeStateResponse: function (inSender, inResponse) {
-		if (inResponse.status == "enabled") {
-			this.$.DevModeToggle.setValue(true);
-		}
-		else {
-			this.$.DevModeToggle.setValue(false);
-		}
+	onGetDevModeStateResponse: function (inResponse) {
+		this.$.DevModeToggle.setValue(inResponse.status == "enabled");
 	}
 });

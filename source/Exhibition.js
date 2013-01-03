@@ -1,10 +1,4 @@
 enyo.kind({
-	name: "ExhibitionService",
-	kind: "enyo.webOS.ServiceRequest",
-	service: "palm://com.palm.display/control/"
-});
-
-enyo.kind({
 	name: "Exhibition",
 	layoutKind: "FittableRowsLayout",
 	components:[
@@ -35,8 +29,11 @@ enyo.kind({
 	//Action Handlers
 	startExhibitionTapped: function(inSender, inEvent) {
 		if(window.PalmSystem) {
-			var startExhibition = new ExhibitionService({method:"setState"});
-			startExhibition.go({state:"dock"});
+			var request = navigator.service.Request("luna://com.palm.display/control/",
+			{
+				method: 'setState',
+				parameters: {state:"dock"}
+			});
 		}
 		else {
 			enyo.log("Starting Exhibition");
