@@ -276,7 +276,7 @@ enyo.kind({
 		if(enyo.Panels.isScreenNarrow()) {
 			this.$.AppPanels.setArrangerKind("CoreNaviArranger");
 			this.$.AppPanels.setDraggable(false);
-			this.$.AppPanels.$ContentPanels.addStyles("box-shadow: 0");
+			this.$.AppPanels.$.ContentPanels.addStyles("box-shadow: 0");
 		}
 		else {
 			this.$.AppPanels.setArrangerKind("CollapsingArranger");
