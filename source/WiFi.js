@@ -141,6 +141,12 @@ enyo.kind({
 		fit: true,
 		draggable: false,
 		components:[
+				{name:"WifiInactive",
+				layoutKind: "FittableRowsLayout",
+				style: "padding: 35px 10% 35px 10%;",
+				components:[
+					{fit: true, content: "Wi-Fi is currently off, please turn it on first.", style:"color: #fff; text-align: center;"}
+				]},
 				{name: "SearchList",
 				layoutKind: "FittableRowsLayout",
 				style: "padding: 35px 10% 35px 10%;",
@@ -176,12 +182,12 @@ enyo.kind({
 							{kind: "WiFiListItem", ontap: "listItemTapped"}
 						]}
 					]},
-				]},
-				{ /* Workaround for HFlipArranger incorrectly displaying with 2 panels*/ }
+				]}
 		]},
 		{kind: "onyx.Toolbar", components:[
 			{name: "Grabber", kind: "onyx.Grabber"},
-			{kind: "onyx.RadioGroup",
+			{name: "WiFiMode",
+			kind: "onyx.RadioGroup",
 			style: "position: absolute; bottom: 3px; left: 50%; margin-left: -76px;",
 			components:[
 				{content: "Search", active: true, ontap: "showSearch"},
@@ -196,7 +202,7 @@ enyo.kind({
 			kind: "onyx.Button",
 			content: "Rescan",
 			style: "float: right;",
-			ontap: "rescan"},
+			ontap: "rescan"}
 		]}
 	],
 	//Handlers
@@ -274,11 +280,16 @@ enyo.kind({
 		}
 	},
 	//Action Functions
-	showSearch: function(inSender, inEvent) {
+	showInactiveMsg: function(inSender, inEvent) {
 		this.$.WiFiPanels.setIndex(0);
+		this.showWiFiToolbar(false);
+	},
+	showSearch: function(inSender, inEvent) {
+		this.$.WiFiPanels.setIndex(1);
+		this.showWiFiToolbar(true);
 	},
 	showKnown: function(inSender, inEvent) {
-		this.$.WiFiPanels.setIndex(1);
+		this.$.WiFiPanels.setIndex(2);
 	},
 	setToggleValue: function(value) {
 		this.$.WiFiToggle.setValue(value);
@@ -289,7 +300,12 @@ enyo.kind({
 			{
 				method: 'setstate',
 				parameters: {"state": "enabled"},
+				onSuccess: enyo.bind(this, "showSearch")
 			});
+		}
+		else {
+			//placeholder to test on non-palm devices
+			this.showSearch();
 		}
 	},
 	deactivateWiFi: function(inSender, inEvent) {
@@ -298,7 +314,12 @@ enyo.kind({
 			{
 				method: 'setstate',
 				parameters: {"state": "disabled"},
+				onSuccess: enyo.bind(this, "showInactiveMsg")
 			});
+		}
+		else {
+			//placeholder to test on non-palm devices
+			this.showInactiveMsg();
 		}
 	},
 	rescan: function(inSender, inEvent) {
@@ -358,12 +379,16 @@ enyo.kind({
 		this.foundNetworks = [];
 		this.$.SearchRepeater.setCount(this.foundNetworks.length);
 	},
+	showWiFiToolbar: function(toggle) {
+		this.$.WiFiMode.applyStyle("visibility", (toggle == true) ? "visible" : "hidden");
+		this.$.RescanButton.applyStyle("visibility", (toggle == true) ? "visible" : "hidden");
+		this.$.NewButton.applyStyle("visibility", (toggle == true) ? "visible" : "hidden");
+	},
 	//Service Callbacks
 	handleInitWiFiConnectionStatus: function(inResponse) {
 		//enyo.log(JSON.stringify(inResponse));
 		
-		this.$.WiFiToggle.setValue(true);
-		this.$.RescanButton.setDisabled(false);
+
 		//Rescanning won't work immediately, so wait a couple of seconds before calling it
 		var storedThis = this;
 		setTimeout(function() { storedThis.rescan(); }, 2000);
@@ -373,13 +398,13 @@ enyo.kind({
 		
 		if(inResponse.status == "serviceDisabled") {
 			this.$.WiFiToggle.setValue(false);
-			this.$.RescanButton.setDisabled(true);
+			this.showInactiveMsg();
 			this.clearFoundNetworks();
 		}
 		else if(inResponse.status == "serviceEnabled") {
 			this.$.WiFiToggle.setValue(true);
-			this.$.RescanButton.setDisabled(false);
-		//Rescanning won't work immediately, so wait a couple of seconds before calling it
+			this.showSearch();
+			//Rescanning won't work immediately, so wait a couple of seconds before calling it
 			var storedThis = this;
 			setTimeout(function() { storedThis.rescan(); }, 2000);
 		}
