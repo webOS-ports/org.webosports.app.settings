@@ -12,6 +12,7 @@ enyo.kind({
 		{kind: "Scroller",
 		touch: true,
 		horizontal: "hidden",
+		vertical: "auto",
 		fit: true,
 		components:[
 			{tag: "div", style: "padding: 35px 10% 35px 10%;", components: [
