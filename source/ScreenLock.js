@@ -34,7 +34,9 @@ enyo.kind({
 								{content: "30 Seconds", active: true},
 								{content: "1 Minute"},
 								{content: "2 Minutes"},
-								{content: "3 Minutes"}
+								{content: "5 Minutes"},
+								{content: "30 Minutes"},
+								{content: "1 Hour"}
 							]}
 						]}
 					
@@ -168,8 +170,14 @@ enyo.kind({
 			case "2 Minutes":
 				t = 120;
 				break;
-			case "3 Minutes":
-				t = 180;
+			case "5 Minutes":
+				t = 300;
+				break;
+			case "30 Minutes":
+				t = 1800;
+				break;
+			case "1 Hour":
+				t = 3600;
 				break;
 		}
 		
