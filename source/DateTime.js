@@ -43,16 +43,36 @@ enyo.kind({
 					]},
 					{classes: "group-item",
 					components:[
-						{content: "Current Time",
+						{content: "Set Date",
 						fit: true,
-						style: "line-height: 42px;"},
-						{name: "TimeDrawer", kind: "onyx.Drawer", open: true, components:[
-							{content: "Date", style: "display: inline-block;"},
-							{name: "DatePicker", kind: "onyx.DatePicker", style: "display: inline-block", onSelect: "dateTimeChanged"},
-							{content: "Time", style: "display: inline-block;"},
-							{name: "TimePicker", kind: "onyx.TimePicker", style: "display: inline-block", onSelect: "dateTimeChanged"}
-						]}
-				
+						style: "display: inline-block; line-height: 42px;"},
+						{name: "DatePicker",
+							kind: "onyx.DatePicker", 
+							style: "float:right; display: inline-block", 
+							onSelect: "dateTimeChanged"}				
+					]},
+					{classes: "group-item",
+					components:[
+						{content: "Set Time",
+						fit: true,
+						style: "display: inline-block; line-height: 42px;"}, 
+						{name: "TimePicker",
+							kind: "onyx.TimePicker",
+							style: "float:right; display: inline-block",
+							onSelect: "dateTimeChanged"}				
+					]},
+					{classes: "group-item",
+					components:[
+						{content: "Date Format",
+						fit: true,
+						style: "display: inline-block; line-height: 42px;"}, 
+						{kind: "onyx.PickerDecorator", style: "float: right;", components: [
+							{},
+							{name: "DateFormatPicker", kind: "onyx.Picker", onChange: "dateFormatChanged", components: [
+								{content: "12 / 31 / 2013", active: true},
+								{content: "31 / 12 / 2013"}
+							]}
+						]}			
 					]},
 					/*
 					{classes: "group-item",
@@ -154,6 +174,19 @@ enyo.kind({
 			enyo.log(timeObj);
 		}
 	},
+	dateFormatChanged: function(inSender, inEvent)
+	{
+		//		Change the format dependant on users choice
+		switch(inEvent.selected.content)
+		{
+			case "12 / 31 / 2013":
+				// Use UK Time format
+				break;
+			case "31 / 12 / 2013":
+				// Use US Time format
+				break;
+		}
+	}
 	//Service Callbacks
 	handleGetPreferencesResponse: function(inResponse) {
 		if(inResponse.timeFormat != undefined) {
