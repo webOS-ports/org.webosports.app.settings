@@ -43,15 +43,18 @@ enyo.kind({
 					]},
 					{classes: "group-item",
 					components:[
-						{content: "Current Time",
+						{content: "Set Current Time",
 						fit: true,
-						style: "line-height: 42px;"},
-						{name: "TimeDrawer", kind: "onyx.Drawer", open: true, components:[
-							{content: "Date", style: "display: inline-block;"},
-							{name: "DatePicker", kind: "onyx.DatePicker", style: "display: inline-block", onSelect: "dateTimeChanged"},
-							{content: "Time", style: "display: inline-block;"},
-							{name: "TimePicker", kind: "onyx.TimePicker", style: "display: inline-block", onSelect: "dateTimeChanged"}
-						]}
+						style: "line-height: 42px; display: inline-block;"},
+							{name: "TimePicker", kind: "onyx.TimePicker", style: "float: right;", onSelect: "dateTimeChanged"},
+				
+					]},
+					{classes: "group-item",
+					components:[
+						{content: "Set Current Date",
+						fit: true,
+						style: "line-height: 42px; display: inline-block;"},
+							{name: "DatePicker", kind: "onyx.DatePicker", style: "float: right;", onSelect: "dateTimeChanged"},
 				
 					]},
 					/*
