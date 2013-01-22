@@ -12,5 +12,6 @@ enyo.depends(
 	"Exhibition.js",
 	"ScreenLock.js",
 	"WiFi.js",
-	"DevMode.js"
+	"DevMode.js",
+	"Telephony.js"
 );

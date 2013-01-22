@@ -97,7 +97,7 @@ enyo.kind({
 					style: "height:32px; float: right;"}
 				]},
 				*/
-				
+				{kind: "ListItem", icon: "icon.png", title: "Telephony", ontap: "openTelephony"},
 				//Services
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Services"},
 				//{kind: "ListItem", icon: "icon.png", title: "Accounts", ontap: "openAccounts"},
@@ -143,6 +143,7 @@ enyo.kind({
 			{}, //	{kind: "LocationServices"},
 			{}, //	{kind: "DeviceInfo"},
 			{kind: "DevMode"},
+			{kind: "Telephony"}
 		]},
 	],
 	//Action Functions
@@ -251,6 +252,12 @@ enyo.kind({
 	},
 	openDevMode: function(inSender) {
 		this.$.ContentPanels.setIndex(17);
+
+		if (enyo.Panels.isScreenNarrow())
+			this.setIndex(1);
+	},
+	openTelephony: function(inSender) {
+		this.$.ContentPanels.setIndex(18);
 
 		if (enyo.Panels.isScreenNarrow())
 			this.setIndex(1);
