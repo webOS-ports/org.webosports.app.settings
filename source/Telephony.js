@@ -46,7 +46,18 @@ enyo.kind({
 	},
 	deviceready: function(inSender, inEvent) {
 		this.inherited(arguments);
+
+		var request = navigator.service.Request("luna://com.palm.telephony/",
+			{ method: 'pin1StatusQuery', subscribe: true, resubscribe: true, onSuccess: enyo.bind(this, "handlePin1Status")});
 	},
+	/* Service Response handlers */
+	handlePin1Status: function(inResponse) {
+		if (!inResponse.returnValue)
+			return;
+
+		this.$.SimLockToggle.setValue(inResponse.extended.enabled);
+	},
+	/* Component action handlers */
 	simLockChanged: function(inSender, inEvent) {
 	},
 	changeSimPin: function(inSender, inEvent) {
