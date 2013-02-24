@@ -63,6 +63,7 @@ enyo.kind({
 			{kind: "Scroller",
 			horizontal: "hidden",
 			classes: "enyo-fill",
+			style: "background-image:url('assets/bg.png')",
 			fit: true,
 			touch: true,
 			components:[
