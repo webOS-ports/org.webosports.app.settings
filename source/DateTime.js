@@ -134,8 +134,6 @@ enyo.kind({
 		else {
 			enyo.log(inSender.value);
 		}
-		
-		this.$.TimeDrawer.setOpen(!inSender.value);
 	},
 	dateTimeChanged: function(inSender, inEvent) {
 		var timeObj = {};
