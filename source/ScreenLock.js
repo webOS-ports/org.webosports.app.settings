@@ -9,6 +9,7 @@ enyo.kind({
 		components:[
 				{content: "Screen & Lock"},
 		]},
+		{name: "ImagePicker", kind: "FilePicker", fileType:["image"], onPickFile: "selectedImageFile"},                  
 		{kind: "Scroller",
 		touch: true,
 		horizontal: "hidden",
@@ -40,16 +41,13 @@ enyo.kind({
 					
 					]},
 				]},
-				/* Disabled until we have a wallpaper chooser
 				{kind: "onyx.Groupbox", components: [
 					{kind: "onyx.GroupboxHeader", content: "Wallpaper"},
 					{classes: "group-item",
 					components:[
-						{kind: "onyx.Button", fit: true, content: "Change Wallpaper"}
-					
+						{kind: "onyx.Button", style: "width: 100%;", content: "Change Wallpaper", ontap: "openWallpaperPicker"}
 					]},
 				]},
-				*/
 				/* Disabled because the preference isn't returning anything (and it's standard functionality now)
 				{kind: "onyx.Groupbox", components: [
 					{kind: "onyx.GroupboxHeader", content: "Advanced Gestures"},
@@ -130,7 +128,7 @@ enyo.kind({
 			parameters: {keys: ["showAlertsWhenLocked", "BlinkNotifications"]},
 			onSuccess: enyo.bind(this, "handleGetPreferencesResponse")
 		});
-		
+
 		this.palm = true;
 	},
 	reflow: function(inSender) {
@@ -184,6 +182,9 @@ enyo.kind({
 			enyo.log(t);
 		}
 	},
+	openWallpaperPicker: function() {
+		this.$.ImagePicker.pickFile();
+	},
 	lockAlertsChanged: function(inSender, inEvent) {
 		if(this.palm) {
 			var request = navigator.service.Request("palm://com.palm.systemservice/",
@@ -208,6 +209,34 @@ enyo.kind({
 			enyo.log(inSender.value);
 		}
 	},
+	selectedImageFile: function(inSender, response) {
+		if(response && response.length == 0)
+			return;
+		var params = {"target": encodeURIComponent(response[0].fullPath)};
+		
+		/*var cropInfoWindow = response[0].cropInfo;
+		
+		if(cropInfoWindow) {
+			if(cropInfoWindow.scale)
+				params["scale"] = cropInfoWindow.scale;
+			
+			if(cropInfoWindow.focusX)
+				params["focusX"] = cropInfoWindow.focusX;
+			
+			if(cropInfoWindow.focusY)
+				params["focusY"] = cropInfoWindow.focusY;
+		}*/			
+
+		var request = navigator.service.Request("luna://com.palm.systemservice/wallpaper/",
+		{
+			method: 'importWallpaper',
+			parameters: params,
+			onSuccess: enyo.bind(this, "handleImportWallpaper")
+		});
+
+		this.$.importWallpaper.call(params);
+	},
+
 	//Service Callbacks
 	handleGetPropertiesResponse: function(inResponse) {
 		enyo.log("Handling Get Properties Response");
@@ -233,4 +262,14 @@ enyo.kind({
 		if(inResponse.BlinkNotifications != undefined)
 			this.$.BlinkToggle.setValue(inResponse.BlinkNotifications);
 	},
+	handleImportWallpaper: function(inResponse) {
+		if(inResponse.wallpaper) {
+			var request = navigator.service.Request("luna://com.palm.systemservice/",
+			{
+				method: 'setPreferences',
+				parameters: {wallpaper: inResponse.wallpaper},
+			});
+		}
+	},
+
 });
