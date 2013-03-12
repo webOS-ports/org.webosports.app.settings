@@ -9,7 +9,9 @@ enyo.kind({
 		components:[
 				{content: "Screen & Lock"},
 		]},
+		/* Disabled for now due to broken FilePicker, media components are pending open-source
 		{name: "ImagePicker", kind: "FilePicker", fileType:["image"], onPickFile: "selectedImageFile"},                  
+		*/
 		{kind: "Scroller",
 		touch: true,
 		horizontal: "hidden",
@@ -44,8 +46,39 @@ enyo.kind({
 				{kind: "onyx.Groupbox", components: [
 					{kind: "onyx.GroupboxHeader", content: "Wallpaper"},
 					{classes: "group-item",
+					style: "padding: 0;",
 					components:[
+						/* Disabled pending open-sourcing of media components
 						{kind: "onyx.Button", style: "width: 100%;", content: "Change Wallpaper", ontap: "openWallpaperPicker"}
+						*/
+						{kind: "enyo.Scroller",
+						touch: true,
+						horizontal: "hidden",
+						style: "width: 100%; height: 212px;",
+						components: [
+							{style: "width: 100%;",
+							defaultKind: enyo.kind({
+								kind: "ListItem",
+								title: "",
+								filename: "",
+								style: "margin: 0;",
+								ontap: "pickWallpaper"
+							}),
+							components: [
+								{title: "Blue Rocks", filename: "bluerocks.png"},
+								{title: "Bubbles", filename: "bubbles.png"},
+								{title: "Butterfly", filename: "butterfly.png"},
+								{title: "Dew", filename: "plant.png"},
+								{title: "Flowers", filename: "flowers.png"},
+								{title: "Ice Plant", filename: "iceplant.png"},
+								{title: "Ice Veins", filename: "iceveins.png"},
+								{title: "Milky Way", filename: "milkyway.png"},
+								{title: "Moonrise", filename: "moonrise.png"},
+								{title: "Orange Sunset", filename: "orangesunset.png"},
+								{title: "Snow Tracks", filename: "snowtracks.png"},
+								{title: "Wyoming", filename: "wyoming.png"},
+							]}
+						]}
 					]},
 				]},
 				/* Disabled because the preference isn't returning anything (and it's standard functionality now)
@@ -233,8 +266,6 @@ enyo.kind({
 			parameters: params,
 			onSuccess: enyo.bind(this, "handleImportWallpaper")
 		});
-
-		this.$.importWallpaper.call(params);
 	},
 
 	//Service Callbacks
@@ -261,6 +292,16 @@ enyo.kind({
 			
 		if(inResponse.BlinkNotifications != undefined)
 			this.$.BlinkToggle.setValue(inResponse.BlinkNotifications);
+	},
+	pickWallpaper: function(inSender) {
+		var wallpaperPath = "file:///usr/lib/luna/system/luna-systemui/images/";
+		var request = navigator.service.Request("luna://com.palm.systemservice/wallpaper/",
+		{
+			method: 'importWallpaper',
+			parameters: {"target": wallpaperPath + inSender.filename},
+			onSuccess: enyo.bind(this, "handleImportWallpaper"),
+		});
+
 	},
 	handleImportWallpaper: function(inResponse) {
 		if(inResponse.wallpaper) {
