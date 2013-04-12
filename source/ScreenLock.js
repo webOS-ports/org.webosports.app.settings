@@ -294,7 +294,7 @@ enyo.kind({
 			this.$.BlinkToggle.setValue(inResponse.BlinkNotifications);
 	},
 	pickWallpaper: function(inSender) {
-		var wallpaperPath = "file:///usr/lib/luna/system/luna-systemui/images/";
+		var wallpaperPath = "file:///usr/lib/luna/system/luna-systemui/images/wallpapers/";
 		var request = navigator.service.Request("luna://com.palm.systemservice/wallpaper/",
 		{
 			method: 'importWallpaper',
