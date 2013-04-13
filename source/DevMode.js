@@ -17,7 +17,17 @@ enyo.kind({
 			touch: true,
 			horizontal: "hidden",
 			fit: true,
-			components: [ ]
+			components: [
+				{tag: "div", style: "padding: 35px 10% 35px 10%;", components: [
+					{kind: "onyx.Groupbox", components: [
+						{kind: "onyx.GroupboxHeader", content: "Graphics"},
+						{classes: "group-item", components:[
+							{kind: "Control", content: "Enable FPS counter", style: "display: inline-block; line-height: 32px;"},
+							{name: "FpsCounterToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "fpsCounterChanged"},
+						]}
+					]}
+				]}
+			]
 		},
 	],
 	create: function(inSender, inEvent) {
@@ -45,5 +55,12 @@ enyo.kind({
 	},
 	onGetDevModeStateResponse: function (inResponse) {
 		this.$.DevModeToggle.setValue(inResponse.status == "enabled");
+	},
+	fpsCounterChanged: function (inSender, inEvent) {
+		var request = navigator.service.Request("luna://com.palm.systemmanager",
+		{
+			method: 'enableFpsCounter',
+			parameters: { "enable": inEvent.value }
+		});
 	}
 });
