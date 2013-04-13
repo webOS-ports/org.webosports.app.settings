@@ -117,7 +117,7 @@ enyo.kind({
 				//{kind: "ListItem", icon: "icon.png", title: "Regional Settings", ontap: "openRegionalSettings"},
 				//{kind: "ListItem", icon: "icon.png", title: "Location Services", ontap: "openLocationServices"},
 				//{kind: "ListItem", icon: "icon.png", title: "Device Info", ontap: "openDeviceInfo"},
-				{kind: "ListItem", icon: "icon.png", title: "Developer Mode", ontap: "openDevMode"},
+				{kind: "ListItem", icon: "icon.png", title: "Developer Options", ontap: "openDevOptions"},
 			]},
 		]},
 		{name: "ContentPanels",
@@ -143,7 +143,7 @@ enyo.kind({
 			{}, //	{kind: "RegionalSettings"},
 			{}, //	{kind: "LocationServices"},
 			{}, //	{kind: "DeviceInfo"},
-			{kind: "DevMode"},
+			{kind: "DevOptions"},
 			{kind: "Telephony"}
 		]},
 	],
@@ -251,7 +251,7 @@ enyo.kind({
 		if(enyo.Panels.isScreenNarrow())
 			this.setIndex(1);
 	},
-	openDevMode: function(inSender) {
+	openDevOptions: function(inSender) {
 		this.$.ContentPanels.setIndex(17);
 
 		if (enyo.Panels.isScreenNarrow())

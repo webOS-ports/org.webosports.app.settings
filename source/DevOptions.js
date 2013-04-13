@@ -1,5 +1,5 @@
 enyo.kind({
-	name: "DevMode",
+	name: "DevOptions",
 	layoutKind: "FittableRowsLayout",
 	palm: false,
 	components:[
@@ -8,7 +8,7 @@ enyo.kind({
 			kind: "onyx.Toolbar",
 			style: "line-height: 36px;",
 			components:[
-				{ content: "Developer Mode" },
+				{ content: "Developer Options" },
 				{ name: "DevModeToggle", kind: "onyx.ToggleButton", style: "position: absolute; top: 8px; right: 6px; height: 31px;", onChange: "onDevModeChanged"}
 			]
 		},
