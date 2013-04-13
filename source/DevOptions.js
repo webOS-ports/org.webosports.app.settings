@@ -9,7 +9,6 @@ enyo.kind({
 			style: "line-height: 36px;",
 			components:[
 				{ content: "Developer Options" },
-				{ name: "DevModeToggle", kind: "onyx.ToggleButton", style: "position: absolute; top: 8px; right: 6px; height: 31px;", onChange: "onDevModeChanged"}
 			]
 		},
 		{
@@ -37,24 +36,7 @@ enyo.kind({
 	},
 	deviceready: function(inSender, inEvent) {
 		this.inherited(arguments);
-		var request = navigator.service.Request("luna://org.webosports.service.customization",
-		{
-			method: 'getDevModeState',
-			subscribe: true,
-			resubscribe: true,
-			onSuccess: enyo.bind(this, "onGetDevModeStateResponse")
-		});
 		this.palm = true;
-	},
-	onDevModeChanged: function(inSender, inEvent) {
-		var request = navigator.service.Request("luna://org.webosports.service.customization",
-		{
-			method: 'setDevModeState',
-			parameters: {"state": inEvent.value ? "enabled" : "disabled"}
-		});
-	},
-	onGetDevModeStateResponse: function (inResponse) {
-		this.$.DevModeToggle.setValue(inResponse.status == "enabled");
 	},
 	fpsCounterChanged: function (inSender, inEvent) {
 		var request = navigator.service.Request("luna://com.palm.systemmanager",
