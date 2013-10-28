@@ -37,9 +37,9 @@ enyo.kind({
 	},
 	deviceready: function(inSender, inEvent) {
 		this.inherited(arguments);
-		var request = navigator.service.Request("luna://org.webosports.service.customization",
+		var request = navigator.service.Request("luna://org.webosports.service.devmode",
 		{
-			method: 'getDevModeState',
+			method: 'getState',
 			subscribe: true,
 			resubscribe: true,
 			onSuccess: enyo.bind(this, "onGetDevModeStateResponse")
@@ -47,9 +47,9 @@ enyo.kind({
 		this.palm = true;
 	},
 	onDevModeChanged: function(inSender, inEvent) {
-		var request = navigator.service.Request("luna://org.webosports.service.customization",
+		var request = navigator.service.Request("luna://org.webosports.service.devmode",
 		{
-			method: 'setDevModeState',
+			method: 'setState',
 			parameters: {"state": inEvent.value ? "enabled" : "disabled"}
 		});
 	},
