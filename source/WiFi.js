@@ -21,6 +21,12 @@ enyo.kind({
 });
 
 enyo.kind({
+	name: "WiFiService",
+	kind: "enyo.PalmService",
+	service: "palm://com.palm.wifi/"
+});
+
+enyo.kind({
 	name: "WiFi",
 	layoutKind: "FittableRowsLayout",
 	phonyFoundNetworks: {
@@ -75,8 +81,8 @@ enyo.kind({
 	},
 	currentSSID: "",
 	palm: false,
+	findNetworksRequest: null,
 	components: [
-		{kind: "Signals", ondeviceready: "deviceready"},
 		{name: "PasswordPopup",
 		kind: "onyx.Popup",
 		modal: true,
@@ -153,38 +159,45 @@ enyo.kind({
 			src: "assets/icon-new.png",
 			style: "float: right;",
 			ontap: ""},
-			{name: "RescanButton",
-			kind: "onyx.Button",
-			content: "Rescan",
-			style: "float: right;",
-			ontap: "rescan"},
-		]}
+		]},
+		{
+			name: "FindNetworks",
+			kind: "WiFiService",
+			method: "findnetworks",
+			subscribe: true,
+			resubscribe: true,
+			onResponse: "handleFindNetworksResponse"
+		},
+		{
+			name: "GetWiFiStatus",
+			kind: "WiFiService",
+			method: "getstatus",
+			subscribe: true,
+			resubscribe: true,
+			onResponse: "handleWiFiStatus"
+		},
+		{
+			name: "SetWiFiState",
+			kind: "WiFiService",
+			method: "setstate"
+		},
+		{
+			name: "Connect",
+			kind: "WiFiService",
+			method: "connect",
+			onResponse: "handleConnectResponse"
+		}
 	],
 	//Handlers
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
+
 		if(!window.PalmSystem)
-			enyo.log("Non-palm platform, service requests disabled.");
-	},
-	deviceready: function(inSender, inEvent) {
-		this.inherited(arguments);
-		//Query the initial connection status
-	        var request = navigator.service.Request("luna://com.palm.wifi/",
-		{
-			method: 'getstatus',
-			onSuccess: enyo.bind(this, "handleInitWiFiConnectionStatus")
-		});
-		
-		//Subscribe to the connection status service
-	        var request = navigator.service.Request("luna://com.palm.wifi/",
-		{
-			method: 'getstatus',
-			subscribe: true,
-			resubscribe: true,
-			onSuccess: enyo.bind(this, "handleWiFiConnectionStatus")
-		});
-		
+			return;
+
 		this.palm = true;
+		this.$.GetWiFiStatus.send({});
+		this.$.FindNetworks.send({});
 	},
 	reflow: function(inSender) {
 		this.inherited(arguments);
@@ -199,7 +212,7 @@ enyo.kind({
 			this.activateWiFi(this);
 		else
 			this.deactivateWiFi(this);
-			
+
 		this.doActiveChanged(inEvent);
 	},
 	listItemTapped: function(inSender, inEvent) {
@@ -245,32 +258,13 @@ enyo.kind({
 	},
 	activateWiFi: function(inSender, inEvent) {
 		if(this.palm) {
-			var request = navigator.service.Request("luna://com.palm.wifi/",
-			{
-				method: 'setstate',
-				parameters: {"state": "enabled"},
-			});
+			this.$.SetWiFiState.send({"state":"enabled"});
 		}
 	},
 	deactivateWiFi: function(inSender, inEvent) {
 		if(this.palm) {
-			var request = navigator.service.Request("luna://com.palm.wifi/",
-			{
-				method: 'setstate',
-				parameters: {"state": "disabled"},
-			});
+			this.$.SetWiFiState.send({"state":"disabled"});
 		}
-	},
-	rescan: function(inSender, inEvent) {
-		if(this.palm) {
-			var request = navigator.service.Request("luna://com.palm.wifi/",
-			{
-				method: 'findnetworks',
-				onSuccess: enyo.bind(this, "handleFindNetworksResponse")
-			});
-		}
-		else
-			this.handleFindNetworksResponse(this, this.phonyFoundNetworks);
 	},
 	connect: function(inSender, inEvent) {
 		if(!this.palm)
@@ -307,8 +301,7 @@ enyo.kind({
 		var request = navigator.service.Request("luna://com.palm.wifi/",
 		{
 			method: 'connect',
-			parameters: obj,
-			onSuccess: enyo.bind(this, "handleConnectResponse")
+			parameters: obj
 		});
 	},
 	//Utility Functions
@@ -317,36 +310,31 @@ enyo.kind({
 		this.$.SearchRepeater.setCount(this.foundNetworks.length);
 	},
 	//Service Callbacks
-	handleInitWiFiConnectionStatus: function(inResponse) {
-		this.$.WiFiToggle.setValue(true);
-		this.$.RescanButton.setDisabled(false);
-		//Rescanning won't work immediately, so wait a couple of seconds before calling it
-		var storedThis = this;
-		setTimeout(function() { storedThis.rescan(); }, 2000);
-	},
-	handleWiFiConnectionStatus: function(inResponse) {
-		if(inResponse.status == "serviceDisabled") {
+	handleWiFiStatus: function(inSender, inResponse) {
+		var result = inResponse.data;
+
+		if (!result)
+			return;
+
+		if(result.status == "serviceDisabled") {
 			this.$.WiFiToggle.setValue(false);
-			this.$.RescanButton.setDisabled(true);
 			this.clearFoundNetworks();
 		}
-		else if(inResponse.status == "serviceEnabled") {
+		else if(result.status == "serviceEnabled") {
 			this.$.WiFiToggle.setValue(true);
-			this.$.RescanButton.setDisabled(false);
-		//Rescanning won't work immediately, so wait a couple of seconds before calling it
-			var storedThis = this;
-			setTimeout(function() { storedThis.rescan(); }, 2000);
 		}
 	},
-	handleFindNetworksResponse: function(inResponse) {
-		if(inResponse.foundNetworks) {
-			this.foundNetworks = inResponse.foundNetworks;
+	handleFindNetworksResponse: function(inSender, inResponse) {
+		var result = inResponse.data;
+		if (result.foundNetworks) {
+			this.foundNetworks = result.foundNetworks;
 			this.$.SearchRepeater.setCount(this.foundNetworks.length);
 		}
 		else {
 			this.clearFoundNetworks();
 		}
 	},
-	handleConnectResponse: function(inResponse) {
+	handleConnectResponse: function(inSender, inResponse) {
+		var result = inResponse.data;
 	}
 });
