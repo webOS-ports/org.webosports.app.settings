@@ -20,45 +20,6 @@ enyo.kind({
 	}
 });
 
-/*
-{name: "SetRadioState",
-kind: "WiFiService",
-method: "setstate",
-onFailure: "handleSetStateFailure"},
-
-{name: "GetConnectionStatus",
-kind: "WiFiService",
-method: "getstatus",
-subscribe: true,
-resubscribe: true,
-onResponse: "handleWiFiConnectionStatus"},
-
-{name: "FindNetworks",
-kind: "WiFiService",
-method: "findnetworks",
-onResponse: "handleFindNetworksResponse"},
-
-{name: "Connect",
-kind: "WiFiService",
-method: "connect",
-onResponse: "handleConnectResponse"},
-
-{name: "GetProfileInfo",
-kind: "WiFiService",
-method: "getprofile",
-onResponse: "handleProfileInfoResponse"},
-
-{name: "GetWiFiInfo",
-kind: "WiFiService",
-method: "getinfo",
-onSuccess: "handleWiFiInfoResponse"},
-
-{name: "DeleteProfile",
-kind: "WiFiService", 
-method: "deleteprofile",
-onFailure: "handleDeleteProfileFailure"},
-*/
-
 enyo.kind({
 	name: "WiFi",
 	layoutKind: "FittableRowsLayout",
@@ -234,7 +195,6 @@ enyo.kind({
 	},
 	//Action Handlers
 	toggleButtonChanged: function(inSender, inEvent) {
-		//enyo.log("Toggle Button Changed, value:" + inEvent.value);
 		if(inEvent.value == true)
 			this.activateWiFi(this);
 		else
@@ -344,8 +304,6 @@ enyo.kind({
 			};
 		}
 		
-		//enyo.log(JSON.stringify(obj));
-		
 		var request = navigator.service.Request("luna://com.palm.wifi/",
 		{
 			method: 'connect',
@@ -360,8 +318,6 @@ enyo.kind({
 	},
 	//Service Callbacks
 	handleInitWiFiConnectionStatus: function(inResponse) {
-		//enyo.log(JSON.stringify(inResponse));
-		
 		this.$.WiFiToggle.setValue(true);
 		this.$.RescanButton.setDisabled(false);
 		//Rescanning won't work immediately, so wait a couple of seconds before calling it
@@ -369,8 +325,6 @@ enyo.kind({
 		setTimeout(function() { storedThis.rescan(); }, 2000);
 	},
 	handleWiFiConnectionStatus: function(inResponse) {
-		//enyo.log(JSON.stringify(inResponse));
-		
 		if(inResponse.status == "serviceDisabled") {
 			this.$.WiFiToggle.setValue(false);
 			this.$.RescanButton.setDisabled(true);
@@ -385,8 +339,6 @@ enyo.kind({
 		}
 	},
 	handleFindNetworksResponse: function(inResponse) {
-		//enyo.log(JSON.stringify(inResponse));
-		
 		if(inResponse.foundNetworks) {
 			this.foundNetworks = inResponse.foundNetworks;
 			this.$.SearchRepeater.setCount(this.foundNetworks.length);
@@ -396,6 +348,5 @@ enyo.kind({
 		}
 	},
 	handleConnectResponse: function(inResponse) {
-		//enyo.log(JSON.stringify(inResponse));
 	}
 });
