@@ -4,6 +4,7 @@ enyo.depends(
 	//"Theme.less",	// uncomment this line, and follow the steps described in Theme.less
 	"$lib/webos-ports-lib",
 	"$lib/more-arrangers",
+	"$lib/webos-lib",
 	//Main App
 	"App.css",
 	"App.js",
