@@ -29,52 +29,49 @@ enyo.kind({
 enyo.kind({
 	name: "WiFi",
 	layoutKind: "FittableRowsLayout",
-	phonyFoundNetworks: {
-		"foundNetworks": [
-			{
-			    "networkInfo": {
-				"ssid": "BTWiFi",
-				"availableSecurityTypes": [
-				    "none"
-				],
-				"signalBars": 2,
-				"signalLevel": 77,
-				"connectState": "ipConfigured"
-			    }
-			},
-			{
-			    "networkInfo": {
-				"ssid": "BTWiFi-with-FON",
-				"availableSecurityTypes": [
-				    "none"
-				],
-				"signalBars": 2,
-				"signalLevel": 69
-			    }
-			},
-			{
-			    "networkInfo": {
-				"ssid": "SKY13476",
-				"availableSecurityTypes": [
-				    "psk"
-				],
-				"signalBars": 2,
-				"signalLevel": 86
-			    }
-			},
-			{
-			    "networkInfo": {
-				"ssid": "BTHub3-8MP5",
-				"availableSecurityTypes": [
-				    "psk"
-				],
-				"signalBars": 1,
-				"signalLevel": 64
-			    }
+	phonyFoundNetworks: [
+		{
+			"networkInfo": {
+			"ssid": "BTWiFi",
+			"availableSecurityTypes": [
+				"none"
+			],
+			"signalBars": 2,
+			"signalLevel": 77,
+			"connectState": "ipConfigured"
 			}
-		],
-		"returnValue": true
-	},
+		},
+		{
+			"networkInfo": {
+			"ssid": "BTWiFi-with-FON",
+			"availableSecurityTypes": [
+				"none"
+			],
+			"signalBars": 2,
+			"signalLevel": 69
+			}
+		},
+		{
+			"networkInfo": {
+			"ssid": "SKY13476",
+			"availableSecurityTypes": [
+				"psk"
+			],
+			"signalBars": 2,
+			"signalLevel": 86
+			}
+		},
+		{
+			"networkInfo": {
+			"ssid": "BTHub3-8MP5",
+			"availableSecurityTypes": [
+				"psk"
+			],
+			"signalBars": 1,
+			"signalLevel": 64
+			}
+		}
+	],
 	foundNetworks: [],
 	events: {
 		onActiveChanged: ""
@@ -83,19 +80,16 @@ enyo.kind({
 	palm: false,
 	findNetworksRequest: null,
 	components: [
-		{name: "PasswordPopup",
-		kind: "onyx.Popup",
-		modal: true,
-		classes: "password-popup",
-		onShow: "popupShown",
-		components:[
-			{content: "Enter password for", style: "display: inline;"},
-			{name: "PopupSSID", content: "SSID", style: "margin-left: 4px; display: inline;"},
-			{kind: "onyx.InputDecorator", style: "display: block; margin-top: 16px;", components:[
-				{name: "PasswordInput", kind: "onyx.Input", type: "password", style: "width: 100%", onkeypress: "passwordKeyPress"}
-			]},
-		]},
-		
+		{
+			name: "ErrorPopup",
+			kind: "onyx.Popup",
+			classes: "error-popup",
+			modal: true,
+			style: "padding: 10px;",
+			components: [
+				{name: "ErrorMessage", content: "", style: "display: inline;" },
+			]
+		},
 		{kind: "onyx.Toolbar",
 		style: "line-height: 28px;",
 		components:[
@@ -108,7 +102,7 @@ enyo.kind({
 		fit: true,
 		draggable: false,
 		components:[
-				{name: "SearchList",
+				{name: "NetworkList",
 				layoutKind: "FittableRowsLayout",
 				style: "padding: 35px 10% 35px 10%;",
 				components:[
@@ -128,37 +122,26 @@ enyo.kind({
 						]}
 					]},
 				]},
-				{name: "KnownList",
-				layoutKind: "FittableRowsLayout",
-				style: "padding: 35px 10% 35px 10%;",
-				components:[
-					{kind: "onyx.GroupboxHeader", style: "border-radius: 8px 8px 0 0;", content: "Known Networks"},
-					{kind: "Scroller",
-					touch: true,
-					horizontal: "hidden",
-					fit: true,
-					style: "border: 1px solid white; border-top: 0; border-radius: 0 0 8px 8px;",
-					components:[
-						{kind: "Repeater", count: 1, components: [
-							{kind: "WiFiListItem", ontap: "listItemTapped"}
-						]}
-					]},
-				]},
+				{
+					name: "NetworkConnect",
+					layoutKind: "FittableRowsLayout",
+					style: "padding: 35px 10% 35px 10%;",
+					components: [
+						{style:"padding-bottom: 10px;", components: [
+							{content: "Please enter the password for network", style: "display: inline; color: white;"},
+							{name: "PopupSSID", content: "SSID", style: "margin-left: 4px; display: inline; color: white; font-weight: bold;"},
+							{kind: "onyx.InputDecorator", style: "display: block; margin-top: 16px; margin-bottom: 16px;", components:[
+								{name: "PasswordInput", kind: "onyx.Input", type: "password", style: "width: 100%"}
+							]},
+							{kind: "onyx.Button", style: "margin-right: 10px", content: "Connect", ontap: "onNetworkConnect"},
+							{kind: "onyx.Button", content: "Cancel", ontap: "onNetworkConnectAborted"},
+						]},
+					]
+				},
 				{ /* Workaround for HFlipArranger incorrectly displaying with 2 panels*/ }
 		]},
 		{kind: "onyx.Toolbar", components:[
 			{name: "Grabber", kind: "onyx.Grabber"},
-			{kind: "onyx.RadioGroup",
-			style: "position: absolute; bottom: 3px; left: 50%; margin-left: -76px;",
-			components:[
-				{content: "Search", active: true, ontap: "showSearch"},
-				{content: "Known", ontap: "showKnown"}
-			]},
-			{name: "NewButton",
-			kind: "onyx.IconButton",
-			src: "assets/icon-new.png",
-			style: "float: right;",
-			ontap: ""},
 		]},
 		{
 			name: "FindNetworks",
@@ -192,8 +175,12 @@ enyo.kind({
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
 
-		if(!window.PalmSystem)
+		if(!window.PalmSystem) {
+			// if we're outside the webOS system add some entries for easier testing
+			this.foundNetworks = this.phonyFoundNetworks;
+			this.$.SearchRepeater.setCount(this.foundNetworks.length);
 			return;
+		}
 
 		this.palm = true;
 		this.$.GetWiFiStatus.send({});
@@ -216,14 +203,18 @@ enyo.kind({
 		this.doActiveChanged(inEvent);
 	},
 	listItemTapped: function(inSender, inEvent) {
-		this.currentSSID = inSender.$.SSID.content;
+		this.currentNetwork = {
+			ssid: inSender.$.SSID.content,
+			securityTypes: inSender.$.Padlock.content
+		};
 		
-		if(inSender.$.Padlock.content != "none") {
-			this.$.PopupSSID.setContent(this.currentSSID);
-			this.$.PasswordPopup.show();
+		if(inSender.$.Padlock.content != "none" || inSender.$.Padlock.content != "") {
+			this.$.PopupSSID.setContent(this.currentNetwork.ssid);
+			this.showNetworkConnect();
 		}
 		else {
-			this.connect(this, {ssid: inSender.$.SSID.content});
+			console.log("Connect to open network");
+			this.connect(this, {ssid: this.currentNetwork.ssid});
 		}
 	},
 	setupSearchRow: function(inSender, inEvent) {
@@ -231,30 +222,38 @@ enyo.kind({
 		inEvent.item.$.wiFiListItem.$.Padlock.setContent(this.foundNetworks[inEvent.index].networkInfo.availableSecurityTypes);
 		inEvent.item.$.wiFiListItem.$.Signal.setContent(this.foundNetworks[inEvent.index].networkInfo.signalBars);
 	},
-	popupShown: function(inSender, inEvent) {
-		inSender.children[2].hasNode().focus();
-	},
-	passwordKeyPress: function(inSender, inEvent) {
-		//If return pressed
-		if(inEvent.keyCode == 13) {
-			this.$.PasswordPopup.hide();
-			
-			var p = inSender.getValue();
-			this.connect(this, {ssid: this.currentSSID, password: p});
-			
-			inSender.setValue("");
-			delete p;
+	onNetworkConnect: function(inSender, inEvent) {
+		var password = this.$.PasswordInput.getValue();
+
+		if (this.validatePassword(password)) {
+			this.connect(this, {ssid: this.currentSSID, password: password});
 		}
+		else {
+			this.showError("Entered password is invalid");
+		}
+
+		// switch back to network list view
+		this.$.WiFiPanels.setIndex(0);
+
+		delete password;
+		this.$.PasswordInput.setValue("");
+	},
+	onNetworkConnectAborted: function(inSender, inEvent) {
+		// switch back to network list view
+		this.$.WiFiPanels.setIndex(0);
+
+		this.$.PasswordInput.setValue("");
 	},
 	//Action Functions
-	showSearch: function(inSender, inEvent) {
-		this.$.WiFiPanels.setIndex(0);
-	},
-	showKnown: function(inSender, inEvent) {
+	showNetworkConnect: function(inSender, inEvent) {
 		this.$.WiFiPanels.setIndex(1);
 	},
 	setToggleValue: function(value) {
 		this.$.WiFiToggle.setValue(value);
+	},
+	showError: function(message) {
+		this.$.ErrorMessage.setContent(message);
+		this.$.ErrorPopup.show();
 	},
 	activateWiFi: function(inSender, inEvent) {
 		if(this.palm) {
@@ -308,6 +307,15 @@ enyo.kind({
 	clearFoundNetworks: function() {
 		this.foundNetworks = [];
 		this.$.SearchRepeater.setCount(this.foundNetworks.length);
+	},
+	validatePassword: function(key) {
+		var pass = false;
+
+		if (8 <= key.length && 63 >= key.length) {
+				pass = true;
+		}
+
+		return pass;
 	},
 	//Service Callbacks
 	handleWiFiStatus: function(inSender, inResponse) {
