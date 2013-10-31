@@ -102,6 +102,19 @@ enyo.kind({
 		fit: true,
 		draggable: false,
 		components:[
+				{
+					name: "WiFiDisabled",
+					layoutKind: "FittableRowsLayout",
+					style: "padding: 35px 10% 35px 10%;",
+					components: [
+						{
+							style:"padding-bottom: 10px;",
+							components: [
+								{content: "WiFi is disabled", style: "display: inline; color: white;"},
+							]
+						}
+					]
+				},
 				{name: "NetworkList",
 				layoutKind: "FittableRowsLayout",
 				style: "padding: 35px 10% 35px 10%;",
@@ -128,13 +141,14 @@ enyo.kind({
 					style: "padding: 35px 10% 35px 10%;",
 					components: [
 						{style:"padding-bottom: 10px;", components: [
-							{content: "Please enter the password for network", style: "display: inline; color: white;"},
+							{content: "Connect to", style: "display: inline; color: white;"},
 							{name: "PopupSSID", content: "SSID", style: "margin-left: 4px; display: inline; color: white; font-weight: bold;"},
-							{kind: "onyx.InputDecorator", style: "display: block; margin-top: 16px; margin-bottom: 16px;", components:[
-								{name: "PasswordInput", kind: "onyx.Input", type: "password", style: "width: 100%"}
+							{kind: "onyx.GroupboxHeader", style: "margin-top: 10px; border-radius: 8px 8px 0 0;", content: "Password"},
+							{kind: "onyx.InputDecorator", style: "display: block; margin-bottom: 16px;", alwaysLooksFocused: true, components:[
+								{name: "PasswordInput", placeholder: "Type here ..", kind: "onyx.Input", type: "password", style: "width: 100%"}
 							]},
-							{kind: "onyx.Button", style: "margin-right: 10px", content: "Connect", ontap: "onNetworkConnect"},
-							{kind: "onyx.Button", content: "Cancel", ontap: "onNetworkConnectAborted"},
+							{kind: "onyx.Button", style: "width: 100%", content: "Connect", ontap: "onNetworkConnect"},
+							{kind: "onyx.Button", style: "width: 100%; margin-top: 10px;", content: "Cancel", ontap: "onNetworkConnectAborted"},
 						]},
 					]
 				},
@@ -175,7 +189,11 @@ enyo.kind({
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
 
+		console.log("WiFi: created");
+
 		if(!window.PalmSystem) {
+			// WiFi is enabled by default ...
+			this.$.WiFiPanels.setIndex(1);
 			// if we're outside the webOS system add some entries for easier testing
 			this.foundNetworks = this.phonyFoundNetworks;
 			this.$.SearchRepeater.setCount(this.foundNetworks.length);
@@ -233,20 +251,20 @@ enyo.kind({
 		}
 
 		// switch back to network list view
-		this.$.WiFiPanels.setIndex(0);
+		this.$.WiFiPanels.setIndex(1);
 
 		delete password;
 		this.$.PasswordInput.setValue("");
 	},
 	onNetworkConnectAborted: function(inSender, inEvent) {
 		// switch back to network list view
-		this.$.WiFiPanels.setIndex(0);
+		this.$.WiFiPanels.setIndex(1);
 
 		this.$.PasswordInput.setValue("");
 	},
 	//Action Functions
 	showNetworkConnect: function(inSender, inEvent) {
-		this.$.WiFiPanels.setIndex(1);
+		this.$.WiFiPanels.setIndex(2);
 	},
 	setToggleValue: function(value) {
 		this.$.WiFiToggle.setValue(value);
@@ -326,10 +344,12 @@ enyo.kind({
 
 		if(result.status == "serviceDisabled") {
 			this.$.WiFiToggle.setValue(false);
+			this.$.WiFiPanels.setIndex(0);
 			this.clearFoundNetworks();
 		}
 		else if(result.status == "serviceEnabled") {
 			this.$.WiFiToggle.setValue(true);
+			this.$.WiFiPanels.setIndex(1);
 		}
 	},
 	handleFindNetworksResponse: function(inSender, inResponse) {
