@@ -183,6 +183,13 @@ enyo.kind({
 			kind: "WiFiService",
 			method: "connect",
 			onResponse: "handleConnectResponse"
+		},
+		{
+			name: "WiFiServiceWatch",
+			kind: "enyo.PalmService",
+			service: "palm://com.palm.bus/signal",
+			method: "registerServerStatus",
+			onResponse: "handleWifiServiceStatus",
 		}
 	],
 	//Handlers
@@ -200,9 +207,23 @@ enyo.kind({
 			return;
 		}
 
+		this.$.WiFiServiceWatch.send({"serviceName":"com.palm.wifi"});
 		this.palm = true;
-		this.$.GetWiFiStatus.send({});
-		this.$.FindNetworks.send({});
+	},
+	handleWifiServiceStatus: function(inSender, inResponse) {
+		var result = inResponse.data;
+
+		if (!result)
+			return;
+
+		if (result.connected) {
+			this.$.GetWiFiStatus.send({});
+			this.$.FindNetworks.send({});
+		}
+		else {
+			this.$.WiFiPanels.setIndex(0);
+			this.$.WiFiToggle.setValue(false);
+		}
 	},
 	reflow: function(inSender) {
 		this.inherited(arguments);
@@ -287,7 +308,7 @@ enyo.kind({
 		if(!this.palm)
 			return;
 
-		var ssid = this.currentSSID;
+		var ssid = this.currentNetwork.ssid;
 		var password = inEvent.password;
 		var hidden = false;
 		
@@ -298,7 +319,7 @@ enyo.kind({
 			obj = {
 				"ssid": ssid,
 				"security": {
-					"securityType": "",
+					"securityType": "psk",
 					"simpleSecurity": {
 						"passKey": password
 					}
