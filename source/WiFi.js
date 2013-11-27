@@ -596,11 +596,28 @@ enyo.kind({
         },
         {
             kind: "onyx.Toolbar",
+            layoutKind: "FittableColumnsLayout",
             components: [
                 {
                     name: "Grabber",
                     kind: "onyx.Grabber"
+                }, // this is hacky
+
+                {
+                    fit: true
                 },
+                {
+                    name: "KnownNetworksButton",
+                    kind: "onyx.Button",
+                    content: "Known Networks",
+                    ontap: "showKnownNetworks"
+                },
+                {
+                    name: "SettingsButton",
+                    kind: "onyx.Button",
+                    content: "Settings",
+                    ontap: "showSettings"
+                }
             ]
         },
         {
@@ -756,6 +773,12 @@ enyo.kind({
     },
     showNetworkConnect: function (inSender, inEvent) {
         this.$.WiFiPanels.setIndex(2);
+    },
+    showSettings: function (inSender, inEvent) {
+        this.$.WiFiPanels.setIndex(4);
+    },
+    showKnownNetworks: function (inSender, inEvent) {
+        this.$.WiFiPanels.setIndex(5);
     },
     setToggleValue: function (value) {
         this.$.WiFiToggle.setValue(value);
