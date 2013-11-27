@@ -43,7 +43,6 @@ enyo.kind({
 	kind: "Panels",
 	realtimeFit: true,
 	arrangerKind: "CollapsingArranger",
-	classes: "app-panels",
 	components:[
 		{name: "MenuPanel",
 		style: "width: 33%",
@@ -124,6 +123,7 @@ enyo.kind({
 		kind: "Panels",
 		arrangerKind: "CardArranger",
 		draggable: false,
+        classes: "onyx",
 		index: 1,
 		components:[
 			{kind: "EmptyPanel"},
