@@ -177,7 +177,6 @@ enyo.kind({
                             components: [
                                 {
                                     kind: "onyx.GroupboxHeader",
-                                    classes: "group-header",
                                     content: "Choose a Network"
                                 },
                                 {
@@ -437,7 +436,6 @@ enyo.kind({
                                     components: [
                                         {
                                             kind: "onyx.GroupboxHeader",
-                                            classes: "group-header",
                                             content: "Known Networks"
                                         },
                                         {
