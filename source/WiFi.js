@@ -228,55 +228,62 @@ enyo.kind({
                 {
                     name: "NetworkConnect",
                     layoutKind: "FittableRowsLayout",
-                    style: "padding: 35px 10% 35px 10%;",
+                    classes: "content-wrapper",
                     components: [
                         {
-                            style: "padding-bottom: 10px;",
+                            classes: "content-aligner",
                             components: [
                                 {
-                                    content: "Connect to",
-                                    style: "display: inline; color: white;"
-                                },
-                                {
-                                    name: "PopupSSID",
-                                    content: "SSID",
-                                    style: "margin-left: 4px; display: inline; color: white; font-weight: bold;"
-                                },
-                                {
-                                    kind: "onyx.GroupboxHeader",
-                                    style: "margin-top: 10px; border-radius: 8px 8px 0 0;",
-                                    content: "Password"
-                                },
-                                {
-                                    kind: "onyx.InputDecorator",
-                                    style: "display: block; margin-bottom: 16px;",
-                                    alwaysLooksFocused: true,
+                                    classes: "content-heading",
                                     components: [
                                         {
-                                            name: "PasswordInput",
-                                            placeholder: "Type here ..",
-                                            kind: "onyx.Input",
-                                            type: "password",
-                                            style: "width: 100%"
+                                            content: "Join ",
+                                            tag: "span"
+                                        },
+                                        {
+                                            name: "PopupSSID",
+                                            tag: "span",
+                                            content: "SSID",
+                                            style: "font-weight: bold;"
+                                        }
+                                    ]
+                                },
+                                {
+                                    kind: "onyx.Groupbox",
+                                    components: [
+                                        {
+                                            kind: "onyx.GroupboxHeader",
+                                            content: "Password"
+                                        },
+                                        {
+                                            kind: "onyx.InputDecorator",
+                                            alwaysLooksFocused: true,
+                                            components: [
+                                                {
+                                                    name: "PasswordInput",
+                                                    placeholder: "Type here ..",
+                                                    kind: "onyx.Input",
+                                                    type: "password"
+                                                }
+                                            ]
                                         }
                                     ]
                                 },
                                 {
                                     kind: "onyx.Button",
-                                    style: "width: 100%",
+                                    classes: "onyx-affirmative",
                                     content: "Connect",
                                     ontap: "onNetworkConnect"
                                 },
                                 {
                                     kind: "onyx.Button",
-                                    style: "width: 100%; margin-top: 10px;",
                                     content: "Cancel",
                                     ontap: "onNetworkConnectAborted"
-                                },
+                                }
                             ]
-                        },
+                        }
                     ]
-    },
+    }
                 { /* Workaround for HFlipArranger incorrectly displaying with 2 panels*/ }
             ]
         },
@@ -422,11 +429,14 @@ enyo.kind({
     },
     onNetworkConnectAborted: function (inSender, inEvent) {
         // switch back to network list view
-        this.$.WiFiPanels.setIndex(1);
+        this.showNetworksList(inSender, inEvent);
 
         this.$.PasswordInput.setValue("");
     },
     //Action Functions
+    showNetworksList: function (inSender, inEvent) {
+        return this.$.WiFiPanels.setIndex(1);
+    },
     showNetworkConnect: function (inSender, inEvent) {
         this.$.WiFiPanels.setIndex(2);
     },

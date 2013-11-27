@@ -5,6 +5,9 @@
  .onyx-toolbar {
     height: 54px;
 }
+.content-heading {
+    margin-bottom: 10px;
+}
 .list-header {
     width: inherit;
     height: 14px;
@@ -34,6 +37,9 @@
 }
 .onyx-groupbox {
     margin-bottom: 8px;
+}
+.onyx-groupbox input[type='password'], .onyx-groupbox input[type='text'] {
+    width:100%;
 }
 .group-header {
     padding: 3px 8px;
