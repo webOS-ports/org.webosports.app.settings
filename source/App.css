@@ -33,7 +33,10 @@
     background-color: MidnightBlue;
 }
 .onyx-groupbox {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+}
+.group-header {
+    padding: 3px 8px;
 }
 .group-item {
     padding: 8px;
@@ -56,6 +59,36 @@
  .wifi-list-icon {
     margin-left: 8px;
 }
- .group-item-wrapper {
+.wifi-join-button {
+    padding: 8px 0;
+    min-height: 27px;
+    line-height: 27px;
+    border: 1px solid #AAAAAA;
+    border-top: 0px;
+    border-radius: 0 0 8px 8px;
+}
+.wifi-join-button img {
+    padding: 5px 7px 0 7px;
+}
+.networks-scroll .group-item-wrapper:last-child .group-item {
+    border-bottom: 0px;
+}
+.networks-scroll {
+    border: 1px solid;
+    border-top: 0;
+    border-color: #AAAAAA;
+}
+.group-item-wrapper {
     padding: 0 8px;
+}
+.content-wrapper {
+    padding: 35px 0 85px 0;
+}
+.content-aligner {
+    max-width:675px;
+    margin:auto;
+}
+.content-aligner button {
+    margin: 10px 0 0 0;
+    width: 100%;
 }

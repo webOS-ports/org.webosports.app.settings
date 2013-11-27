@@ -150,50 +150,80 @@ enyo.kind({
                     name: "WiFiDisabled",
                     layoutKind: "FittableRowsLayout",
                     style: "padding: 35px 10% 35px 10%;",
-                    components: [
-                        {
+                    components: [{
                             style: "padding-bottom: 10px;",
-                            components: [
-                                {
+                            components: [{
                                     content: "WiFi is disabled",
-                                    style: "display: inline; color: white;"
-                                },
+                                    style: "display: inline;"
+                    },
                             ]
-      }
+                        }
                     ]
-    },
+                },
                 {
-                    name: "NetworkList",
-                    layoutKind: "FittableRowsLayout",
-                    style: "padding: 35px 10% 35px 10%;",
+                    kind: "enyo.FittableRows",
+                    classes: "content-wrapper",
                     components: [
                         {
-                            kind: "onyx.GroupboxHeader",
-                            style: "border-radius: 8px 8px 0 0;",
-                            content: "Choose a Network"
-                        },
-                        {
-                            kind: "Scroller",
-                            touch: true,
-                            horizontal: "hidden",
+                            name: "NetworkList",
+                            kind: "onyx.Groupbox",
+                            layoutKind: "FittableRowsLayout",
+                            classes: "content-aligner",
                             fit: true,
-                            style: "border: 1px solid white; border-top: 0; border-radius: 0 0 8px 8px;",
                             components: [
                                 {
-                                    name: "SearchRepeater",
-                                    kind: "Repeater",
-                                    count: 0,
-                                    onSetupItem: "setupSearchRow",
+                                    kind: "onyx.GroupboxHeader",
+                                    classes: "group-header",
+                                    content: "Choose a Network"
+                                },
+                                {
+                                    classes: "networks-scroll",
+                                    kind: "Scroller",
+                                    touch: true,
+                                    horizontal: "hidden",
+                                    fit: true,
+                                    components: [{
+                                            name: "SearchRepeater",
+                                            kind: "Repeater",
+                                            count: 0,
+                                            onSetupItem: "setupSearchRow",
+                                            components: [
+                                                {
+                                                    kind: "WiFiListItem",
+                                                    ontap: "listItemTapped"
+                                                }
+                                            ]
+                            }]
+                        },
+                                {
+                                    name: "JoinButton",
+                                    kind: "enyo.FittableColumns",
+                                    classes: "wifi-join-button",
                                     components: [
                                         {
-                                            kind: "WiFiListItem",
-                                            ontap: "listItemTapped"
+                                            kind: "Image",
+                                            src: "assets/wifi/join-plus-icon.png"
+                                        },
+                                        {
+                                            content: "Join Network",
+                                            fit: true
                                         }
-                                    ]
+                                    ],
+                                    ontap: "onJoinButtonTapped",
+                                    handlers: {
+                                        onmousedown: "pressed",
+                                        ondragstart: "released",
+                                        onmouseup: "released"
+                                    },
+                                    pressed: function () {
+                                        this.addClass("onyx-selected");
+                                    },
+                                    released: function () {
+                                        this.removeClass("onyx-selected");
+                                    }
                                 }
                             ]
-                        },
-                    ]
+                }]
                 },
                 {
                     name: "NetworkConnect",
@@ -362,8 +392,15 @@ enyo.kind({
     },
     setupSearchRow: function (inSender, inEvent) {
         inEvent.item.$.wiFiListItem.$.SSID.setContent(this.foundNetworks[inEvent.index].networkInfo.ssid);
-        inEvent.item.$.wiFiListItem.$.Padlock.setContent(this.foundNetworks[inEvent.index].networkInfo.availableSecurityTypes);
-        inEvent.item.$.wiFiListItem.$.Signal.setContent(this.foundNetworks[inEvent.index].networkInfo.signalBars);
+
+        inEvent.item.$.wiFiListItem.$.Active.setShowing(true);
+        if (this.foundNetworks[inEvent.index].networkInfo.availableSecurityTypes !== "none") {
+            inEvent.item.$.wiFiListItem.$.Padlock.setShowing(true);
+        }
+
+        if (this.foundNetworks[inEvent.index].networkInfo.signalBars) {
+            inEvent.item.$.wiFiListItem.$.Signal.setSrc("assets/wifi/signal-icon-" + this.foundNetworks[inEvent.index].networkInfo.signalBars + ".png");
+        }
     },
     onNetworkConnect: function (inSender, inEvent) {
         var password = this.$.PasswordInput.getValue();
