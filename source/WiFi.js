@@ -477,7 +477,8 @@ enyo.kind({
                             classes: "content-aligner",
                             components: [
                                 {
-                                    content: "Network Info goes here...",
+                                    classes: "content-heading",
+                                    content: "Network Info goes here..."
                                 },
                                 {
                                     kind: "onyx.Groupbox",
