@@ -121,20 +121,24 @@ enyo.kind({
                     name: "ErrorMessage",
                     content: "",
                     style: "display: inline;"
-                },
+                }
             ]
   },
         {
             kind: "onyx.Toolbar",
+            layoutKind: "FittableColumnsLayout",
             style: "line-height: 28px;",
             components: [
                 {
                     content: "Wi-Fi"
+                }, // This is hacky
+
+                {
+                    fit: true
                 },
                 {
                     name: "WiFiToggle",
                     kind: "onyx.ToggleButton",
-                    style: "position: absolute; top: 8px; right: 6px; height: 31px;",
                     onChange: "toggleButtonChanged"
                 }
             ]
