@@ -419,6 +419,53 @@ enyo.kind({
                         },
                     ]
     },
+                {
+                    name: "KnownNetworks",
+                    layoutKind: "FittableRowsLayout",
+                    classes: "content-wrapper",
+                    components: [{
+                            classes: "content-aligner",
+                            components: [
+                                {
+                                    name: "KnownNetworksList",
+                                    kind: "onyx.Groupbox",
+                                    fit: true,
+                                    components: [
+                                        {
+                                            kind: "onyx.GroupboxHeader",
+                                            classes: "group-header",
+                                            content: "Known Networks"
+                                        },
+                                        {
+                                            classes: "networks-scroll",
+                                            kind: "Scroller",
+                                            touch: true,
+                                            horizontal: "hidden",
+                                            fit: true,
+                                            components: [{
+                                                    name: "KnownNetworksRepeater",
+                                                    kind: "Repeater",
+                                                    count: 0,
+                                                    onSetupItem: "setupKnownNetworkRow",
+                                                    components: [
+                                                        {
+                                                            kind: "WiFiListItem",
+                                                            ontap: "knownNetworkItemTapped"
+                                                        }
+                                                    ]
+                            }]
+                        }
+                                    ]
+                },
+                                {
+                                    kind: "onyx.Button",
+                                    content: "Back",
+                                    ontap: "showNetworksList"
+                                }
+                            ]
+                        }
+                    ]
+                },
                 { /* Workaround for HFlipArranger incorrectly displaying with 2 panels*/ }
             ]
         },
