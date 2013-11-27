@@ -53,6 +53,9 @@
 /*
  *   WiFi
  */
+ .wifi-list-icon {
+    margin-left: 8px;
+}
  .group-item-wrapper {
     padding: 0 8px;
 }
