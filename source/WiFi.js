@@ -466,6 +466,131 @@ enyo.kind({
                         }
                     ]
                 },
+                {
+                    name: "NetworkConfiguration",
+                    layoutKind: "FittableRowsLayout",
+                    classes: "content-wrapper",
+                    components: [
+                        {
+                            classes: "content-aligner",
+                            components: [
+                                {
+                                    content: "Network Info goes here...",
+                                },
+                                {
+                                    kind: "onyx.Groupbox",
+                                    components: [
+                                        {
+                                            kind: "FittableColumns",
+                                            classes: "group-item",
+                                            components: [
+                                                {
+                                                    content: "Automatic IP Setings",
+                                                    fit: true
+                                                },
+                                                {
+                                                    kind: "onyx.ToggleButton",
+                                                    value: true
+                                                },
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    kind: "onyx.Groupbox",
+                                    components: [
+                                        {
+                                            kind: "onyx.InputDecorator",
+                                            layoutKind: "FittableColumnsLayout",
+                                            components: [
+                                                {
+                                                    name: "AddressInput",
+                                                    kind: "onyx.Input",
+                                                    fit: true
+                                                },
+                                                {
+                                                    content: "Address",
+                                                    classes: "config - label"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            kind: "onyx.InputDecorator",
+                                            layoutKind: "FittableColumnsLayout",
+                                            components: [
+                                                {
+                                                    name: "SubnetInput",
+                                                    kind: "onyx.Input",
+                                                    fit: true
+                                                },
+                                                {
+                                                    content: "Subnet",
+                                                    classes: "config-label"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            kind: "onyx.InputDecorator",
+                                            layoutKind: "FittableColumnsLayout",
+                                            components: [
+                                                {
+                                                    name: "GatewayInput",
+                                                    kind: "onyx.Input",
+                                                    fit: true
+                                                },
+                                                {
+                                                    content: "Gateway",
+                                                    classes: "config-label"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            kind: "onyx.InputDecorator",
+                                            layoutKind: "FittableColumnsLayout",
+                                            components: [
+                                                {
+                                                    name: "DNSServerInput1",
+                                                    kind: "onyx.Input",
+                                                    fit: true
+                                                },
+                                                {
+                                                    content: "DNS Server",
+                                                    classes: "config-label"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            kind: "onyx.InputDecorator",
+                                            layoutKind: "FittableColumnsLayout",
+                                            components: [
+                                                {
+                                                    name: "DNSServerInput2",
+                                                    kind: "onyx.Input",
+                                                    fit: true
+                                                },
+                                                {
+                                                    content: "DNS Server",
+                                                    classes: "config-label"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    kind: "onyx.Button",
+                                    classes: "onyx-negative",
+                                    content: "Forget Network",
+                                    ontap: ""
+                                },
+                                {
+                                    kind: "onyx.Button",
+                                    content: "Done",
+                                    ontap: "showNetworksList"
+                                },
+                            ]
+                        },
+                    ]
+    },
                 { /* Workaround for HFlipArranger incorrectly displaying with 2 panels*/ }
             ]
         },

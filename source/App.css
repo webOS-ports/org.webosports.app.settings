@@ -96,6 +96,12 @@
 .group-item-wrapper {
     padding: 0 8px;
 }
+.config-label {
+    display: inline;
+    text-transform: uppercase;
+    color: DodgerBlue;
+    font-weight: bold;
+}
 .content-wrapper {
     padding: 35px 0 85px 0;
 }
