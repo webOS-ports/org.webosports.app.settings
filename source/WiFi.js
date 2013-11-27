@@ -1,18 +1,24 @@
 enyo.kind({
-	name: "WiFiListItem",
+    name: "WiFiListItem",
+    classes: "group-item-wrapper",
+    components: [
+        {
 	classes: "group-item",
 	layoutKind: "FittableColumnsLayout",
-	handlers: {
+	components:[
+		{ name: "SSID", content: "SSID", fit: true },
+        { name: "Active", kind: "Image", src: "assets/wifi/checkmark.png", showing: false, classes: "wifi-list-icon" },
+		{ name: "Padlock", kind: "Image", src: "assets/wifi/secure-icon.png", showing: false, classes: "wifi-list-icon" },
+        { name: "SecurityType", classes: "wifi-list-icon" },
+		{ name: "Signal", kind: "Image", src: "assets/wifi/signal-icon.png", classes: "wifi-list-icon" }
+	],
+}],
+    handlers: {
 		onmousedown: "pressed",
 		ondragstart: "released",
 		onmouseup: "released"
 	},
-	components:[
-		{name: "SSID", content: "SSID", fit: true},
-		{name: "Padlock", content: "Secured"},
-		{name: "Signal", content: "Signal", style: "margin-left: 8px;"}
-	],
-	pressed: function() {
+    pressed: function() {
 		this.addClass("onyx-selected");
 	},
 	released: function() {
