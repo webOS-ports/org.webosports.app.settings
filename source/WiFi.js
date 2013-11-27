@@ -708,7 +708,6 @@ enyo.kind({
             this.activateWiFi(this);
         else
             this.deactivateWiFi(this);
-
         this.doActiveChanged(inEvent);
     },
     listItemTapped: function (inSender, inEvent) {
@@ -727,6 +726,9 @@ enyo.kind({
             });
         }
     },
+    knownNetworkItemTapped: function (inSender, inEvent) {
+        this.showNetworkConfiguration(inSender, inEvent);
+    },
     onJoinButtonTapped: function (inSender, inEvent) {
         this.$.WiFiPanels.setIndex(3);
     },
@@ -742,6 +744,11 @@ enyo.kind({
             inEvent.item.$.wiFiListItem.$.Signal.setSrc("assets/wifi/signal-icon-" + this.foundNetworks[inEvent.index].networkInfo.signalBars + ".png");
         }
     },
+    setupKnownNetworkRow: function (inSender, inEvent) {
+        inEvent.item.$.wiFiListItem.$.SSID.setContent(this.knownNetworks[inEvent.index].networkInfo.ssid);
+        inEvent.item.$.wiFiListItem.$.SecurityType.setContent(this.knownNetworks[inEvent.index].networkInfo.availableSecurityTypes);
+        inEvent.item.$.wiFiListItem.$.Signal.setShowing(false);
+    },
     onNetworkConnect: function (inSender, inEvent) {
         var password = this.$.PasswordInput.getValue();
 
@@ -756,7 +763,6 @@ enyo.kind({
 
         // switch back to network list view
         this.$.WiFiPanels.setIndex(1);
-
         delete password;
         this.$.PasswordInput.setValue("");
     },
@@ -785,6 +791,9 @@ enyo.kind({
     },
     showKnownNetworks: function (inSender, inEvent) {
         this.$.WiFiPanels.setIndex(5);
+    },
+    showNetworkConfiguration: function (inSender, inEvent) {
+        this.$.WiFiPanels.setIndex(6);
     },
     setToggleValue: function (value) {
         this.$.WiFiToggle.setValue(value);
