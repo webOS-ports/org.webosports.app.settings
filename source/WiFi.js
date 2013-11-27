@@ -283,7 +283,94 @@ enyo.kind({
                             ]
                         }
                     ]
-    }
+    },
+                {
+                    name: "NewNetworkJoin",
+                    layoutKind: "FittableRowsLayout",
+                    classes: "content-wrapper",
+                    components: [
+                        {
+                            classes: "content-aligner",
+                            components: [
+                                {
+                                    content: "Join Other Network",
+                                    classes: "content-heading"
+                                },
+                                {
+                                    kind: "onyx.Groupbox",
+                                    components: [
+                                        {
+                                            kind: "onyx.GroupboxHeader",
+                                            content: "Network Name"
+                                        },
+                                        {
+                                            kind: "onyx.InputDecorator",
+                                            alwaysLooksFocused: true,
+                                            components: [
+                                                {
+                                                    name: "ssidInput",
+                                                    placeholder: "Enter Network Name",
+                                                    kind: "onyx.Input",
+                                                    type: "text"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    kind: "onyx.Groupbox",
+                                    components: [
+                                        {
+                                            kind: "onyx.GroupboxHeader",
+                                            content: "Network Security"
+                                        },
+                                        {
+                                            kind: "onyx.PickerDecorator",
+                                            alwaysLooksFocused: true,
+                                            components: [
+                                                {},
+                                                {
+                                                    name: "SecurityTypePicker",
+                                                    style: "max-width:170px; margin-top:41px; left:auto !important; right:0 !important;",
+                                                    kind: "onyx.Picker",
+                                                    components: [
+                                     //TODO: load dynamically
+
+                                                        {
+                                                            name: "OpenSecurityItem",
+                                                            content: "Open",
+                                                            active: true
+                                                        },
+                                                        {
+                                                            content: "WPA-Personal"
+                                                        },
+                                                        {
+                                                            content: "WEP"
+                                                        },
+                                                        {
+                                                            content: "Enterprise"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    kind: "onyx.Button",
+                                    classes: "onyx-affirmative",
+                                    content: "Connect",
+                                    ontap: ""
+                                },
+                                {
+                                    kind: "onyx.Button",
+                                    content: "Cancel",
+                                    ontap: "onOtherJoinCancelled"
+                                },
+                            ]
+                        },
+                    ]
+    },
                 { /* Workaround for HFlipArranger incorrectly displaying with 2 panels*/ }
             ]
         },
@@ -397,6 +484,9 @@ enyo.kind({
             });
         }
     },
+    onJoinButtonTapped: function (inSender, inEvent) {
+        this.$.WiFiPanels.setIndex(3);
+    },
     setupSearchRow: function (inSender, inEvent) {
         inEvent.item.$.wiFiListItem.$.SSID.setContent(this.foundNetworks[inEvent.index].networkInfo.ssid);
 
@@ -432,6 +522,13 @@ enyo.kind({
         this.showNetworksList(inSender, inEvent);
 
         this.$.PasswordInput.setValue("");
+    },
+    onOtherJoinCancelled: function (inSender, inEvent) {
+        // switch back to network list view
+        this.showNetworksList(inSender, inEvent);
+
+        this.$.ssidInput.setValue("");
+        this.$.SecurityTypePicker.setSelected(this.$.OpenSecurityItem);
     },
     //Action Functions
     showNetworksList: function (inSender, inEvent) {
