@@ -671,6 +671,8 @@ enyo.kind({
             // if we're outside the webOS system add some entries for easier testing
             this.foundNetworks = this.phonyFoundNetworks;
             this.$.SearchRepeater.setCount(this.foundNetworks.length);
+            this.knownNetworks = this.phonyFoundNetworks;
+            this.$.KnownNetworksRepeater.setCount(this.knownNetworks.length);
             return;
         }
 
