@@ -371,6 +371,54 @@ enyo.kind({
                         },
                     ]
     },
+                {
+                    name: "Settings",
+                    layoutKind: "FittableRowsLayout",
+                    classes: "content-wrapper",
+                    components: [
+                        {
+                            classes: "content-aligner",
+                            components: [{
+                                    kind: "onyx.Groupbox",
+                                    components: [
+                                        {
+                                            kind: "onyx.GroupboxHeader",
+                                            content: "When Device Sleeps"
+                                        },
+                                        {
+                                            kind: "onyx.PickerDecorator",
+                                            alwaysLooksFocused: true,
+                                            components: [
+                                                {},
+                                                {
+                                                    name: "SleepBehaviourPicker",
+                                                    style: "max-width:170px; margin-top:41px; left:auto !important; right:0 !important;",
+                                                    kind: "onyx.Picker",
+                                                    components: [
+                                     //TODO: get current state
+
+                                                        {
+                                                            content: "Keep Wi-Fi On",
+                                                            active: true
+                                                        },
+                                                        {
+                                                            content: "Turn Wi-Fi Off"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    kind: "onyx.Button",
+                                    content: "Back",
+                                    ontap: "showNetworksList"
+                                },
+                            ]
+                        },
+                    ]
+    },
                 { /* Workaround for HFlipArranger incorrectly displaying with 2 panels*/ }
             ]
         },
