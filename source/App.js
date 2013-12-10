@@ -107,7 +107,7 @@ enyo.kind({
 				{kind: "ListItem", icon: "icon.png", title: "Exhibition", ontap: "openExhibition"},
 				//{kind: "ListItem", icon: "icon.png", title: "SIM", ontap: "openSIM"},
 				//{kind: "ListItem", icon: "icon.png", title: "Software Manager", ontap: "openSoftwareManager"},
-				//{kind: "ListItem", icon: "icon.png", title: "System Updates", ontap: "openSystemUpdates"},
+				{kind: "ListItem", icon: "icon.png", title: "System Updates", ontap: "openSystemUpdates"},
 				
 				//Core Settings
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Core"},
@@ -136,7 +136,7 @@ enyo.kind({
 			{kind: "Exhibition"},
 			{}, //	{kind: "SIM"},
 			{}, //	{kind: "SoftwareManager"},
-			{}, //	{kind: "SystemUpdates"},
+			{kind: "SystemUpdates"},
 			{kind: "ScreenLock"},
 			{}, //	{kind: "SoundRingtones"},
 			{kind: "DateTime"},
