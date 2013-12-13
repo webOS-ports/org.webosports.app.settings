@@ -63,44 +63,36 @@ enyo.kind({
         {
             "networkInfo": {
                 "ssid": "BTWiFi",
-                "availableSecurityTypes": [
-    "none"
-                ],
+                "availableSecurityTypes": [ "none" ],
                 "signalBars": 2,
                 "signalLevel": 77,
                 "connectState": "ipConfigured"
             }
-  },
+        },
         {
             "networkInfo": {
                 "ssid": "BTWiFi-with-FON",
-                "availableSecurityTypes": [
-    "none"
-                ],
+                "availableSecurityTypes": [ "none" ],
                 "signalBars": 2,
                 "signalLevel": 69
             }
-  },
+        },
         {
             "networkInfo": {
                 "ssid": "SKY13476",
-                "availableSecurityTypes": [
-    "psk"
-                ],
+                "availableSecurityTypes": [ "psk" ],
                 "signalBars": 2,
                 "signalLevel": 86
             }
-  },
+        },
         {
             "networkInfo": {
                 "ssid": "BTHub3-8MP5",
-                "availableSecurityTypes": [
-    "psk"
-                ],
+                "availableSecurityTypes": [ "psk" ],
                 "signalBars": 1,
                 "signalLevel": 64
             }
-  }
+        }
     ],
     foundNetworks: [],
     events: {
@@ -123,7 +115,7 @@ enyo.kind({
                     style: "display: inline;"
                 }
             ]
-  },
+        },
         {
             kind: "onyx.Toolbar",
             layoutKind: "FittableColumnsLayout",
@@ -132,7 +124,6 @@ enyo.kind({
                 {
                     content: "Wi-Fi"
                 }, // This is hacky
-
                 {
                     fit: true
                 },
@@ -159,8 +150,7 @@ enyo.kind({
                             components: [{
                                     content: "WiFi is disabled",
                                     style: "display: inline;"
-                    },
-                            ]
+                            }]
                         }
                     ]
                 },
@@ -196,8 +186,8 @@ enyo.kind({
                                                     ontap: "listItemTapped"
                                                 }
                                             ]
-                            }]
-                        },
+                                    }]
+                                },
                                 {
                                     name: "JoinButton",
                                     kind: "enyo.FittableColumns",
@@ -286,7 +276,7 @@ enyo.kind({
                             ]
                         }
                     ]
-    },
+                },
                 {
                     name: "NewNetworkJoin",
                     layoutKind: "FittableRowsLayout",
@@ -337,8 +327,7 @@ enyo.kind({
                                                     style: "max-width:170px; margin-top:41px; left:auto !important; right:0 !important;",
                                                     kind: "onyx.Picker",
                                                     components: [
-                                     //TODO: load dynamically
-
+                                                        //TODO: load dynamically
                                                         {
                                                             name: "OpenSecurityItem",
                                                             content: "Open",
@@ -373,7 +362,7 @@ enyo.kind({
                             ]
                         },
                     ]
-    },
+                },
                 {
                     name: "Settings",
                     layoutKind: "FittableRowsLayout",
@@ -398,8 +387,7 @@ enyo.kind({
                                                     style: "max-width:170px; margin-top:41px; left:auto !important; right:0 !important;",
                                                     kind: "onyx.Picker",
                                                     components: [
-                                     //TODO: get current state
-
+                                                        //TODO: get current state
                                                         {
                                                             content: "Keep Wi-Fi On",
                                                             active: true
@@ -421,7 +409,7 @@ enyo.kind({
                             ]
                         },
                     ]
-    },
+                },
                 {
                     name: "KnownNetworks",
                     layoutKind: "FittableRowsLayout",
@@ -455,10 +443,10 @@ enyo.kind({
                                                             ontap: "knownNetworkItemTapped"
                                                         }
                                                     ]
-                            }]
-                        }
+                                            }]
+                                        }
                                     ]
-                },
+                                },
                                 {
                                     kind: "onyx.Button",
                                     content: "Back",
@@ -593,7 +581,7 @@ enyo.kind({
                             ]
                         },
                     ]
-    },
+                },
                 { /* Workaround for HFlipArranger incorrectly displaying with 2 panels*/ }
             ]
         },
@@ -630,7 +618,7 @@ enyo.kind({
             subscribe: true,
             resubscribe: true,
             onResponse: "handleFindNetworksResponse"
-  },
+        },
         {
             name: "GetWiFiStatus",
             kind: "WiFiService",
@@ -638,25 +626,25 @@ enyo.kind({
             subscribe: true,
             resubscribe: true,
             onResponse: "handleWiFiStatus"
-  },
+        },
         {
             name: "SetWiFiState",
             kind: "WiFiService",
             method: "setstate"
-  },
+        },
         {
             name: "Connect",
             kind: "WiFiService",
             method: "connect",
             onResponse: "handleConnectResponse"
-  },
+        },
         {
             name: "WiFiServiceWatch",
             kind: "enyo.PalmService",
             service: "palm://com.palm.bus/signal",
             method: "registerServerStatus",
             onResponse: "handleWifiServiceStatus",
-  }
+        }
     ],
     //Handlers
     create: function (inSender, inEvent) {
@@ -678,6 +666,7 @@ enyo.kind({
         this.$.WiFiServiceWatch.send({
             "serviceName": "com.palm.wifi"
         });
+
         this.palm = true;
     },
     handleWifiServiceStatus: function (inSender, inResponse) {
@@ -837,9 +826,7 @@ enyo.kind({
                 }
             };
         }
-        /*
-			TODO: Enterprise support when it becomes available
-		*/
+        /* TODO: Enterprise support when it becomes available */
         else {
             enyo.log("Connecting to unsecured network");
             obj = {
