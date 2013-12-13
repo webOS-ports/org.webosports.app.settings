@@ -593,7 +593,6 @@ enyo.kind({
                     name: "Grabber",
                     kind: "onyx.Grabber"
                 }, // this is hacky
-
                 {
                     fit: true
                 },
@@ -816,7 +815,7 @@ enyo.kind({
 
         if (password != "") {
             enyo.log("Connecting to PSK network");
-            obj = {
+            this.$.Connect({
                 "ssid": ssid,
                 "security": {
                     "securityType": "psk",
@@ -824,20 +823,13 @@ enyo.kind({
                         "passKey": password
                     }
                 }
-            };
+            });
         }
         /* TODO: Enterprise support when it becomes available */
         else {
             enyo.log("Connecting to unsecured network");
-            obj = {
-                "ssid": ssid
-            };
+            this.$.Connect({ "ssid": ssid });
         }
-
-        var request = navigator.service.Request("luna://com.palm.wifi/", {
-            method: 'connect',
-            parameters: obj
-        });
     },
     //Utility Functions
     clearFoundNetworks: function () {
@@ -880,5 +872,6 @@ enyo.kind({
     },
     handleConnectResponse: function (inSender, inResponse) {
         var result = inResponse.data;
+        /* FIXME show popup that connection could not be established */
     }
 });
