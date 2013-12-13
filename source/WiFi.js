@@ -722,7 +722,11 @@ enyo.kind({
     setupSearchRow: function (inSender, inEvent) {
         inEvent.item.$.wiFiListItem.$.SSID.setContent(this.foundNetworks[inEvent.index].networkInfo.ssid);
 
-        inEvent.item.$.wiFiListItem.$.Active.setShowing(true);
+        if (this.foundNetworks[inEvent.index].networkInfo.connectState === "ipConfigured")
+            inEvent.item.$.wiFiListItem.$.Active.setShowing(true);
+        else
+            inEvent.item.$.wiFiListItem.$.Active.setShowing(false);
+
         if (this.foundNetworks[inEvent.index].networkInfo.availableSecurityTypes !== "none") {
             inEvent.item.$.wiFiListItem.$.Padlock.setShowing(true);
         }
