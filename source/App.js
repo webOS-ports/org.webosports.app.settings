@@ -5,7 +5,7 @@ enyo.kind({
 	handlers: {
 		onmousedown: "pressed",
 		ondragstart: "released",
-		onmouseup: "released",
+		onmouseup: "released"
 	},
 	published: {
 		icon: "",
@@ -13,7 +13,7 @@ enyo.kind({
 	},
 	components:[
 		{name: "ItemIcon", kind: "Image", style: "height: 100%"},
-		{name: "ItemTitle", style: "padding-left: 10px;"},
+		{name: "ItemTitle", style: "padding-left: 10px;"}
 	],
 	create: function() {
 		this.inherited(arguments);
@@ -43,7 +43,6 @@ enyo.kind({
 	kind: "Panels",
 	realtimeFit: true,
 	arrangerKind: "CollapsingArranger",
-	classes: "app-panels",
 	components:[
 		{name: "MenuPanel",
 		style: "width: 33%",
@@ -117,13 +116,14 @@ enyo.kind({
 				//{kind: "ListItem", icon: "icon.png", title: "Regional Settings", ontap: "openRegionalSettings"},
 				//{kind: "ListItem", icon: "icon.png", title: "Location Services", ontap: "openLocationServices"},
 				//{kind: "ListItem", icon: "icon.png", title: "Device Info", ontap: "openDeviceInfo"},
-				{kind: "ListItem", icon: "icon.png", title: "Developer Options", ontap: "openDevOptions"},
-			]},
+				{kind: "ListItem", icon: "icon.png", title: "Developer Options", ontap: "openDevOptions"}
+			]}
 		]},
 		{name: "ContentPanels",
 		kind: "Panels",
 		arrangerKind: "CardArranger",
 		draggable: false,
+        classes: "onyx",
 		index: 1,
 		components:[
 			{kind: "EmptyPanel"},
@@ -145,7 +145,7 @@ enyo.kind({
 			{}, //	{kind: "DeviceInfo"},
 			{kind: "DevOptions"},
 			{kind: "Telephony"}
-		]},
+		]}
 	],
 	//Action Functions
 	wifiActiveChanged: function(inSender, inEvent) {
