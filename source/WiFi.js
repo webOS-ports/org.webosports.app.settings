@@ -1,3 +1,13 @@
+Array.prototype.contains = function(obj) {
+    var i = this.length;
+    while (i--) {
+        if (this[i] === obj) {
+            return true;
+        }
+    }
+    return false;
+}
+
 enyo.kind({
     name: "WiFiListItem",
     classes: "group-item-wrapper",
@@ -10,6 +20,12 @@ enyo.kind({
                     name: "SSID",
                     content: "SSID",
                     fit: true
+                },
+                {
+                    name: "StatusMessage",
+                    content: "",
+                    classes: "wifi-message-status",
+                    showing: false
                 },
                 {
                     name: "Active",
@@ -80,6 +96,7 @@ enyo.kind({
         {
             "networkInfo": {
                 "ssid": "SKY13476",
+                "connectState": "associating",
                 "availableSecurityTypes": [ "psk" ],
                 "signalBars": 2,
                 "signalLevel": 86
@@ -90,7 +107,16 @@ enyo.kind({
                 "ssid": "BTHub3-8MP5",
                 "availableSecurityTypes": [ "psk" ],
                 "signalBars": 1,
-                "signalLevel": 64
+                "signalLevel": 64,
+                "connectState": "ipFailed"
+            }
+        },
+        {
+            "networkInfo": {
+                "ssid": "open-net",
+                "availableSecurityTypes": [ "none" ],
+                "signalBars": 2,
+                "signalLevel": 70
             }
         }
     ],
@@ -722,12 +748,31 @@ enyo.kind({
     setupSearchRow: function (inSender, inEvent) {
         inEvent.item.$.wiFiListItem.$.SSID.setContent(this.foundNetworks[inEvent.index].networkInfo.ssid);
 
-        if (this.foundNetworks[inEvent.index].networkInfo.connectState === "ipConfigured")
-            inEvent.item.$.wiFiListItem.$.Active.setShowing(true);
-        else
+        switch (this.foundNetworks[inEvent.index].networkInfo.connectState) {
+        case "associating":
+        case "associated":
             inEvent.item.$.wiFiListItem.$.Active.setShowing(false);
+            inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(true);
+            inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("Connecting ...");
+            break;
+        case "ipConfigured":
+            inEvent.item.$.wiFiListItem.$.Active.setShowing(true);
+            inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(false);
+            inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("");
+            break;
+        case "ipFailed":
+            inEvent.item.$.wiFiListItem.$.Active.setShowing(false);
+            inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(true);
+            inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("Association failed!");
+            break;
+        default:
+            inEvent.item.$.wiFiListItem.$.Active.setShowing(false);
+            inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(false);
+            inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("");
+            break;
+        }
 
-        if (this.foundNetworks[inEvent.index].networkInfo.availableSecurityTypes !== "none") {
+        if (!this.foundNetworks[inEvent.index].networkInfo.availableSecurityTypes.contains("none")) {
             inEvent.item.$.wiFiListItem.$.Padlock.setShowing(true);
         }
 

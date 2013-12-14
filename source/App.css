@@ -85,6 +85,16 @@
 .wifi-join-button img {
     padding: 5px 7px 0 7px;
 }
+.wifi-message-status {
+    font-size: 12px;
+    color: grey;
+    padding: 0px 0px 0px 3px;
+}
+.wifi-message-error {
+    font-size: 16px;
+    color: red;
+    padding: 0px 0px 10px 8px;
+}
 .networks-scroll .group-item-wrapper:last-child .group-item {
     border-bottom: 0px;
 }
