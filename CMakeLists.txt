@@ -17,8 +17,14 @@ if(NOT Qt5Core_FOUND)
     message(FATAL_ERROR "Qt5Core module is required!")
 endif()
 
+find_package(Qt5DBus REQUIRED)
+if(NOT Qt5DBus_FOUND)
+    message(FATAL_ERROR "Qt5DBus module is required!")
+endif()
+
 find_package(PkgConfig "0.22" REQUIRED)
 
 pkg_check_modules(WEBAPP_PLUGIN webapp-plugin REQUIRED)
+pkg_check_modules(CONNMAN_QT5 connman-qt5 REQUIRED)
 
 add_subdirectory(plugin)

@@ -75,8 +75,7 @@ enyo.kind({
 				components:[
 					{name: "WiFiToggle",
 					kind: "onyx.ToggleButton",
-					style: "position: absolute; top: 11px; right: 9px; height: 31px;",
-					onChange: "wifiToggleChanged"}
+					style: "position: absolute; top: 11px; right: 9px; height: 31px;" }
 				]},
 				//{kind: "ListItem", icon: "icon.png", title: "Mobile Hotspot"}, //NOTE: Integrate into Wi-Fi
 				/* No service implementation yet
@@ -284,12 +283,12 @@ enyo.kind({
 		if(enyo.Panels.isScreenNarrow()) {
 			this.$.AppPanels.setArrangerKind("CoreNaviArranger");
 			this.$.AppPanels.setDraggable(false);
-			this.$.AppPanels.$ContentPanels.addStyles("box-shadow: 0");
+			this.$.AppPanels.$.ContentPanels.setStyle("box-shadow: 0");
 		}
 		else {
 			this.$.AppPanels.setArrangerKind("CollapsingArranger");
 			this.$.AppPanels.setDraggable(true);
-			this.$.AppPanels.$.ContentPanels.addStyles("box-shadow: -4px 0px 4px rgba(0,0,0,0.3)");
+			this.$.AppPanels.$.ContentPanels.setStyle("box-shadow: -4px 0px 4px rgba(0,0,0,0.3)");
 		}
 	},
 	handleBackGesture: function(inSender, inEvent) {

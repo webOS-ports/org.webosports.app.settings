@@ -16,6 +16,7 @@
  */
 
 #include "settingsplugin.h"
+#include "wifimanager.h"
 
 SettingsPlugin::SettingsPlugin()
 {
@@ -23,5 +24,7 @@ SettingsPlugin::SettingsPlugin()
 
 QList<luna::BaseExtension*> SettingsPlugin::createExtensions(luna::ApplicationEnvironment *executor)
 {
-    return QList<luna::BaseExtension*>();
+    QList<luna::BaseExtension*> extensions;
+    extensions.append(new WiFiManager(executor, this));
+    return extensions;
 }
