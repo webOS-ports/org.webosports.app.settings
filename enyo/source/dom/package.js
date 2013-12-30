@@ -1,14 +1,16 @@
 enyo.depends(
-	"dom.css",	
+	"dom.css",
 	"dom.js",
 	"transform.js",
 	"Control.js",
 	"platform.js",
-	"animation.js",	
-	"phonegap.js",
+	"animation.js",
+	"cordova.js",
 	"dispatcher.js",
 	"preview.js",
 	"modal.js",
 	"gesture.js",
-	"drag.js"
+	"drag.js",
+	"transition.js",
+	"keymap.js"
 );

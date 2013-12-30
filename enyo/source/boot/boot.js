@@ -23,30 +23,43 @@ enyo.machine = {
 			link.type = type;
 			document.getElementsByTagName('head')[0].appendChild(link);
 		} else {
-			document.write('<link href="' + inPath + '" media="screen" rel="' + rel + '" type="' + type + '" />');
+			/* jshint evil: true */
+			document.write(
+				'<link href="' + inPath + '" media="screen" rel="' +
+				rel + '" type="' + type + '" />');
+			/* jshint evil: false */
 		}
 		if (isLess && window.less) {
-			less.sheets.push(link);
+			window.less.sheets.push(link);
 			if (!enyo.loader.finishCallbacks.lessRefresh) {
 				enyo.loader.finishCallbacks.lessRefresh = function() {
-					less.refresh(true);
+					window.less.refresh(true);
 				};
 			}
 		}
 	},
 	script: function(inSrc, onLoad, onError) {
-		if (!enyo.runtimeLoading) {
-			document.write('<scri' + 'pt src="' + inSrc + '"' + (onLoad ? ' onload="' + onLoad + '"' : '') + (onError ? ' onerror="' + onError + '"' : '') + '></scri' + 'pt>');
-		} else {
+		if (enyo.runtimeLoading) {
 			var script = document.createElement('script');
 			script.src = inSrc;
-			script.onLoad = onLoad;
-			script.onError = onError;
+			script.onload = onLoad;
+			script.onerror = onError;
+			script.charset = "utf-8";
 			document.getElementsByTagName('head')[0].appendChild(script);
+		} else {
+			/* jshint evil: true */
+			document.write(
+				'<scri' + 'pt src="' + inSrc + '"' +
+				(onLoad ? ' onload="' + onLoad + '"' : '') +
+				(onError ? ' onerror="' + onError + '"' : '') +
+				'></scri' + 'pt>');
+			/* jshint evil: false */
 		}
 	},
 	inject: function(inCode) {
-		document.write('<script type="text/javascript">' + inCode + "</script>");
+		/* jshint evil: true */
+		document.write('<scri' + 'pt type="text/javascript">' + inCode + "</scri" + "pt>");
+		/* jshint evil: false */
 	}
 };
 
@@ -91,13 +104,15 @@ enyo.depends = function() {
 			var depends = args[0];
 			var dependsArg = enyo.isArray(depends) ? depends : [depends];
 			var onLoadCallback = args[1];
-			enyo.loader.finishCallbacks.runtimeLoader = function() {
+			enyo.loader.finishCallbacks.runtimeLoader = function(inBlock) {
 				// Once loader is done loading a package, we chain a call to runtimeLoad(),
 				// which will call the onLoadCallback from the original load call, passing
 				// a reference to the depends argument from the original call for tracking,
 				// followed by kicking off any additionally queued load() calls
 				runtimeLoad(function() {
-					onLoadCallback && onLoadCallback(depends);
+					if (onLoadCallback) {
+						onLoadCallback(inBlock);
+					}
 				});
 			};
 			enyo.loader.packageFolder = "./";
