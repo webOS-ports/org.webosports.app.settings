@@ -17,7 +17,6 @@ enyo.kind({
 		//display status information and change log:
 		{
 			name: "statusDisplay",
-			style: "color: white;",
 			classes: "nice-padding",
 			fit: false,
 			content: "Please check for updates"
