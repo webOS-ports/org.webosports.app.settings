@@ -6,7 +6,6 @@ enyo.kind({
 	kind: "FittableRows",
 	fit: true,
 	currentRequest: false,
-	classes: "center",
 	published: {
 		updateResults: null
 	},
@@ -18,8 +17,9 @@ enyo.kind({
 		{
 			name: "statusDisplay",
 			classes: "nice-padding",
+			style: "text-align: left;",
 			fit: false,
-			content: "Please check for updates"
+			content: "There is currently no update available. Please check again later."
 		},
 		{
 			name: "changesDisplayContainer", 
@@ -62,14 +62,7 @@ enyo.kind({
 			}
 		]},
 		
-		//application events:
-		{
-			kind: enyo.ApplicationEvents,
-			onWindowParamsChange: "windowParamsChangeHandler",
-			onApplicationRelaunch: "relaunched"
-		},
-		
-				//service caller:
+		//service caller:
 		{
 			name: "updateService",
 			kind: "enyo.PalmService",
@@ -96,18 +89,7 @@ enyo.kind({
 			onComplete: "initiateUpdateComplete"
 		}
 	],
-	
-	//application event callbacks:
-	windowParamsChangeHandler: function () {
-		console.error("New params: " + JSON.stringify(enyo.windowParams));
-		this.setUpdateResults(enyo.windowParams);
-	},
-	
-	relaunched: function () {
-		console.error("Relaunched!");
-		enyo.windows.activate("debug.html", "UpdateAppMain");
-	},
-	
+
 	//button callbacks:
 	doCheck: function (inSender, inEvent) {
 		this.currentRequest = this.$.updateService.send({});
@@ -121,7 +103,7 @@ enyo.kind({
 		this.currentRequest = this.$.initiateService.send({});
 		this.startActivity("Initiating reboot into system update state.");
 	},
-	
+
 	//helper methods:
 	startActivity: function (msg) {
 		this.$.toolbarControls.hide();
@@ -141,12 +123,12 @@ enyo.kind({
 		this.$.spinner.hide();
 		this.$.spinner.stop();
 	},
-	
+
 	updateStatus: function (msg) {
 		this.$.statusDisplay.setContent(msg);
 		this.resized();
 	},
-	
+
 	//service callbacks:
 	updateChecked: function (inSender, inEvent) {
 		var result = inEvent.data;
@@ -154,7 +136,7 @@ enyo.kind({
 		
 		this.setUpdateResults(result);
 	},
-	
+
 	downloadComplete: function (inSender, inEvent) {
 		var result = inEvent.data;
 		
@@ -171,7 +153,7 @@ enyo.kind({
 			this.updateStatus("Downloaded " + result.numDownloaded + " of " + result.toDownload + " packages.");
 		}
 	},
-	
+
 	initiateUpdateComplete: function (inSender, inEvent) {
 		var result = inEvent.data;
 		
@@ -182,26 +164,32 @@ enyo.kind({
 			this.updateStatus("Error, could not initiate update: " + result.msg);
 		}
 	},
-	
+
 	setUpdateResults: function (result) {
 		this.$.changesDisplay.setContent("");
-		
-		if (result && result.success) {
+
+		if (!result)
+			return;
+
+		if (result.success) {
 			if (result.needUpdate) {
 				this.updateStatus("An update is available.");
-				
+
 				enyo.forEach(result.changesSinceLast, function processChange(change) {
 					var content = [
 						"<p><strong>Version: ", change.version, "</strong></p>"
 					], i;
-					
+
+					content.push("<ul>");
 					for (i = 0; i < change.changes.length; i += 1) {
+						content.push("<li>");
 						content.push(change.changes[i]);
-						content.push("<br>");
+						content.push("</li>");
 					}
-					
+					content.push("</ul>");
+
 					content.push("<hr>");
-					
+
 					this.$.changesDisplay.addContent(content.join(""));
 				}, this);
 				
@@ -210,7 +198,7 @@ enyo.kind({
 			} else {
 				this.updateStatus("Your system is up to date.");
 			}
-		} else if (result && (result.success === false || result.returnValue === false)) {
+		} else if (result.success === false) {
 			this.updateStatus("Could not check for updates: " + (result.message || result.errorText || "no error speficied."));
 		}
 	}
