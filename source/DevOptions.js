@@ -33,7 +33,7 @@ enyo.kind({
 						{
 							style:"padding-bottom: 10px;",
 							components: [
-								{content: "Developer mode is disabled", style: "display: inline; color: white;"},
+								{content: "Developer mode is disabled", style: "display: inline;"},
 							]
 						}
 					]
