@@ -56,6 +56,14 @@ enyo.kind({
 			},
 			{
 				kind: "onyx.Button",
+				name: "btnDownloadSkipFeeds",
+				classes: "center",
+				content: "Download anyway",
+				ontap: "doDownloadSkipFeeds",
+				showing: false
+			},
+			{
+				kind: "onyx.Button",
 				name: "btnInitiateUpdate",
 				classes: "onyx-affirmative center",
 				content: "Install System Update",
@@ -101,6 +109,11 @@ enyo.kind({
 		this.currentRequest = this.$.downloadService.send({});
 		this.startActivity("Starting to download system update...");
 	},
+	doDownloadSkipFeeds: function (inSender, inEvent) {
+		this.$.btnDownloadSkipFeeds.hide();
+		this.currentRequest = this.$.downloadService.send({skipFeedsUpdate: true});
+		this.startActivity("Starting to download system update...");
+	},
 	doInstall: function (inSender, inEvent) {
 		this.currentRequest = this.$.initiateService.send({});
 		this.startActivity("Initiating reboot into system update state.");
@@ -144,16 +157,22 @@ enyo.kind({
 	downloadComplete: function (inSender, inEvent) {
 		var result = inEvent.data, errorMsg;
 		
-		console.error("Got: " + JSON.stringify(result));
+		console.log("Got: " + JSON.stringify(result));
 		if (result.error) { //had error. Download aborted or something...
-			this.stopActivity();
 			errorMsg = result.msg.replace(/\n/g, "<br>");
 			this.updateStatus(errorMsg);
-		} else if (result.finished) { //finished downloading
+
+			if (result.errorStage === "feedsUpdate") {
+				console.log("Allow retry...");
+				this.$.btnDownload.setContent("Retry");
+				this.$.btnDownloadSkipFeeds.show();
+			}
 			this.stopActivity();
+		} else if (result.finished) { //finished downloading
 			this.updateStatus("Downloading finished");
 			this.$.btnInitiateUpdate.show();
 			this.$.btnDownload.hide();
+			this.stopActivity();
 		} else { //only some status from service:
 			this.updateStatus("Downloaded " + result.numDownloaded + " of " + result.toDownload + " packages.");
 		}
@@ -162,12 +181,12 @@ enyo.kind({
 	initiateUpdateComplete: function (inSender, inEvent) {
 		var result = inEvent.data;
 		
-		this.stopActivity();
 		if (result.success) { //had error. Download aborted or something...
 			this.updateStatus("Successfully initiated update. System will now reboot and update.");
 		} else { //only some status from service:
 			this.updateStatus("Error, could not initiate update: " + result.msg);
 		}
+		this.stopActivity();
 	},
 
 	setUpdateResults: function (result) {
