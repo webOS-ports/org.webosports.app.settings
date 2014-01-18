@@ -19,6 +19,7 @@ enyo.kind({
 			classes: "nice-padding",
 			style: "text-align: left;",
 			fit: false,
+			allowHtml: true,
 			content: "There is currently no update available. Please check again later."
 		},
 		{
@@ -27,9 +28,9 @@ enyo.kind({
 			classes: "changes-display", 
 			fit: true, components: [
 				{classes: "vspacer"},
-				{name: "spinner", kind: "onyx.Spinner", showing: false},
+				{name: "spinner", kind: "onyx.Spinner", showing: false, classes: "center"},
 				{kind: "enyo.Scroller",fit: true,touch: true,components: [
-					{name: "changesDisplay", classes: "nice-padding", style: "text-align: left;", allowHtml: true}
+					{name: "changesDisplay", classes: "nice-padding center", style: "text-align: left;", allowHtml: true}
 				]},
 				{classes: "vspacer"}
 			]
@@ -41,13 +42,14 @@ enyo.kind({
 			{
 				kind: "onyx.Button",
 				name: "btnCheck",
+				classes: "center",
 				content: "Check for updates",
 				ontap: "doCheck"
 			},
 			{
 				kind: "onyx.Button",
 				name: "btnDownload",
-				classes: "onyx-affirmative",
+				classes: "onyx-affirmative center",
 				content: "Download System Update",
 				ontap: "doDownload",
 				showing: false
@@ -55,7 +57,7 @@ enyo.kind({
 			{
 				kind: "onyx.Button",
 				name: "btnInitiateUpdate",
-				classes: "onyx-affirmative",
+				classes: "onyx-affirmative center",
 				content: "Install System Update",
 				ontap: "doInstall",
 				showing: false
@@ -113,6 +115,7 @@ enyo.kind({
 		if (msg) {
 			this.updateStatus(msg);
 		}
+		this.render();
 	},
 	stopActivity: function () {
 		if (this.currentRequest) {
@@ -122,6 +125,7 @@ enyo.kind({
 		this.$.changesDisplay.show();
 		this.$.spinner.hide();
 		this.$.spinner.stop();
+		this.render();
 	},
 
 	updateStatus: function (msg) {
@@ -138,12 +142,13 @@ enyo.kind({
 	},
 
 	downloadComplete: function (inSender, inEvent) {
-		var result = inEvent.data;
+		var result = inEvent.data, errorMsg;
 		
 		console.error("Got: " + JSON.stringify(result));
 		if (result.error) { //had error. Download aborted or something...
 			this.stopActivity();
-			this.updateStatus("Error downloading updates: " + result.msg);
+			errorMsg = result.msg.replace(/\n/g, "<br>");
+			this.updateStatus(errorMsg);
 		} else if (result.finished) { //finished downloading
 			this.stopActivity();
 			this.updateStatus("Downloading finished");
@@ -168,8 +173,9 @@ enyo.kind({
 	setUpdateResults: function (result) {
 		this.$.changesDisplay.setContent("");
 
-		if (!result)
+		if (!result) {
 			return;
+		}
 
 		if (result.success) {
 			if (result.needUpdate) {

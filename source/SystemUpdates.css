@@ -6,7 +6,8 @@
 }
 
 .center {
-	text-align: center;	
+	text-align: center;
+	margin: 0px auto;	
 }
 
 .changes-display {
