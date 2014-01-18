@@ -110,7 +110,6 @@ enyo.kind({
 		this.startActivity("Starting to download system update...");
 	},
 	doDownloadSkipFeeds: function (inSender, inEvent) {
-		this.$.btnDownloadSkipFeeds.hide();
 		this.currentRequest = this.$.downloadService.send({skipFeedsUpdate: true});
 		this.startActivity("Starting to download system update...");
 	},
@@ -162,6 +161,7 @@ enyo.kind({
 			errorMsg = result.msg.replace(/\n/g, "<br>");
 			this.updateStatus(errorMsg);
 
+			this.$.btnDownloadSkipFeeds.hide();
 			if (result.errorStage === "feedsUpdate") {
 				console.log("Allow retry...");
 				this.$.btnDownload.setContent("Retry");
@@ -172,6 +172,7 @@ enyo.kind({
 			this.updateStatus("Downloading finished");
 			this.$.btnInitiateUpdate.show();
 			this.$.btnDownload.hide();
+			this.$.btnDownloadSkipFeeds.hide();
 			this.stopActivity();
 		} else { //only some status from service:
 			this.updateStatus("Downloaded " + result.numDownloaded + " of " + result.toDownload + " packages.");
