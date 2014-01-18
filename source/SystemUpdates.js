@@ -17,6 +17,7 @@ enyo.kind({
 		{
 			name: "statusDisplay",
 			classes: "nice-padding",
+			style: "text-align: left;",
 			fit: false,
 			allowHtml: true,
 			content: "There is currently no update available. Please check again later."
