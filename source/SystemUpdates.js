@@ -41,7 +41,8 @@ enyo.kind({
 			{
 				kind: "onyx.Button",
 				name: "btnCheck",
-				content: "Check for updates center",
+				classes: "center",
+				content: "Check for updates",
 				ontap: "doCheck"
 			},
 			{
