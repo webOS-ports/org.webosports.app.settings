@@ -61,7 +61,7 @@ enyo.kind({
 	components: [	
 		 /* Top toolbar */
 		{kind: "onyx.Toolbar", style: "line-height: 28px;", content: "Licenses"},
-		 /* WiFi Panels */
+		 /* License Panels */
         {
             name: "licensePanels",
             kind: "Panels",
@@ -179,7 +179,6 @@ enyo.kind({
 				}
             ]
         },
-		//service caller:
 		{
 			name: "listPackagesService",
 			kind: "enyo.PalmService",
