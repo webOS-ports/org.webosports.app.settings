@@ -84,6 +84,7 @@ enyo.kind({
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Core"},
 				{kind: "ListItem", icon: "icon.png", title: "Screen & Lock", ontap: "openPanel", targetPanel: "ScreenLockPanel"},
 				{kind: "ListItem", icon: "icon.png", title: "Date & Time", ontap: "openPanel", targetPanel: "DateTimePanel"},
+				{kind: "ListItem", icon: "icon.png", title: "Language & Input", ontap: "openPanel", targetPanel: "LanguageInputPanel"},
 				{kind: "ListItem", icon: "icon.png", title: "Developer Options", ontap: "openPanel", targetPanel: "DevOptionsPanel"}
 			]}
 		]},
@@ -100,7 +101,8 @@ enyo.kind({
 			{name: "ScreenLockPanel", kind: "ScreenLock"},
 			{name: "DateTimePanel", kind: "DateTime"},
 			{name: "DevOptionsPanel", kind: "DevOptions"},
-			{name: "TelephonyPanel", kind: "Telephony"}
+			{name: "TelephonyPanel", kind: "Telephony"},
+			{name: "LanguageInputPanel", kind: "LanguageInput"}
 		]}
 	],
 	//Action Functions
