@@ -15,5 +15,6 @@ enyo.depends(
 	"DevOptions.js",
 	"Telephony.js",
 	"SystemUpdates.css",
-	"SystemUpdates.js"
+	"SystemUpdates.js",
+	"Licenses.js"
 );
