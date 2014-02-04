@@ -1,8 +1,7 @@
 enyo.kind({
-    name: "About",
+    name: "DeviceSoftwareInformation",
     layoutKind: "FittableRowsLayout",
     palm: true,
-    keyboardState: { },
     components: [
         { kind: "onyx.Toolbar", style: "line-height: 36px;",
             components:[ { content: "About" } ] },
@@ -31,7 +30,8 @@ enyo.kind({
                         {kind: "Control", content: "Android version", style: "display: inline-block; line-height: 32px;"},
                         {kind: "Control", name: "SoftwareAndroidVersion", style: "float: right;", content: "Unknown"},
                     ]},
-                ]}
+                ]},
+                {kind: "onyx.Button", content: "Software Licenses", style: "width: 100%", ontap: "onShowSoftwareLicenses" }
            ]}
         ]},
         { kind: "onyx.Toolbar", components:[ {name: "Grabber", kind: "onyx.Grabber"}, ] },
@@ -57,6 +57,10 @@ enyo.kind({
             "ro.product.model",
             "ro.product.manufacturer",
             "ro.build.version.release"]});
+    },
+    // Action Handlers
+    onShowSoftwareLicenses: function(inSender, inEvent) {
+        this.bubble("onSwitchPanel", {targetPanel: "Licenses"});
     },
     // Service Handlers
     onVersionResponse: function(inSender, inEvent) {
@@ -92,5 +96,43 @@ enyo.kind({
         }
 
         this.$.DeviceName.setContent(manufacturer + " " + model);
+    }
+});
+
+enyo.kind({
+    name: "About",
+    layoutKind: "FittableRowsLayout",
+    palm: true,
+    components: [
+        { kind: "Signals", onbackbutton: "handleBackGesture" },
+        { kind: "Panels", name: "ContentPanels", fit: true, draggable: false,
+          components: [
+            { name: "Information", kind: "DeviceSoftwareInformation", onSwitchPanel: "switchPanel" },
+            { name: "Licenses", kind: "Licenses", onSwitchPanel: "switchPanel" }
+        ]},
+    ],
+    // Handlers
+    create: function(inSender, inEvent) {
+        this.inherited(arguments);
+        if (!window.PalmSystem) {
+            enyo.log("Non-palm platform, service requests disabled.");
+            this.palm = false;
+            return;
+        }
+    },
+    // Action Handlers
+    handleBackGesture: function(inSender, inEvent) {
+        this.switchPanel(null, {targetPanel: "Information"});
+    },
+    switchPanel: function(inSender, inEvent) {
+        console.log("switchPanel: targetPanel=" + inEvent.targetPanel);
+        if (typeof inEvent.targetPanel === 'undefined')
+            return;
+        this.$.ContentPanels.selectPanelByName(inEvent.targetPanel);
+        this.selectContentPanel();
+    },
+    selectContentPanel: function() {
+        if (enyo.Panels.isScreenNarrow())
+            this.selectPanelByName("ContentPanels");
     }
 });
