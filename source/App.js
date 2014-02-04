@@ -79,6 +79,7 @@ enyo.kind({
 				//Services
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Services"},
 				{kind: "ListItem", icon: "icon.png", title: "System Updates", ontap: "openPanel", targetPanel: "SystemUpdatesPanel"},
+				{kind: "ListItem", icon: "icon.png", title: "Licenses", ontap: "openPanel", targetPanel: "LicensesPanel"},
 				
 				//Core Settings
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Core"},
@@ -99,6 +100,7 @@ enyo.kind({
 			{kind: "EmptyPanel"},
 			{name: "WiFiPanel", kind: "WiFi", onActiveChanged: "wifiActiveChanged"},
 			{name: "SystemUpdatesPanel", kind: "SystemUpdates"},
+			{name: "LicensesPanel", kind: "Licenses"},
 			{name: "ScreenLockPanel", kind: "ScreenLock"},
 			{name: "DateTimePanel", kind: "DateTime"},
 			{name: "DevOptionsPanel", kind: "DevOptions"},
