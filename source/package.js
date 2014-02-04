@@ -16,5 +16,6 @@ enyo.depends(
 	"Telephony.js",
 	"SystemUpdates.css",
 	"SystemUpdates.js",
-	"LanguageInput.js"
+	"LanguageInput.js",
+	"About.js"
 );

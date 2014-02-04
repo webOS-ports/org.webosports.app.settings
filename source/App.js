@@ -85,7 +85,8 @@ enyo.kind({
 				{kind: "ListItem", icon: "icon.png", title: "Screen & Lock", ontap: "openPanel", targetPanel: "ScreenLockPanel"},
 				{kind: "ListItem", icon: "icon.png", title: "Date & Time", ontap: "openPanel", targetPanel: "DateTimePanel"},
 				{kind: "ListItem", icon: "icon.png", title: "Language & Input", ontap: "openPanel", targetPanel: "LanguageInputPanel"},
-				{kind: "ListItem", icon: "icon.png", title: "Developer Options", ontap: "openPanel", targetPanel: "DevOptionsPanel"}
+				{kind: "ListItem", icon: "icon.png", title: "Developer Options", ontap: "openPanel", targetPanel: "DevOptionsPanel"},
+				{kind: "ListItem", icon: "icon.png", title: "About", ontap: "openPanel", targetPanel: "AboutPanel"}
 			]}
 		]},
 		{name: "ContentPanels",
@@ -102,7 +103,8 @@ enyo.kind({
 			{name: "DateTimePanel", kind: "DateTime"},
 			{name: "DevOptionsPanel", kind: "DevOptions"},
 			{name: "TelephonyPanel", kind: "Telephony"},
-			{name: "LanguageInputPanel", kind: "LanguageInput"}
+			{name: "LanguageInputPanel", kind: "LanguageInput"},
+			{name: "AboutPanel", kind: "About"}
 		]}
 	],
 	//Action Functions

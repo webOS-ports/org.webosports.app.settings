@@ -1,0 +1,96 @@
+enyo.kind({
+    name: "About",
+    layoutKind: "FittableRowsLayout",
+    palm: true,
+    keyboardState: { },
+    components: [
+        { kind: "onyx.Toolbar", style: "line-height: 36px;",
+            components:[ { content: "About" } ] },
+        { kind: "Scroller", touch: true, horizontal: "hidden", fit: true,
+          components:[
+            { tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true,
+              components: [
+                {kind: "onyx.Groupbox", components: [
+                    {kind: "onyx.GroupboxHeader", content: "Device"},
+                    {classes: "group-item", components:[
+                        {kind: "Control", content: "Name", style: "display: inline-block; line-height: 32px;"},
+                        {kind: "Control", name: "DeviceName", style: "float: right;", content: "Unknown"},
+                    ]},
+                    {classes: "group-item", components:[
+                        {kind: "Control", content: "Serial number", style: "display: inline-block; line-height: 32px;"},
+                        {kind: "Control", name: "DeviceSerialNumber", style: "float: right;", content: "Unknown"},
+                    ]},
+                ]},
+                {kind: "onyx.Groupbox", components: [
+                    {kind: "onyx.GroupboxHeader", content: "Software"},
+                    {classes: "group-item", components:[
+                        {kind: "Control", content: "Version", style: "display: inline-block; line-height: 32px;"},
+                        {kind: "Control", name: "SoftwareVersion", style: "float: right;", content: "Unknown"},
+                    ]},
+                    {classes: "group-item", components:[
+                        {kind: "Control", content: "Android version", style: "display: inline-block; line-height: 32px;"},
+                        {kind: "Control", name: "SoftwareAndroidVersion", style: "float: right;", content: "Unknown"},
+                    ]},
+                ]}
+           ]}
+        ]},
+        { kind: "onyx.Toolbar", components:[ {name: "Grabber", kind: "onyx.Grabber"}, ] },
+        { kind: "enyo.PalmService", name: "RetrieveVersion", service: "palm://org.webosports.service.update",
+            method: "retrieveVersion", onComplete: "onVersionResponse" },
+        { kind: "enyo.PalmService", name: "GetAndroidProperty", service: "palm://com.android.properties",
+            method: "getProperty", onComplete: "onGetAndroidPropertyResponse"},
+    ],
+    // Handlers
+    create: function(inSender, inEvent) {
+        this.inherited(arguments);
+        if (!window.PalmSystem) {
+            enyo.log("Non-palm platform, service requests disabled.");
+            this.palm = false;
+            return;
+        }
+        this.updateAll();
+    },
+    updateAll: function() {
+        this.$.RetrieveVersion.send({});
+        this.$.GetAndroidProperty.send({keys:[
+            "ro.serialno",
+            "ro.product.model",
+            "ro.product.manufacturer",
+            "ro.build.version.release"]});
+    },
+    // Service Handlers
+    onVersionResponse: function(inSender, inEvent) {
+        var response = inEvent.data;
+        console.log("Got response from update service: " + response);
+        if (!response || !response.returnValue)
+            return;
+
+        if (response.localVersion)
+            this.$.SoftwareVersion.setContent(response.localVersion);
+    },
+    onGetAndroidPropertyResponse: function(inSender, inEvent) {
+        var response = inEvent.data;
+        console.log("Got response from android property service: " + response);
+        if (!response || !response.returnValue)
+            return;
+        if (!response.properties)
+            return;
+
+        var model = "";
+        var manufacturer = "";
+
+        for (var n = 0; n < response.properties.length; n++) {
+            var property = response.properties[n];
+            if (property["ro.serialno"])
+                this.$.DeviceSerialNumber.setContent(property["ro.serialno"]);
+            else if (property["ro.product.model"])
+                model = property["ro.product.model"];
+            else if (property["ro.product.manufacturer"])
+                manufacturer = property["ro.product.manufacturer"];
+            else if (property["ro.build.version.release"])
+                this.$.SoftwareAndroidVersion.setContent(property["ro.build.version.release"]);
+        }
+
+        this.$.DeviceName.setContent(manufacturer + " " + model);
+    }
+});
