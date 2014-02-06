@@ -87,6 +87,7 @@ enyo.kind({
                                     content: "Choose a Package"
                                 },
                                 {
+                                    name : "packageScroller",
                                     classes: "networks-scroll",
                                     kind: "Scroller",
                                     touch: true,
@@ -133,6 +134,7 @@ enyo.kind({
                                     content: "Licenses"
                                 },
                                 {
+                                    name : "licenseScroller",
                                     classes: "networks-scroll",
                                     kind: "Scroller",
                                     touch: true,
@@ -257,18 +259,35 @@ enyo.kind({
     gotLicenseText: function(inSender, inEvent) {
 		var result = inEvent.data.license;
 		if(result) {
-			this.licenseTextList.push(String.fromCharCode.apply(null, new Uint16Array(result)));
+
+			this.licenseTextList.push(this.decodeString(result));
 
 			// we have got all the license, refresh the list
 			if(this.licenseTextList.length == this.licenseList.length) {
 
-				//this.log(this.licenseTextList);
+				this.log("Number of Licenses: " + this.licenseTextList.length);
 
+                this.showLicense(); 
 				this.$.licenseRepeater.setCount(this.licenseTextList.length);	
-				this.showLicense();	
+				
 			}
 			
 		}
+    },
+
+    // On some browsers If you try to decode an array largre than 2^16 
+    // it throws an error about Max stack depth.  So chunk it to batches
+    decodeString: function(buf){
+        var str = "";
+        var b = new Uint16Array(buf);
+        var n = b.length;
+        var CHUNK_SIZE = Math.pow(2, 16);
+        var offset, len;
+        for (offset = 0; offset < n; offset += CHUNK_SIZE) {
+            len = Math.min(CHUNK_SIZE, n-offset);
+            str += String.fromCharCode.apply(null, b.subarray(offset, offset+len));
+        }
+        return str; 
     },
 
     showPackage: function() {
@@ -285,12 +304,15 @@ enyo.kind({
 
     showLicense: function() {
     	this.$.licensePanels.setIndex(2);
+        this.$.licenseScroller.stabilize();
+        this.$.licenseScroller.scrollToTop();
     	this.$.btnBack.show();
     	this.$.footer.reflow();
     },
 
 	setupPackageRow: function (inSender, inEvent) {
         inEvent.item.$.packageListItem.$.package.setContent(this.packageList[inEvent.index]);
+        return true;
 	},
 
 	packageSelected: function (inSender, inEvent) {
@@ -314,7 +336,9 @@ enyo.kind({
 	},
 
 	setupLicenseRow: function (inSender, inEvent) {
+        //this.log("setupLicenseRow: " + inEvent.index);
         inEvent.item.$.licenseTextItem.$.licenseText.setContent(this.licenseTextList[inEvent.index]);
+        return true;
 	},
 
 	doBack: function (inSender, inEvent) {
