@@ -17,7 +17,7 @@ enyo.kind({
 	],
 	create: function() {
 		this.inherited(arguments);
-		this.$.ItemIcon.setSrc(this.icon);
+		// this.$.ItemIcon.setSrc(this.icon);
 		this.$.ItemTitle.setContent(this.title);
 	},
 	pressed: function() {
