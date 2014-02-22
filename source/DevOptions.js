@@ -76,8 +76,8 @@ enyo.kind({
 				}
 			]
 		},
-		{name: "GetStatus", kind: "DevModeService", method: "getStatus", onComplete: "onGetStateResponse"},
-		{name: "SetStatus", kind: "DevModeService", method: "setStatus", onComplete: "onSetStateResponse"},
+		{name: "GetStatus", kind: "DevModeService", method: "getStatus", onComplete: "onGetStatusResponse"},
+		{name: "SetStatus", kind: "DevModeService", method: "setStatus", onComplete: "onSetStatusResponse"},
 		{name: "EnableFpsCounter", kind: "enyo.PalmService", service: "luna://org.webosports.luna/", method: "setFpsCounter"}
 	],
 	create: function(inSender, inEvent) {
@@ -113,7 +113,7 @@ enyo.kind({
 	onGetStatusResponse: function (inSender, inResponse) {
 		var result = inResponse.data;
 		console.log(JSON.stringify(result));
-		if (result.status === "enabled") {
+		if (result.usbDebugging === "enabled") {
 			this.$.DevModeToggle.setValue(true);
 			this.$.DevModePanels.setIndex(1);
 		}
