@@ -69,8 +69,15 @@ enyo.kind({
         if (!response || !response.returnValue)
             return;
 
-        if (response.localVersion)
-            this.$.SoftwareVersion.setContent(response.localVersion);
+        if (response.localVersion && response.codename) {
+            this.$.SoftwareVersion.setContent(response.codename + " (" + response.localVersion + ")");
+        } else {
+            if (response.localVersion)
+                this.$.SoftwareVersion.setContent(response.localVersion);
+            if (response.codename) {
+                this.$.SoftwareVersion.setContent(response.codename);
+            }
+        }
     },
     onGetAndroidPropertyResponse: function(inSender, inEvent) {
         var response = inEvent.data;
