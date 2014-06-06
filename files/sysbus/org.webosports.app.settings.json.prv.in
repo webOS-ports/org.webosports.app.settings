@@ -1,0 +1,8 @@
+{
+    "role": {
+        "exeName":"@APP_DIR@/org.webosports.app.settings",
+        "type": "privileged",
+        "allowedNames": [""]
+    },
+    "permissions": [ ]
+}
