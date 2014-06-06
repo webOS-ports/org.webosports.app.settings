@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/extensions/WiFiManager/">
-        <file>WiFiManager.js</file>
-    </qresource>
-</RCC>
