@@ -72,6 +72,7 @@ enyo.kind({
 				components:[
 					{name: "WiFiToggle",
 					kind: "onyx.ToggleButton",
+					ontap: "wifiToggleChanged",
 					style: "position: absolute; top: 11px; right: 9px; height: 31px;" }
 				]},
 				{kind: "ListItem", icon: "icon.png", title: "Telephony", ontap: "openPanel", targetPanel: "TelephonyPanel"},
