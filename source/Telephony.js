@@ -31,6 +31,9 @@ enyo.kind({
 				]},
 			]
 		},
+		{kind: "onyx.Toolbar", components:[
+			{name: "Grabber", kind: "onyx.Grabber"}
+		]}
 	],
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
