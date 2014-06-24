@@ -76,6 +76,9 @@ enyo.kind({
 				}
 			]
 		},
+		{kind: "onyx.Toolbar", components:[
+			{name: "Grabber", kind: "onyx.Grabber"}
+	 	]},
 		{name: "GetStatus", kind: "DevModeService", method: "getStatus", onComplete: "onGetStatusResponse"},
 		{name: "SetStatus", kind: "DevModeService", method: "setStatus", onComplete: "onSetStatusResponse"},
 		{name: "EnableFpsCounter", kind: "enyo.PalmService", service: "luna://org.webosports.luna/", method: "setFpsCounter"}
