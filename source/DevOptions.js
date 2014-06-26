@@ -15,7 +15,7 @@ enyo.kind({
 			components:[
 				{ content: "Developer Options" },
 				{ name: "DevModeToggle", kind: "onyx.ToggleButton", style: "position: absolute; top: 8px; right: 6px; height: 31px;",
-				  onChange: "onDevModeChanged", value: true, disabled: true}
+				  onChange: "onDevModeChanged", value: false }
 			]
 		},
 		{
@@ -24,9 +24,7 @@ enyo.kind({
 			arrangerKind: "HFlipArranger",
 			fit: true,
 			draggable: false,
-			/* until we have some functionality to handle devmode enabled/disabled we
-			 * alwas enable the panel by default */
-			index: 1,
+			index: 0, /* disabled by default */
 			components:[
 				{
 					name: "DevModeDisabled",
