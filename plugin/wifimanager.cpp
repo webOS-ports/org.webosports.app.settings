@@ -33,6 +33,8 @@ WiFiManager::WiFiManager(luna::ApplicationEnvironment *environment, QObject *par
     mAgent(this)
 {
     mManager = NetworkManagerFactory::createInstance();
+    connect(mManager, SIGNAL(technologiesChanged()), this, SLOT(technologiesChanged()));
+
     mWifi = mManager->getTechnology("wifi");
     if (mWifi)
         connectWifiSignals();
@@ -45,6 +47,7 @@ WiFiManager::WiFiManager(luna::ApplicationEnvironment *environment, QObject *par
     connect(&mAgent, SIGNAL(userInputRequested(const QString&, const QVariantMap&)),
             this, SLOT(handleUserInputRequested(const QString&, const QVariantMap&)));
 
+    qDebug() << "Registering WiFiManager extension ...";
     environment->registerUserScript(QUrl("qrc:///extensions/WiFiManager/WiFiManager.js"));
 }
 
@@ -71,8 +74,10 @@ void WiFiManager::servicesChanged()
 
 void WiFiManager::technologiesChanged()
 {
-    if (mWifi && mManager->getTechnology("wifi") == NULL)
+    if (mWifi && mManager->getTechnology("wifi") == NULL) {
         mWifi = NULL;
+        initialize();
+    }
     else if (mWifi == NULL) {
         mWifi = mManager->getTechnology("wifi");
         if (mWifi) {

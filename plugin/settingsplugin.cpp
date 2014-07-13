@@ -20,10 +20,12 @@
 
 SettingsPlugin::SettingsPlugin()
 {
+    qDebug() << __PRETTY_FUNCTION__;
 }
 
 QList<luna::BaseExtension*> SettingsPlugin::createExtensions(luna::ApplicationEnvironment *executor)
 {
+    qDebug() << __PRETTY_FUNCTION__;
     QList<luna::BaseExtension*> extensions;
     extensions.append(new WiFiManager(executor, this));
     return extensions;
