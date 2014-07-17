@@ -10,7 +10,7 @@
   },
   "providers": {
     "phonegap": {
-      "enabled": false,
+      "enabled": true,
       "autoGenerateXML": true,
       "minification": true,
       "features": {
@@ -97,7 +97,9 @@
       "access": {
         "origin": ""
       },
-      "targets": {},
+      "targets": {
+        "webos": {}
+      },
       "appId": ""
     },
     "webos": {

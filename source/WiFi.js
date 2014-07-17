@@ -138,7 +138,7 @@ enyo.kind({
 			modal: true,
 			style: "text-align: center; padding: 20px; width: 200px;",
 			components: [
-				{kind: "Image", src: "assets/save-spinner.gif", style: "width: 54px; height: 55px;"},
+				{kind: "onyx.Spinner", classes: "onyx-dark"},
 				{ name: "wpText", content: " "},
 			]
 		},
@@ -862,5 +862,5 @@ enyo.kind({
 		}else{
 			this.$.waitPopup.hide();
 		}
-    }
+    },
 });
