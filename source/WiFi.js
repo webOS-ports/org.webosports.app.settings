@@ -128,7 +128,7 @@ enyo.kind({
                 }
             ]
         },
-        
+        /* wait popup */
         {
 			name: "waitPopup",
 			kind: "onyx.Popup",
@@ -158,7 +158,8 @@ enyo.kind({
                 {
                     name: "WiFiToggle",
                     kind: "onyx.ToggleButton",
-                    onChange: "toggleButtonChanged"
+                    onChange: "toggleButtonChanged",
+                    showing: "true"
                 }
             ]
         },
@@ -787,6 +788,15 @@ enyo.kind({
 
         this.showNetworksList();
     },
+    showspinner: function(inSender, inEvent) {			
+		var text = inEvent;
+		if (inSender === "start"){
+			this.$.waitPopup.show();
+			this.$.wpText.setContent(text);
+		}else{
+			this.$.waitPopup.hide();
+		}
+    },
     //Utility Functions
     clearFoundNetworks: function () {
         this.foundNetworks = [];
@@ -854,13 +864,5 @@ enyo.kind({
     handleWiFiNetworksChanged: function(networks) {
         this.handleRetrieveNetworksResponse(networks);
     },
-    showspinner: function(inSender, inEvent) {			
-		var text = inEvent;
-		if (inSender === "start"){
-			this.$.waitPopup.show();
-			this.$.wpText.setContent(text);
-		}else{
-			this.$.waitPopup.hide();
-		}
-    },
+    
 });
