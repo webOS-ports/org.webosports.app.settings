@@ -128,6 +128,21 @@ enyo.kind({
                 }
             ]
         },
+        
+        {
+			name: "waitPopup",
+			kind: "onyx.Popup",
+			centered: true,
+			floating: true, 
+			autoDismiss: false,
+			modal: true,
+			style: "text-align: center; padding: 20px; width: 200px;",
+			components: [
+				{kind: "Image", src: "assets/save-spinner.gif", style: "width: 54px; height: 55px;"},
+				{ name: "wpText", content: " "},
+			]
+		},
+        
         /* Top toolbar */
         {
             kind: "onyx.Toolbar",
@@ -509,8 +524,10 @@ enyo.kind({
                         },
                     ]
                 },
-                { /* Workaround for HFlipArranger incorrectly displaying with 2 panels*/ }
+                
+                { /* Workaround for HFlipArranger incorrectly displaying with 2 panels*/ },
             ]
+            
         },
         /* Bottom toolbar */
         {
@@ -604,7 +621,7 @@ enyo.kind({
         }
     },
     onJoinButtonTapped: function (inSender, inEvent) {
-        this.showJoinNetwork();
+		this.showJoinNetwork();
     },
     signalStrengthToBars: function(strength) {
         if(strength > 0 && strength < 34)
@@ -659,7 +676,8 @@ enyo.kind({
         inEvent.item.$.wiFiListItem.$.Signal.setShowing(false);
     },
     onNetworkConnect: function (inSender, inEvent) {
-        var password = this.$.PasswordInput.getValue();
+		var password = this.$.PasswordInput.getValue();
+		this.showspiner("start", "Searching");
 
         if (this.validatePassword(password)) {
             this.connectNetwork(this, {
@@ -667,7 +685,7 @@ enyo.kind({
                 password: password
             });
         } else {
-            this.showError("Entered password is invalid");
+			this.showError("Entered password is invalid");
         }
 
         // switch back to network list view
@@ -713,6 +731,7 @@ enyo.kind({
         this.$.WiFiToggle.setValue(value);
     },
     showError: function (message) {
+		this.showspiner();
         this.$.ErrorMessage.setContent(message);
         this.$.ErrorPopup.show();
     },
@@ -729,6 +748,7 @@ enyo.kind({
         navigator.WiFiManager.enabled = false;
     },
     handleNetworkConnectSucceeded: function() {
+		this.showspiner();
     },
     handleNetworkConnectFailed: function() {
     },
@@ -790,6 +810,7 @@ enyo.kind({
         }
     },
     triggerAutoscan: function() {
+		this.showspiner();
         if (!navigator.WiFiManager)
             return;
         navigator.WiFiManager.retrieveNetworks(enyo.bind(this, "handleRetrieveNetworksResponse"),
@@ -800,6 +821,7 @@ enyo.kind({
             console.log("Stopping autoscan ...");
             window.clearInterval(this.autoscan);
             this.autoscan = null;
+            this.showspiner();
         }
     },
     //Service Callbacks
@@ -816,6 +838,7 @@ enyo.kind({
     },
     handleConnectResponse: function (inSender, inResponse) {
         var result = inResponse.data;
+        this.showspiner();
         this.showError("Connection could not be established");
     },
     handleWiFiEnabled: function() {
@@ -830,5 +853,14 @@ enyo.kind({
     },
     handleWiFiNetworksChanged: function(networks) {
         this.handleRetrieveNetworksResponse(networks);
+    },
+    showspiner: function(inSender, inEvent) {			
+		var text = inEvent;
+		if (inSender === "start"){
+			this.$.waitPopup.show();
+			this.$.wpText.setContent(text);
+		}else{
+			this.$.waitPopup.hide();
+		}
     }
 });
