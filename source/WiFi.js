@@ -678,7 +678,7 @@ enyo.kind({
     },
     onNetworkConnect: function (inSender, inEvent) {
 		var password = this.$.PasswordInput.getValue();
-		this.showspinner("start", "Searching");
+		this.updateSpinnerState("start", "Connecting");
 
         if (this.validatePassword(password)) {
             this.connectNetwork(this, {
@@ -732,7 +732,7 @@ enyo.kind({
         this.$.WiFiToggle.setValue(value);
     },
     showError: function (message) {
-		this.showspinner();
+		this.upadateSpinnerState();
         this.$.ErrorMessage.setContent(message);
         this.$.ErrorPopup.show();
     },
@@ -749,7 +749,7 @@ enyo.kind({
         navigator.WiFiManager.enabled = false;
     },
     handleNetworkConnectSucceeded: function() {
-		this.showspinner();
+		this.updateSpinnerState();
     },
     handleNetworkConnectFailed: function() {
     },
@@ -788,7 +788,7 @@ enyo.kind({
 
         this.showNetworksList();
     },
-    showspinner: function(inSender, inEvent) {			
+    updateSpinnerState: function(inSender, inEvent) {			
 		var text = inEvent;
 		if (inSender === "start"){
 			this.$.waitPopup.show();
@@ -820,7 +820,7 @@ enyo.kind({
         }
     },
     triggerAutoscan: function() {
-		this.showspinner();
+		this.updateSpinnerState();
         if (!navigator.WiFiManager)
             return;
         navigator.WiFiManager.retrieveNetworks(enyo.bind(this, "handleRetrieveNetworksResponse"),
@@ -831,7 +831,7 @@ enyo.kind({
             console.log("Stopping autoscan ...");
             window.clearInterval(this.autoscan);
             this.autoscan = null;
-            this.showspinner();
+            this.updateSpinnerState();
         }
     },
     //Service Callbacks
@@ -848,7 +848,7 @@ enyo.kind({
     },
     handleConnectResponse: function (inSender, inResponse) {
         var result = inResponse.data;
-        this.showspinner();
+        this.updateSpinnerState();
         this.showError("Connection could not be established");
     },
     handleWiFiEnabled: function() {
