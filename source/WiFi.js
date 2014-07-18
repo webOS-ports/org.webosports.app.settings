@@ -128,6 +128,21 @@ enyo.kind({
                 }
             ]
         },
+        /* wait popup */
+        {
+			name: "waitPopup",
+			kind: "onyx.Popup",
+			centered: true,
+			floating: true, 
+			autoDismiss: false,
+			modal: true,
+			style: "text-align: center; padding: 20px; width: 200px;",
+			components: [
+				{kind: "onyx.Spinner", classes: "onyx-dark"},
+				{ name: "wpText", content: " "},
+			]
+		},
+        
         /* Top toolbar */
         {
             kind: "onyx.Toolbar",
@@ -143,7 +158,8 @@ enyo.kind({
                 {
                     name: "WiFiToggle",
                     kind: "onyx.ToggleButton",
-                    onChange: "toggleButtonChanged"
+                    onChange: "toggleButtonChanged",
+                    showing: "true"
                 }
             ]
         },
@@ -509,8 +525,10 @@ enyo.kind({
                         },
                     ]
                 },
-                { /* Workaround for HFlipArranger incorrectly displaying with 2 panels*/ }
+                
+                { /* Workaround for HFlipArranger incorrectly displaying with 2 panels*/ },
             ]
+            
         },
         /* Bottom toolbar */
         {
@@ -604,7 +622,7 @@ enyo.kind({
         }
     },
     onJoinButtonTapped: function (inSender, inEvent) {
-        this.showJoinNetwork();
+		this.showJoinNetwork();
     },
     signalStrengthToBars: function(strength) {
         if(strength > 0 && strength < 34)
@@ -659,7 +677,8 @@ enyo.kind({
         inEvent.item.$.wiFiListItem.$.Signal.setShowing(false);
     },
     onNetworkConnect: function (inSender, inEvent) {
-        var password = this.$.PasswordInput.getValue();
+		var password = this.$.PasswordInput.getValue();
+		this.updateSpinnerState("start", "Connecting");
 
         if (this.validatePassword(password)) {
             this.connectNetwork(this, {
@@ -667,7 +686,7 @@ enyo.kind({
                 password: password
             });
         } else {
-            this.showError("Entered password is invalid");
+			this.showError("Entered password is invalid");
         }
 
         // switch back to network list view
@@ -713,6 +732,7 @@ enyo.kind({
         this.$.WiFiToggle.setValue(value);
     },
     showError: function (message) {
+		this.upadateSpinnerState();
         this.$.ErrorMessage.setContent(message);
         this.$.ErrorPopup.show();
     },
@@ -729,6 +749,7 @@ enyo.kind({
         navigator.WiFiManager.enabled = false;
     },
     handleNetworkConnectSucceeded: function() {
+		this.updateSpinnerState();
     },
     handleNetworkConnectFailed: function() {
     },
@@ -767,6 +788,15 @@ enyo.kind({
 
         this.showNetworksList();
     },
+    updateSpinnerState: function(inSender, inEvent) {			
+		var text = inEvent;
+		if (inSender === "start"){
+			this.$.waitPopup.show();
+			this.$.wpText.setContent(text);
+		}else{
+			this.$.waitPopup.hide();
+		}
+    },
     //Utility Functions
     clearFoundNetworks: function () {
         this.foundNetworks = [];
@@ -790,6 +820,7 @@ enyo.kind({
         }
     },
     triggerAutoscan: function() {
+		this.updateSpinnerState();
         if (!navigator.WiFiManager)
             return;
         navigator.WiFiManager.retrieveNetworks(enyo.bind(this, "handleRetrieveNetworksResponse"),
@@ -800,6 +831,7 @@ enyo.kind({
             console.log("Stopping autoscan ...");
             window.clearInterval(this.autoscan);
             this.autoscan = null;
+            this.updateSpinnerState();
         }
     },
     //Service Callbacks
@@ -816,6 +848,7 @@ enyo.kind({
     },
     handleConnectResponse: function (inSender, inResponse) {
         var result = inResponse.data;
+        this.updateSpinnerState();
         this.showError("Connection could not be established");
     },
     handleWiFiEnabled: function() {
@@ -830,5 +863,6 @@ enyo.kind({
     },
     handleWiFiNetworksChanged: function(networks) {
         this.handleRetrieveNetworksResponse(networks);
-    }
+    },
+    
 });
