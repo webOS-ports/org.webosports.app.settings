@@ -18,5 +18,6 @@ enyo.depends(
 	"SystemUpdates.js",
 	"LanguageInput.js",
 	"About.js",
-	"Licenses.js"
+	"Licenses.js",
+	"Sound.js"
 );

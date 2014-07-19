@@ -85,6 +85,10 @@ enyo.kind({
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Core"},
 				{kind: "ListItem", icon: "icon.png", title: "Screen & Lock", ontap: "openPanel", targetPanel: "ScreenLockPanel"},
 				{kind: "ListItem", icon: "icon.png", title: "Date & Time", ontap: "openPanel", targetPanel: "DateTimePanel"},
+				{kind: "ListItem", icon: "inco.png", title: "Sound & Ringtones", ontap: "openPanel", targetPanel: "audioPanel", components: [
+					{name: "audioToggle", kind: "onyx.ToggleButton", style: "position: absolute; top: 11px; right: 9px; height: 31px;", onChange: "toggleButtonChanged", showing: "true"},
+					
+				]},
 				{kind: "ListItem", icon: "icon.png", title: "Language & Input", ontap: "openPanel", targetPanel: "LanguageInputPanel"},
 				{kind: "ListItem", icon: "icon.png", title: "Developer Options", ontap: "openPanel", targetPanel: "DevOptionsPanel"},
 				{kind: "ListItem", icon: "icon.png", title: "About", ontap: "openPanel", targetPanel: "AboutPanel"}
@@ -102,6 +106,7 @@ enyo.kind({
 			{name: "SystemUpdatesPanel", kind: "SystemUpdates"},
 			{name: "ScreenLockPanel", kind: "ScreenLock"},
 			{name: "DateTimePanel", kind: "DateTime"},
+			{name: "audioPanel", kind: "Sound"},
 			{name: "DevOptionsPanel", kind: "DevOptions"},
 			{name: "TelephonyPanel", kind: "Telephony"},
 			{name: "LanguageInputPanel", kind: "LanguageInput"},
@@ -149,12 +154,14 @@ enyo.kind({
 			this.$.AppPanels.setDraggable(false);
 			this.$.AppPanels.$.ContentPanels.applyStyle("box-shadow", "0");
 			this.$.AppPanels.$.WiFiToggle.setShowing(true);
+			this.$.AppPanels.$.audioToggle.setShowing(true);
 		}
 		else {
 			this.$.AppPanels.setArrangerKind("CollapsingArranger");
 			this.$.AppPanels.setDraggable(true);
 			this.$.AppPanels.$.ContentPanels.applyStyle("box-shadow", "-4px 0px 4px rgba(0,0,0,0.3)");
 			this.$.AppPanels.$.WiFiToggle.setShowing(false);
+			this.$.AppPanels.$.audioToggle.setShowing(false);
 		}
 	},
 	handleBackGesture: function(inSender, inEvent) {
