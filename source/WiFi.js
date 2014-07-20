@@ -147,7 +147,7 @@ enyo.kind({
         {
             kind: "onyx.Toolbar",
             layoutKind: "FittableColumnsLayout",
-           // style: "line-height: 28px;",
+            style: "line-height: 28px;",
             components: [
                 {
                     content: "Wi-Fi"
