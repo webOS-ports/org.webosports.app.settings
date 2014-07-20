@@ -10,6 +10,8 @@ enyo.kind({
 	keys: false,
 	vibrate: false,
 	system: false,
+	systemVolume: 0,
+	ringerVolume: 0,
 	
 	components: [
 		{kind: "onyx.Toolbar", layoutKind: "FittableColumnsLayout", classes: "onyx-toolbar", style: "height: 32px;", components: [
@@ -23,7 +25,7 @@ enyo.kind({
 					{kind: "onyx.GroupboxHeader", content: "Audio Settings"},
 					{classes: "group-item", components: [
 						{name: "volume", content: "Volume ", class: "group-item"},
-						{kind: "onyx.Slider", value: "20", onChanging: "voulemChange"}
+						{name: "volumeSlider", kind: "onyx.Slider", value: "20", onChanging: "volumeChange"}
 					]},
 					{classes: "group-item", components: [
 						{kind: "enyo.FittableColumns", components: [
@@ -45,7 +47,11 @@ enyo.kind({
 							{fit: true},
 							{name: "systemSoundToggle", kind: "onyx.ToggleButton", onChange: "systemSounds"}
 						]}
-					]}
+					]},
+					{classes: "group-item", components: [
+						{name: "ringer", content: "Ringer Volume ", class: "group-item"},
+						{name:"ringerSlider", kind: "onyx.Slider", value: "20", onChanging: "ringerVolumeChange"}
+					]},
 				]}
 			]}
 		]},
@@ -70,16 +76,11 @@ enyo.kind({
 			this.keys = true;
 			this.vibrate = true;
 			this.system = true;
+			this.ringerVolume = 65;
+			this.systemVolume = 45;
+            
         }
         this.manage();
-	},
-    reflow: function (inSender) {
-        this.inherited(arguments);
-        if (enyo.Panels.isScreenNarrow()){
-            
-        }else{
-            
-        }
     },
     manage: function (inSender, inEvent){						// get every thing set up
 		this.log("sender:", inSender, ", event:", inEvent);
@@ -119,51 +120,72 @@ enyo.kind({
 		}else{
 			this.$.systemSoundToggle.setValue(false);
 		}
+		
+		/* set slider to */
+		this.$.volumeSlider.setValue(this.systemVolume);
+		this.$.ringerSlider.setValue(this.ringerVolume);
+		
+    },
+	deactivateAudio: function (inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
+        this.$.audioDisabled.show();
     },
     
 	//Action Functions
+	//Utility Functions
+	
+	//Service Callbacks
 	toggleButtonChanged: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent.value);
 		// TO DO - Auto-generated code
 		if (inEvent.value === false){
 			this.deactivateAudio();
 			this.$.audioPanels.setShowing(false);
+			
+			// turn off audio system wide here
 		}
 		
 		if (inEvent.value === true){
 			this.$.audioDisabled.setShowing(false);
 			this.$.audioPanels.setShowing(true);
+			
+			// turn on audio system wide  here
 		}
-		
-	},
-	
-	//Utility Functions
-	deactivateAudio: function (inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);
-        this.$.audioDisabled.show();
-    },
-    
-	//Service Callbacks
+	},				// system wide mute
 	getAudioStatus: function(inSender, inEvent){
 		this.log("sender:", inSender, ", event:", inEvent);
 		
 		return(true);	// for testing
 		// return(get audio status here ===  true/false  );
-	},
+	},			// get audio satus here  is audio true/false
 	keyClicks: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
 		// TO DO - Auto-generated code
-	},
+		console.log("key  value  true/false", inEvent.value);
+		this.keys = inEvent.value;
+	},				// set key clicks true/false here
 	vib: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
 		// TO DO - Auto-generated code
-	},
+		console.log("vibatre value  true/false", inEvent.value);
+		this.vibrate = inEvent.value;
+	},						// set vibrate true/false here
 	systemSounds: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
 		// TO DO - Auto-generated code
-	},
-	voulemChange: function(inSender, inEvent) {
+		console.log("system value true/false", inEvent.value);
+		this.system = inEvent.value;
+	},			// set system sounds true/false here
+	volumeChange: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
 		// TO DO - Auto-generated code
-	}
+		console.log("system volume  value ", inEvent.value);
+		this.systemVolume = inEvent.value;
+	},			// set system volume here
+	ringerVolumeChange: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
+		// TO DO - Auto-generated code
+		console.log("ringer volume value ", inEvent.value);
+		this.ringerVolume = inEvent.value;
+	},		// set ringer volume here
 });
