@@ -1,6 +1,17 @@
 
 enyo.kind({
-	name: "Sound", kind: "enyo.Control", layoutkind: "enyo.FittableColumnsLayout", published: {}, events: {}, palm: false, audio: false, components: [
+	name: "Sound",
+	kind: "enyo.Control",
+	layoutkind: "enyo.FittableColumnsLayout",
+	published: {},
+	events: {}, 
+	palm: false,
+	audio: false, 
+	keys: false,
+	vibrate: false,
+	system: false,
+	
+	components: [
 		{kind: "onyx.Toolbar", layoutKind: "FittableColumnsLayout", classes: "onyx-toolbar", style: "height: 32px;", components: [
 			{content: "Audio"},
 			{fit: true},
@@ -18,26 +29,26 @@ enyo.kind({
 						{kind: "enyo.FittableColumns", components: [
 							{name: "keys", content: "Keyboard Clicks"},
 							{fit: true, onchange: "create"},
-							{kind: "onyx.ToggleButton", classes: "audioToggles", onChange: "keyClicks"}
-							]}
-						]},
-						{classes: "group-item", components: [
-							{kind: "enyo.FittableColumns", components: [
-								{name: "vibrate", content: "Vibrate"},
-									{fit: true},
-									{kind: "onyx.ToggleButton", style: "float: right;", onChange: "vib"}
-								]}
-							]},
-						{classes: "group-item", components: [
-							{kind: "enyo.FittableColumns", components: [
-								{content: "System Sounds "},
-								{fit: true},
-								{kind: "onyx.ToggleButton", onChange: "systemSounds"}
-							]}
+							{name: "keyClicksToggle",kind: "onyx.ToggleButton", onChange: "keyClicks"}
+						]}
+					]},
+					{classes: "group-item", components: [
+						{kind: "enyo.FittableColumns", components: [
+							{name: "vibrate", content: "Vibrate"},
+							{fit: true},
+							{name: "vibrateToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "vib"}
+						]}
+					]},
+					{classes: "group-item", components: [
+						{kind: "enyo.FittableColumns", components: [
+							{content: "System Sounds "},
+							{fit: true},
+							{name: "systemSoundToggle", kind: "onyx.ToggleButton", onChange: "systemSounds"}
 						]}
 					]}
 				]}
-			]},
+			]}
+		]},
 		{name: "audioDisabled", layoutKind: "FittableRowsLayout", style: "padding: 35px 10% 35px 10%;", showing: false, components: [
 			{style: "padding-bottom: 10px;", components: [
 					{content: "Audio is disabled", style: "display: inline;"}
@@ -56,6 +67,9 @@ enyo.kind({
         if (!window.PalmSystem) {
 			// if we're outside the webOS system add some entries for easier testing
 			this.audio = true;
+			this.keys = true;
+			this.vibrate = true;
+			this.system = true;
         }
         this.manage();
 	},
@@ -67,7 +81,7 @@ enyo.kind({
             
         }
     },
-    manage: function (inSender, inEvent){
+    manage: function (inSender, inEvent){						// get every thing set up
 		this.log("sender:", inSender, ", event:", inEvent);
 		this.audio = this.getAudioStatus();
 		// setup the pannel
@@ -85,6 +99,25 @@ enyo.kind({
 			this.$.audioToggle.setValue(true);
 		}else{
 			this.$.audioToggle.setValue(false);
+		}
+		
+		if (this.keys === true){
+			this.$.keyClicksToggle.setValue(true);
+		}else{
+			this.$.keyClicksToggle.setValue(false);
+		}
+		
+		if (this.vibrate === true){
+			console.log ("vibe   ");
+			this.$.vibrateToggle.setValue(true);
+		}else{
+			this.$.vibrateToggle.setValue(false);
+		}
+		
+		if (this.system === true){
+			this.$.systemSoundToggle.setValue(true);
+		}else{
+			this.$.systemSoundToggle.setValue(false);
 		}
     },
     
@@ -113,7 +146,8 @@ enyo.kind({
 	//Service Callbacks
 	getAudioStatus: function(inSender, inEvent){
 		this.log("sender:", inSender, ", event:", inEvent);
-		return(true);
+		
+		return(true);	// for testing
 		// return(get audio status here ===  true/false  );
 	},
 	keyClicks: function(inSender, inEvent) {
