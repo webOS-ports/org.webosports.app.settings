@@ -9,7 +9,6 @@ enyo.depends(
 	"App.js",
 	//Settings Panels
 	"DateTime.js",
-	"Exhibition.js",
 	"ScreenLock.js",
 	"WiFi.js",
 	"DevOptions.js",

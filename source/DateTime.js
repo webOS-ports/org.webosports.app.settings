@@ -3,7 +3,6 @@ enyo.kind({
 	layoutKind: "FittableRowsLayout",
 	palm: false,
 	components:[
-		{kind: "Signals", ondeviceready: "deviceready"},
 		{kind: "onyx.Toolbar",
 		style: "line-height: 36px;",
 		components:[
@@ -37,8 +36,7 @@ enyo.kind({
 						{content: "Network Time",
 						fit: true,
 						style: "display: inline-block; line-height: 42px;"},
-						//DEBUG: Disabled until we have network time functionality
-						{name: "NetworkTimeToggle", kind: "onyx.ToggleButton", disabled: true, style: "float: right;", onChange: "networkTimeChanged"}
+						{name: "NetworkTimeToggle", kind: "onyx.ToggleButton", value: true, style: "float: right;", onChange: "networkTimeChanged"}
 				
 					]},
 					{classes: "group-item",
@@ -46,7 +44,7 @@ enyo.kind({
 						{content: "Set Current Time",
 						fit: true,
 						style: "line-height: 42px; display: inline-block;"},
-							{name: "TimePicker", kind: "onyx.TimePicker", style: "float: right;", onSelect: "dateTimeChanged"},
+							{name: "TimePicker", kind: "onyx.TimePicker", disabled: true, style: "float: right;", onSelect: "dateTimeChanged"},
 				
 					]},
 					{classes: "group-item",
@@ -54,102 +52,83 @@ enyo.kind({
 						{content: "Set Current Date",
 						fit: true,
 						style: "line-height: 42px; display: inline-block;"},
-							{name: "DatePicker", kind: "onyx.DatePicker", style: "float: right;", onSelect: "dateTimeChanged"},
+							{name: "DatePicker", kind: "onyx.DatePicker", disabled: true, style: "float: right;", onSelect: "dateTimeChanged"},
 				
 					]},
-					/*
 					{classes: "group-item",
 					style: "height: 42px;",
 					components:[
 						{content: "Timezone",
 						fit: true,
 						style: "display: inline-block; line-height: 42px;"},
-				
 					]},
-					*/
 				]},
 			]},
 		]},
 		{kind: "onyx.Toolbar", components:[
 			{name: "Grabber", kind: "onyx.Grabber"},
-		]}
+		]},
+		{kind: "SystemService", method: "getPreferences", name: "GetSystemPreferences", onComplete: "handleGetPreferencesResponse"},
+		{kind: "SystemService", method: "setPreferences", name: "SetSystemPreferences" },
+		{kind: "enyo.PalmService", method: "setSystemTime", name: "SetSystemTime", service: "luna://com.palm.systemservice/time" }
 	],
 	//Handlers
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
-		if(!window.PalmSystem)
+		if(!window.PalmSystem) {
 			enyo.log("Non-palm platform, service requests disabled.");
-	},
-	deviceready: function(inSender, inEvent) {
-		this.inherited(arguments);
-		
-	        var request = navigator.service.Request("luna://com.palm.systemservice/",
-		{
-			method: 'getPreferences',
-			parameters: {keys: ["timeFormat", "timeZone", "useNetworkTime"]},
-			onSuccess: enyo.bind(this, "handleGetPreferencesResponse")
-		});
-		
-		//DEBUG: No network time functionality yet, so don't use it
-	        var request = navigator.service.Request("luna://com.palm.systemservice/",
-		{
-			method: 'setPreferences',
-			parameters: {useNetworkTime: false, receiveNetworkTimeUpdates: false}
-		});
-		
+			return;
+		}
+
+		this.$.GetSystemPreferences.send({keys: ["timeFormat", "timeZone", "useNetworkTime"]});
+
 		this.palm = true;
 	},
 	reflow: function(inSender) {
 		this.inherited(arguments);
 		if(enyo.Panels.isScreenNarrow()) {
-			// this.$.Grabber.applyStyle("visibility", "hidden");
+			this.$.Grabber.applyStyle("visibility", "hidden");
 		}
 		else {
-			//this.$.Grabber.applyStyle("visibility", "visible");
+			this.$.Grabber.applyStyle("visibility", "visible");
+		}
+	},
+	updateTimeControlStates: function() {
+		if (this.$.NetworkTimeToggle.value) {
+			this.$.TimePicker.setDisabled(true);
+			this.$.DatePicker.setDisabled(true);
+		}
+		else {
+			this.$.TimePicker.setDisabled(false);
+			this.$.DatePicker.setDisabled(false);
 		}
 	},
 	//Action Handlers
 	timeFormatChanged: function(inSender, inEvent) {
 		if(this.palm) {
-			var request = navigator.service.Request("luna://com.palm.systemservice/",
-			{
-				method: 'setPreferences',
-				parameters: {timeFormat: inSender.selected.content == "12 Hour" ? "HH12" : "HH24"}
-			});
+			this.$.SetSystemPreferences.send({timeFormat: inSender.selected.content == "12 Hour" ? "HH12" : "HH24"});
 		}
 		else {
 			enyo.log(inSender);
 		}
-		
-//		this.$.TimePicker.setIs24HrMode(inSender.selected.content != "12 Hour");
+		//this.$.TimePicker.setIs24HrMode(inSender.selected.content != "12 Hour");
 	},
 	networkTimeChanged: function(inSender, inEvent) {
 		if(this.palm) {
-			var request = navigator.service.Request("luna://com.palm.systemservice/",
-			{
-				method: 'setPreferences',
-				parameters: {useNetworkTime: inSender.value, receiveNetworkTimeUpdates: inSender.value}
-			});
+			this.$.SetSystemPreferences.send({useNetworkTime: inSender.value, receiveNetworkTimeUpdates: inSender.value});
 		}
 		else {
 			enyo.log(inSender.value);
 		}
+
+		this.updateTimeControlStates();
 	},
 	dateTimeChanged: function(inSender, inEvent) {
 		var timeObj = {};
 		timeObj.utc = inEvent.value.getTime()/1000;
 		if(this.palm) {
-			var request = navigator.service.Request("luna://com.palm.systemservice/time/",
-			{
-				method: 'setSystemTime',
-				parameters: timeObj
-			});
-			
-			var request = navigator.service.Request("luna://com.palm.systemservice/",
-			{
-				method: 'setPreferences',
-				parameters: {useNetworkTime: false, receiveNetworkTimeUpdates: false}
-			});
+			this.$.SetSystemTime.send(timeObj);
+			this.$.SetSystemPreferences.send({useNetworkTime: false, receiveNetworkTimeUpdates: false});
 		}
 		else {
 			enyo.log(timeObj);
@@ -157,14 +136,18 @@ enyo.kind({
 	},
 	//Service Callbacks
 	handleGetPreferencesResponse: function(inResponse) {
-		if(inResponse.timeFormat != undefined) {
-			this.$.TimeFormatPicker.setSelected(this.$.TimeFormatPicker.getClientControls()[inResponse.timeFormat == "HH12" ? 0 : 1]);
+		var result = inResponse.data;
+
+		if(result.timeFormat != undefined) {
+			this.$.TimeFormatPicker.setSelected(this.$.TimeFormatPicker.getClientControls()[result.timeFormat == "HH12" ? 0 : 1]);
 		}
-			
-		if(inResponse.useNetworkTime != undefined)
-			this.$.NetworkTimeToggle.setValue(inResponse.useNetworkTime);
-			
-		if(inResponse.timeZone != undefined) {}
+
+		if(result.useNetworkTime != undefined)
+			this.$.NetworkTimeToggle.setValue(result.useNetworkTime);
+
+		if(result.timeZone != undefined) {}
 			//Set time zone
+
+		this.updateTimeControlStates();
 	},
 });

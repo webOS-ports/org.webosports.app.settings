@@ -1,17 +1,26 @@
 enyo.kind({
+	kind: "enyo.PalmService",
+	name: "DisplayService",
+	service: "luna://com.palm.display/control"
+});
+
+enyo.kind({
+	kind: "enyo.PalmService",
+	name: "SystemService",
+	service: "luna://com.palm.systemservice"
+});
+
+enyo.kind({
 	name: "ScreenLock",
 	layoutKind: "FittableRowsLayout",
 	palm: false,
 	components:[
-		{kind: "Signals", ondeviceready: "deviceready"},
 		{kind: "onyx.Toolbar",
 		style: "line-height: 36px;",
 		components:[
 				{content: "Screen & Lock"},
 		]},
-		/* Disabled for now due to broken FilePicker, media components are pending open-source
-		{name: "ImagePicker", kind: "FilePicker", fileType:["image"], onPickFile: "selectedImageFile"},                  
-		*/
+		/* {name: "ImagePicker", kind: "FilePicker", fileType:["image"], onPickFile: "selectedImageFile", autoDismiss: true}, */
 		{kind: "Scroller",
 		touch: true,
 		horizontal: "hidden",
@@ -48,9 +57,7 @@ enyo.kind({
 					{classes: "group-item",
 					style: "padding: 0;",
 					components:[
-						/* Disabled pending open-sourcing of media components
-						{kind: "onyx.Button", style: "width: 100%;", content: "Change Wallpaper", ontap: "openWallpaperPicker"}
-						*/
+						/* {kind: "onyx.Button", style: "width: 100%;", content: "Change Wallpaper", ontap: "openWallpaperPicker"}, */
 						{kind: "enyo.Scroller",
 						touch: true,
 						horizontal: "hidden",
@@ -137,30 +144,24 @@ enyo.kind({
 		]},
 		{kind: "onyx.Toolbar", components:[
 			{name: "Grabber", kind: "onyx.Grabber"}
-		]}
+		]},
+		{name: "GetDisplayProperty", kind: "DisplayService", method: "getProperty", onComplete: "handleGetPropertiesResponse"},
+		{name: "SetDisplayProperty", kind: "DisplayService", method: "setProperty" },
+		{name: "GetSystemPreferences", kind: "SystemService", method: "getPreferences", onComplete: "handleGetPropertiesResponse"},
+		{name: "SetSystemPreferences", kind: "SystemService", method: "setPreferences"},
+		{name: "ImportWallpaper", kind: "enyo.PalmService", service: "luna://com.palm.systemservice/wallpaper", method: "importWallpaper", onComplete: "handleImportWallpaper"}
 	],
 	//Handlers
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
-		if(!window.PalmSystem)
+
+		if(!window.PalmSystem) {
 			enyo.log("Non-palm platform, service requests disabled.");
-	},
-	deviceready: function(inSender, inEvent) {
-		this.inherited(arguments);
-		
-		var request = navigator.service.Request("luna://com.palm.display/control/",
-		{
-			method: 'getProperty',
-			parameters: {properties: ["maximumBrightness", "timeout"]},
-			onSuccess: enyo.bind(this, "handleGetPropertiesResponse")
-		});
-		
-		var request = navigator.service.Request("palm://com.palm.systemservice/",
-		{
-			method: 'getPreferences',
-			parameters: {keys: ["showAlertsWhenLocked", "BlinkNotifications"]},
-			onSuccess: enyo.bind(this, "handleGetPreferencesResponse")
-		});
+			return
+		}
+
+		this.$.GetDisplayProperty.send({properties: ["maximumBrightness", "timeout"]});
+		this.$.GetSystemPreferences.send({keys: ["showAlertsWhenLocked", "BlinkNotifications"]});
 
 		this.palm = true;
 	},
@@ -176,11 +177,7 @@ enyo.kind({
 	//Action Handlers
 	brightnessChanged: function(inSender, inEvent) {
 		if(this.palm) {
-			var request = navigator.service.Request("luna://com.palm.display/control/",
-			{
-				method: 'setProperty',
-				parameters: {maximumBrightness: parseInt(this.$.BrightnessSlider.value)},
-			});
+			this.$.SetDisplayProperty.send({maximumBrightness: parseInt(this.$.BrightnessSlider.value)});
 		}
 		else {
 			enyo.log(parseInt(this.$.BrightnessSlider.value));
@@ -205,11 +202,7 @@ enyo.kind({
 		}
 		
 		if(this.palm) {
-			var request = navigator.service.Request("luna://com.palm.display/control/",
-			{
-				method: 'setProperty',
-				parameters: {timeout: t},
-			});
+			this.$.SetDisplayProperty.send({timeout:t});
 		}
 		else {
 			enyo.log(t);
@@ -220,11 +213,7 @@ enyo.kind({
 	},
 	lockAlertsChanged: function(inSender, inEvent) {
 		if(this.palm) {
-			var request = navigator.service.Request("palm://com.palm.systemservice/",
-			{
-				method: 'setPreferences',
-				parameters: {showAlertsWhenLocked: inSender.value}
-			});
+			this.$.SetSystemPreferences.send({showAlertsWhenLocked: inSender.value});
 		}
 		else {
 			enyo.log(inSender.value);
@@ -232,11 +221,7 @@ enyo.kind({
 	},
 	blinkNotificationsChanged: function(inSender, inEvent) {
 		if(this.palm) {
-			var request = navigator.service.Request("palm://com.palm.systemservice/",
-			{
-				method: 'setPreferences',
-				parameters: {BlinkNotifications: inSender.value}
-			});
+			this.$.SetSystemPreferences.send({BlinkNotifications: inSender.value});
 		}
 		else {
 			enyo.log(inSender.value);
@@ -258,58 +243,46 @@ enyo.kind({
 			
 			if(cropInfoWindow.focusY)
 				params["focusY"] = cropInfoWindow.focusY;
-		}*/			
+		}*/
 
-		var request = navigator.service.Request("luna://com.palm.systemservice/wallpaper/",
-		{
-			method: 'importWallpaper',
-			parameters: params,
-			onSuccess: enyo.bind(this, "handleImportWallpaper")
-		});
+		this.$.ImportWallpaper.send(params);
 	},
 
 	//Service Callbacks
-	handleGetPropertiesResponse: function(inResponse) {
+	handleGetPropertiesResponse: function(inSender, inResponse) {
 		enyo.log("Handling Get Properties Response");
-		enyo.log(JSON.stringify(inResponse));
-		if(inResponse.maximumBrightness != undefined)
-			this.$.BrightnessSlider.setValue(inResponse.maximumBrightness);
+		var result = inResponse.data;
+		enyo.log(JSON.stringify(result));
+		if(result.maximumBrightness != undefined)
+			this.$.BrightnessSlider.setValue(result.maximumBrightness);
 			
-		if(inResponse.timeout != undefined) {
-			if(inResponse.timeout == 30)
+		if(result.timeout != undefined) {
+			if(result.timeout == 30)
 				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[0]);
-			if(inResponse.timeout == 60)
+			if(result.timeout == 60)
 				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[1]);
-			if(inResponse.timeout == 120)
+			if(result.timeout == 120)
 				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[2]);
-			if(inResponse.timeout == 180)
+			if(result.timeout == 180)
 				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[3]);
 		}
 	},
-	handleGetPreferencesResponse: function(inResponse) {
-		if(inResponse.showAlertsWhenLocked != undefined)
-			this.$.AlertsToggle.setValue(inResponse.showAlertsWhenLocked);
-			
-		if(inResponse.BlinkNotifications != undefined)
-			this.$.BlinkToggle.setValue(inResponse.BlinkNotifications);
+	handleGetPreferencesResponse: function(inSender, inResponse) {
+		var result = inResponse.data;
+		if(result.showAlertsWhenLocked != undefined)
+			this.$.AlertsToggle.setValue(result.showAlertsWhenLocked);
+		if(result.BlinkNotifications != undefined)
+			this.$.BlinkToggle.setValue(result.BlinkNotifications);
 	},
-	pickWallpaper: function(inSender) {
+	pickWallpaper: function(inSender, inResponse) {
 		var wallpaperPath = "file:///usr/lib/luna/system/luna-systemui/images/wallpapers/";
-		var request = navigator.service.Request("luna://com.palm.systemservice/wallpaper/",
-		{
-			method: 'importWallpaper',
-			parameters: {"target": wallpaperPath + inSender.filename},
-			onSuccess: enyo.bind(this, "handleImportWallpaper"),
-		});
+		this.$.ImportWallpaper.send({"target": wallpaperPath + inSender.filename});
 
 	},
-	handleImportWallpaper: function(inResponse) {
-		if(inResponse.wallpaper) {
-			var request = navigator.service.Request("luna://com.palm.systemservice/",
-			{
-				method: 'setPreferences',
-				parameters: {wallpaper: inResponse.wallpaper},
-			});
+	handleImportWallpaper: function(inSender, inResponse) {
+		var result = inResponse.data;
+		if(result.wallpaper) {
+			this.$.SetSystemPreferences.send({wallpaper: result.wallpaper});
 		}
 	},
 
