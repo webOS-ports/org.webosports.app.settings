@@ -17,7 +17,6 @@ enyo.kind({
 		{kind: "onyx.Toolbar", layoutKind: "FittableColumnsLayout", classes: "onyx-toolbar", style: "height: 32px;", components: [
 			{content: "Audio"},
 			{fit: true},
-			{name: "audioToggle", kind: "onyx.ToggleButton", onChange: "toggleButtonChanged", showing: "true"}
 		]},
 		{name: "audioPanels", layoutKind: "FittableRowsLayout", fit: true, draggable: false, showing: false, components: [
 			{kind: "enyo.FittableRows", classes: "content-wrapper", components: [
@@ -52,17 +51,23 @@ enyo.kind({
 						{name: "ringer", content: "Ringer Volume ", class: "group-item"},
 						{name:"ringerSlider", kind: "onyx.Slider", value: "20", onChanging: "ringerVolumeChange"}
 					]},
+					{classes: "group-item", components: [
+						{name: "ringerPicker", kind: "onyx.Button", content: "Ringer Picker ", classes: "group-item", ontap: "ringerPopup"},
+						
+					]},
 				]}
 			]}
 		]},
-		{name: "audioDisabled", layoutKind: "FittableRowsLayout", style: "padding: 35px 10% 35px 10%;", showing: false, components: [
-			{style: "padding-bottom: 10px;", components: [
-					{content: "Audio is disabled", style: "display: inline;"}
-			]}
+
+		{kind: "onyx.Toolbar", components:[
+			{name: "Grabber", kind: "onyx.Grabber"},
 		]},
 		{name: "ErrorPopup", kind: "onyx.Popup", classes: "error-popup", modal: true, style: "padding: 10px;", components: [
 			{name: "ErrorMessage", content: "", style: "display: inline;"}
-		]}
+		]},
+		{name: "ringPickerPopup", kind: "onyx.Popup", classes: "error-popup", modal: true, style: "padding: 10px;", components: [
+			{kind: "pickRingTones"}
+		]},
 	],
 	//Handlers
 	create: function() {
@@ -84,24 +89,9 @@ enyo.kind({
     },
     manage: function (inSender, inEvent){						// get every thing set up
 		this.log("sender:", inSender, ", event:", inEvent);
-		this.audio = this.getAudioStatus();
-		// setup the pannel
-		if (this.audio === true){
-			this.$.audioDisabled.setShowing(false);
-			this.$.audioPanels.setShowing(true);
-		}else{
-			this.$.audioDisabled.setShowing(true);
-			this.$.audioPanels.setShowing(false);
-		}   
-		
-		// set up the buttons
+
+		this.$.audioPanels.setShowing(true);
 	
-		if (this.audio === true){
-			this.$.audioToggle.setValue(true);
-		}else{
-			this.$.audioToggle.setValue(false);
-		}
-		
 		if (this.keys === true){
 			this.$.keyClicksToggle.setValue(true);
 		}else{
@@ -132,6 +122,10 @@ enyo.kind({
     },
     
 	//Action Functions
+	ringerPopup: function(inSender, inEvent){
+		this.log("sender:", inSender, ", event:", inEvent);	
+		this.$.ringPickerPopup.show();
+	},
 	//Utility Functions
 	
 	//Service Callbacks
@@ -151,13 +145,7 @@ enyo.kind({
 			
 			// turn on audio system wide  here
 		}
-	},				// system wide mute
-	getAudioStatus: function(inSender, inEvent){
-		this.log("sender:", inSender, ", event:", inEvent);
-		
-		return(true);	// for testing
-		// return(get audio status here ===  true/false  );
-	},			// get audio satus here  is audio true/false
+	},
 	keyClicks: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
 		// TO DO - Auto-generated code
