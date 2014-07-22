@@ -1,34 +1,66 @@
 // Copyright 2014, $ORGANIZATION
 // All rights reserved.
+
+var phonyringTones = [
+		{
+			"name": "Pre",
+			"scr": "assets/ringtones/Pre.mp3"
+		}		
+	];
+
 enyo.kind({
-	name: "pickRingTones", kind: "Control", published: {}, events: {}, components: [
-				{kind: "enyo.Scroller", fit: true, components: [
-						{kind: "enyo.List", fit: true, onSetupItem: "setupRingerList", components: [
-								{content: "Item", kind: "onyx.Item", components: [
-									{name: "index", classes: "list-sample-index"},
-									{name: "tone"}	
-								]}
-							]}
-					]}
-			],
+	name: "pickRingTones",
+	kind: "enyo.Control",
+	published: {}, 
+	events: {}, 
+	components: [
+		{name: "toneList", kind: "List", count: 0, style: "height: 400px;", onSetupItem: "setupItem", components: [
+			{content: "Item", kind: "onyx.Item", class: "list-item.onyx-selected", ontap: "tonePicked", components: [
+				{kind: "enyo.FittableColumns", class: "group-item", components: [
+					{name: "rtones"},
+					{content: "", fit: true},
+					{kind: "onyx.IconButton", Content: "Play", style: "float: right;", src: "assets/Email-btn_controls_play.png", ontap:"playTapped"}
+				]}
+			]}
+		]},
+		{name: "play", kind: "enyo.Audio"}
+	],
+	
 	create: function() {
 		this.inherited(arguments);
 		// initialization code goes here
+		if (!window.PalmSystem) {
+			// if we're outside the webOS system add some entries for easier testing
+			this.ringTones = phonyringTones;
+        }
+        
+        this.$.toneList.setCount(this.ringTones.length);
 	},
-	setupRingerList: function(inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);
 	
+	setupItem: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
 		var i = inEvent.index;
-		// make some mock data if we have none for this row
-		if (!this.names[i]) {
-			this.tone[i] = maketone("tone 0", "tone 2", "tone 2",  "tone 2");
-		}
-		var n = this.tone[i];
-		var ni = ("00000000" + i).slice(-7);
+		var t = this.ringTones[i].name;
+
 		// apply selection style if inSender (the list) indicates that this row is selected.
 		this.$.item.addRemoveClass("list-sample-selected", inSender.isSelected(i));
-		this.$.tone.setContent(n);
-		this.$.index.setContent(ni);
+		this.$.rtones.setContent(t);
 		return true;
+	},
+	
+	playTapped: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
+		var i = inEvent.index;
+		this.$.play.setSrc(this.ringTones[i].scr);
+		if (this.$.play.getPaused()) {
+			this.$.play.play();
+		} else {
+			this.$.play.pause();
+		}
+	},
+	
+	tonePicked: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
+		
 	}
 });

@@ -2,11 +2,9 @@
 enyo.kind({
 	name: "Sound",
 	kind: "enyo.Control",
-	layoutkind: "enyo.FittableColumnsLayout",
 	published: {},
 	events: {}, 
 	palm: false,
-	audio: false, 
 	keys: false,
 	vibrate: false,
 	system: false,
@@ -16,58 +14,61 @@ enyo.kind({
 	components: [
 		{kind: "onyx.Toolbar", layoutKind: "FittableColumnsLayout", classes: "onyx-toolbar", style: "height: 32px;", components: [
 			{content: "Audio"},
-			{fit: true},
 		]},
-		{name: "audioPanels", layoutKind: "FittableRowsLayout", fit: true, draggable: false, showing: false, components: [
-			{kind: "enyo.FittableRows", classes: "content-wrapper", components: [
-				{name: "AudioList", kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout", classes: "content-aligner", fit: true, components: [
-					{kind: "onyx.GroupboxHeader", content: "Audio Settings"},
-					{classes: "group-item", components: [
+		{kind: "Scroller",
+			touch: true,
+			horizontal: "hidden",
+			fit: true,
+			components:[
+				{tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
+				{kind: "enyo.FittableRows", classes: "content-wrapper", components: [
+					{name: "AudioList", kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout", classes: "content-aligner", fit: true, components: [
+						{kind: "onyx.GroupboxHeader", content: "Audio Settings"},
+						{classes: "group-item", components: [
 						{name: "volume", content: "Volume ", class: "group-item"},
 						{name: "volumeSlider", kind: "onyx.Slider", value: "20", onChanging: "volumeChange"}
 					]},
-					{classes: "group-item", components: [
+						{classes: "group-item", components: [
 						{kind: "enyo.FittableColumns", components: [
 							{name: "keys", content: "Keyboard Clicks"},
 							{fit: true, onchange: "create"},
 							{name: "keyClicksToggle",kind: "onyx.ToggleButton", onChange: "keyClicks"}
 						]}
 					]},
-					{classes: "group-item", components: [
+						{classes: "group-item", components: [
 						{kind: "enyo.FittableColumns", components: [
 							{name: "vibrate", content: "Vibrate"},
 							{fit: true},
 							{name: "vibrateToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "vib"}
 						]}
 					]},
-					{classes: "group-item", components: [
+						{classes: "group-item", components: [
 						{kind: "enyo.FittableColumns", components: [
 							{content: "System Sounds "},
 							{fit: true},
 							{name: "systemSoundToggle", kind: "onyx.ToggleButton", onChange: "systemSounds"}
 						]}
 					]},
-					{classes: "group-item", components: [
+						{classes: "group-item", components: [
 						{name: "ringer", content: "Ringer Volume ", class: "group-item"},
 						{name:"ringerSlider", kind: "onyx.Slider", value: "20", onChanging: "ringerVolumeChange"}
 					]},
-					{classes: "group-item", components: [
+						{classes: "group-item", components: [
 						{name: "ringerPicker", kind: "onyx.Button", content: "Ringer Picker ", classes: "group-item", ontap: "ringerPopup"},
 						
 					]},
+					]}
 				]}
-			]}
-		]},
+			]},
 
-		{kind: "onyx.Toolbar", components:[
-			{name: "Grabber", kind: "onyx.Grabber"},
-		]},
-		{name: "ErrorPopup", kind: "onyx.Popup", classes: "error-popup", modal: true, style: "padding: 10px;", components: [
+			]},
+			{name: "ErrorPopup", kind: "onyx.Popup", classes: "error-popup", modal: true, style: "padding: 10px;", components: [
 			{name: "ErrorMessage", content: "", style: "display: inline;"}
-		]},
-		{name: "ringPickerPopup", kind: "onyx.Popup", classes: "error-popup", modal: true, style: "padding: 10px;", components: [
-			{kind: "pickRingTones"}
-		]},
+			]},
+			{name: "ringPickerPopup", kind: "onyx.Popup", classes: "popup", centered: true, floating: true,	components: [
+				{kind: "pickRingTones", style: "height: 100%; width: 100%;"},
+			]},		// tone popup
+	//	]}
 	],
 	//Handlers
 	create: function() {
@@ -77,7 +78,6 @@ enyo.kind({
 		// initialization code goes here
         if (!window.PalmSystem) {
 			// if we're outside the webOS system add some entries for easier testing
-			this.audio = true;
 			this.keys = true;
 			this.vibrate = true;
 			this.system = true;
@@ -86,12 +86,11 @@ enyo.kind({
             
         }
         this.manage();
+      //  this.$.p.setShowing(0);
     },
     manage: function (inSender, inEvent){						// get every thing set up
 		this.log("sender:", inSender, ", event:", inEvent);
 
-		this.$.audioPanels.setShowing(true);
-	
 		if (this.keys === true){
 			this.$.keyClicksToggle.setValue(true);
 		}else{
@@ -116,15 +115,13 @@ enyo.kind({
 		this.$.ringerSlider.setValue(this.ringerVolume);
 		
     },
-	deactivateAudio: function (inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);
-        this.$.audioDisabled.show();
-    },
-    
+
 	//Action Functions
 	ringerPopup: function(inSender, inEvent){
 		this.log("sender:", inSender, ", event:", inEvent);	
 		this.$.ringPickerPopup.show();
+		this.$.ringPickerPopup.setShowing(true);
+		this.$.ErrorPopup.show();
 	},
 	//Utility Functions
 	
