@@ -1,8 +1,12 @@
 enyo.kind({
+	name: "WanService",
+	kind: "enyo.PalmService",
+});
+
+enyo.kind({
 	name: "Telephony",
 	layoutKind: "FittableRowsLayout",
 	components:[
-		{kind: "Signals", ondeviceready: "deviceready"},
 		{
 			kind: "onyx.Toolbar",
 			style: "line-height: 36px;",
@@ -33,29 +37,31 @@ enyo.kind({
 		},
 		{kind: "onyx.Toolbar", components:[
 			{name: "Grabber", kind: "onyx.Grabber"}
-		]}
+		]},
+		{kind: "WanService", method: "getstatus", name: "GetWanStatus", onComplete: "handleWanStatus"},
+		{kind: "WanService", method: "set", name: "SetWanProperty" }
 	],
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
-		if(!window.PalmSystem)
+		if(!window.PalmSystem) {
 			enyo.log("Non-palm platform, service requests disabled.");
-	},
-	deviceready: function(inSender, inEvent) {
-		this.inherited(arguments);
+			return;
+		}
 
-		var request = navigator.service.Request("luna://com.palm.wan/", {
-			method: 'getstatus', onSuccess: enyo.bind(this, "handleWanStatus")});
+		this.$.GetWanStatus.send({});
 	},
 	/* service response handlers */
 	handleWanStatus: function(inResponse) {
-		console.log("WAN status changed: " + JSON.stringify(inResponse));
+		var result = inResponse.data;
 
-		if (inResponse.returnValue) {
+		console.log("WAN status changed: " + JSON.stringify(result));
+
+		if (result.returnValue) {
 			var roamingAllowed = false;
 			var dataUsage = false;
 
-			dataUsage = (inResponse.disablewan == "on");
-			roamingAllowed = (inResponse.roamGuard == "enable");
+			dataUsage = (result.disablewan == "on");
+			roamingAllowed = (result.roamGuard == "enable");
 
 			this.$.RoamingAllowed.setValue(roamingAllowed)
 			this.$.DataUsage.setValue(dataUsage);
@@ -63,11 +69,15 @@ enyo.kind({
 	},
 	/* component event handlers */
 	roamingAllowedChanged: function(inSender, inEvent) {
-		var request = navigator.service.Request("luna://com.palm.wan/", {
-			method: 'set', parameters: {"roamguard": inSender.getValue() }});
+		if (!this.palm)
+			return;
+
+		this.$.SetWanProperty.send({roamGuard: inSender.getValue()});
 	},
 	dataUsageChanged: function(inSender, inEvent) {
-		var request = navigator.service.Request("luna://com.palm.wan/", {
-			method: 'set', parameters: {"disablewan": inSender.getValue() }});
+		if (!this.palm)
+			return;
+
+		this.$.SetWanProperty.send({disablewan: inSender.getValue()});
 	}
 });
