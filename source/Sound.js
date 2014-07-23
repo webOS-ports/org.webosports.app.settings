@@ -4,6 +4,9 @@ enyo.kind({
 	kind: "enyo.Control",
 	published: {},
 	events: {}, 
+	handlers: {
+		onClose: "closePopup"
+	},
 	palm: false,
 	keys: false,
 	vibrate: false,
@@ -16,11 +19,11 @@ enyo.kind({
 			{content: "Audio"},
 		]},
 		{kind: "Scroller",
-			touch: true,
-			horizontal: "hidden",
-			fit: true,
-			components:[
-				{tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
+		touch: true,
+		horizontal: "hidden",
+		fit: true,
+		components:[
+			{tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
 				{kind: "enyo.FittableRows", classes: "content-wrapper", components: [
 					{name: "AudioList", kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout", classes: "content-aligner", fit: true, components: [
 						{kind: "onyx.GroupboxHeader", content: "Audio Settings"},
@@ -54,7 +57,7 @@ enyo.kind({
 						{name:"ringerSlider", kind: "onyx.Slider", value: "20", onChanging: "ringerVolumeChange"}
 					]},
 						{classes: "group-item", components: [
-						{name: "ringerPicker", kind: "onyx.Button", content: "Ringer Picker ", classes: "group-item", ontap: "ringerPopup"},
+						{name: "ringerPicker", kind: "onyx.Button", content: "Ring tone Picker ", classes: "group-item", ontap: "ringerPopup"},
 						
 					]},
 					]}
@@ -63,12 +66,11 @@ enyo.kind({
 
 			]},
 			{name: "ErrorPopup", kind: "onyx.Popup", classes: "error-popup", modal: true, style: "padding: 10px;", components: [
-			{name: "ErrorMessage", content: "", style: "display: inline;"}
+				{name: "ErrorMessage", content: "", style: "display: inline;"}
 			]},
 			{name: "ringPickerPopup", kind: "onyx.Popup", classes: "popup", centered: true, floating: true,	components: [
 				{kind: "pickRingTones", style: "height: 100%; width: 100%;"},
 			]},		// tone popup
-	//	]}
 	],
 	//Handlers
 	create: function() {
@@ -121,7 +123,9 @@ enyo.kind({
 		this.log("sender:", inSender, ", event:", inEvent);	
 		this.$.ringPickerPopup.show();
 		this.$.ringPickerPopup.setShowing(true);
-		this.$.ErrorPopup.show();
+	},
+	closePopup: function(inSender, inEvent){
+		this.$.ringPickerPopup.hide();
 	},
 	//Utility Functions
 	

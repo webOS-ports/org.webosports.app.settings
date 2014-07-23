@@ -9,21 +9,22 @@ var phonyringTones = [
 	];
 
 enyo.kind({
-	name: "pickRingTones",
-	kind: "enyo.Control",
-	published: {}, 
-	events: {}, 
+	name: "pickRingTones", kind: "enyo.Control", published: {},
+	events: {
+		onClose: ""
+	}, 
 	components: [
-		{name: "toneList", kind: "List", count: 0, style: "height: 400px;", onSetupItem: "setupItem", components: [
-			{content: "Item", kind: "onyx.Item", class: "list-item.onyx-selected", ontap: "tonePicked", components: [
+		{name: "toneList", kind: "List", count: 0, style: "height: 365px;", onSetupItem: "setupItem", components: [
+			{content: "Item", kind: "onyx.Item", class: "list-item.onyx-selected", components: [
 				{kind: "enyo.FittableColumns", class: "group-item", components: [
-					{name: "rtones"},
+					{name: "rtones", ontap: "tonePicked"},
 					{content: "", fit: true},
-					{kind: "onyx.IconButton", Content: "Play", style: "float: right;", src: "assets/Email-btn_controls_play.png", ontap:"playTapped"}
+					{kind: "onyx.IconButton", Content: "Play", style: "float: right;", src: "assets/Email-btn_controls_play.png", ontap: "playTapped"},
 				]}
 			]}
 		]},
-		{name: "play", kind: "enyo.Audio"}
+		{kind: "onyx.Button", content: "Close", style: "float: right;", ontap: "closePpoup"},
+		{name: "audio", kind: "enyo.Audio"}
 	],
 	
 	create: function() {
@@ -51,16 +52,18 @@ enyo.kind({
 	playTapped: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
 		var i = inEvent.index;
-		this.$.play.setSrc(this.ringTones[i].scr);
-		if (this.$.play.getPaused()) {
-			this.$.play.play();
-		} else {
-			this.$.play.pause();
-		}
+		this.$.audio.setSrc(this.ringTones[i].scr);
+		this.$.audio.play();
 	},
 	
 	tonePicked: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
-		
+		var i = inEvent.index;
+		console.log(" tone picked =",  this.ringTones[i].scr);
+	},
+	closePpoup: function(inSender, inEvent) {
+		// TO DO - Auto-generated code
+		this.$.audio.pause();
+		this.doClose();
 	}
 });
