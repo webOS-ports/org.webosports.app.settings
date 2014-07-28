@@ -1,10 +1,12 @@
 
 enyo.kind({
 	name: "Sound",
-	kind: "enyo.Control",
-	layoutkind: "enyo.FittableColumnsLayout",
+	kind: "enyo.FittableRows",
+//	layoutkind: "enyo.FittableColumnsLayout",
 	published: {},
-	events: {}, 
+	events: {
+		onBackbutton: "",
+	}, 
 	palm: false,
 	audio: false, 
 	keys: false,
@@ -14,12 +16,13 @@ enyo.kind({
 	ringerVolume: 0,
 	
 	components: [
-		{kind: "onyx.Toolbar", layoutKind: "FittableColumnsLayout", classes: "onyx-toolbar", style: "height: 32px;", components: [
+		{kind: "onyx.Toolbar",
+	//	layoutKind: "FittableColumnsLayout", 
+		classes: "onyx-toolbar", style: "line-height: 36px;", components: [
 			{content: "Audio"},
 			{fit: true},
-			{name: "audioToggle", kind: "onyx.ToggleButton", onChange: "toggleButtonChanged", showing: "true"}
-		]},
-		{name: "audioPanels", layoutKind: "FittableRowsLayout", fit: true, draggable: false, showing: false, components: [
+		]},	// top tool bar
+		{name: "audioPanels", layoutKind: "FittableRowsLayout", fit: true, draggable: false, showing: true, components: [
 			{kind: "enyo.FittableRows", classes: "content-wrapper", components: [
 				{name: "AudioList", kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout", classes: "content-aligner", fit: true, components: [
 					{kind: "onyx.GroupboxHeader", content: "Audio Settings"},
@@ -55,11 +58,11 @@ enyo.kind({
 				]}
 			]}
 		]},
-		{name: "audioDisabled", layoutKind: "FittableRowsLayout", style: "padding: 35px 10% 35px 10%;", showing: false, components: [
-			{style: "padding-bottom: 10px;", components: [
-					{content: "Audio is disabled", style: "display: inline;"}
-			]}
-		]},
+		
+		{kind: "onyx.Toolbar", components:[
+			{name: "Grabber", kind: "onyx.Grabber"},
+			{name: "backbutton", kind: "onyx.Button", style: "float: right;", showing: "true", content: "Back", ontap: "goBack"}
+		]},	// bottom tool bar
 		{name: "ErrorPopup", kind: "onyx.Popup", classes: "error-popup", modal: true, style: "padding: 10px;", components: [
 			{name: "ErrorMessage", content: "", style: "display: inline;"}
 		]}
@@ -82,26 +85,25 @@ enyo.kind({
         }
         this.manage();
     },
+	reflow: function (inSender) {
+        this.inherited(arguments);
+        if (enyo.Panels.isScreenNarrow()){
+            this.$.Grabber.applyStyle("visibility", "hidden");
+            this.$.backbutton.setShowing(true);
+        }else{
+            this.$.Grabber.applyStyle("visibility", "visible");
+            this.$.backbutton.setShowing(false);
+        }
+    },
+    goBack: function(inSender, inEvent){
+		this.doBackbutton();
+	},
     manage: function (inSender, inEvent){						// get every thing set up
 		this.log("sender:", inSender, ", event:", inEvent);
 		this.audio = this.getAudioStatus();
-		// setup the pannel
-		if (this.audio === true){
-			this.$.audioDisabled.setShowing(false);
-			this.$.audioPanels.setShowing(true);
-		}else{
-			this.$.audioDisabled.setShowing(true);
-			this.$.audioPanels.setShowing(false);
-		}   
-		
+
 		// set up the buttons
-	
-		if (this.audio === true){
-			this.$.audioToggle.setValue(true);
-		}else{
-			this.$.audioToggle.setValue(false);
-		}
-		
+
 		if (this.keys === true){
 			this.$.keyClicksToggle.setValue(true);
 		}else{
@@ -133,25 +135,7 @@ enyo.kind({
     
 	//Action Functions
 	//Utility Functions
-	
 	//Service Callbacks
-	toggleButtonChanged: function(inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent.value);
-		// TO DO - Auto-generated code
-		if (inEvent.value === false){
-			this.deactivateAudio();
-			this.$.audioPanels.setShowing(false);
-			
-			// turn off audio system wide here
-		}
-		
-		if (inEvent.value === true){
-			this.$.audioDisabled.setShowing(false);
-			this.$.audioPanels.setShowing(true);
-			
-			// turn on audio system wide  here
-		}
-	},				// system wide mute
 	getAudioStatus: function(inSender, inEvent){
 		this.log("sender:", inSender, ", event:", inEvent);
 		
