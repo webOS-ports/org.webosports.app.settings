@@ -5,7 +5,8 @@ enyo.kind({
 	published: {},
 	events: {}, 
 	handlers: {
-		onClose: "closePopup"
+		onClose: "closePopup",
+		onTone: "tonepicked"
 	},
 	palm: false,
 	keys: false,
@@ -13,6 +14,7 @@ enyo.kind({
 	system: false,
 	systemVolume: 0,
 	ringerVolume: 0,
+	ringTone: "??",
 	
 	components: [
 		{kind: "onyx.Toolbar", layoutKind: "FittableColumnsLayout", classes: "onyx-toolbar", style: "height: 32px;", components: [
@@ -53,22 +55,20 @@ enyo.kind({
 						]}
 					]},
 						{classes: "group-item", components: [
-						{name: "ringer", content: "Ringer Volume ", class: "group-item"},
-						{name:"ringerSlider", kind: "onyx.Slider", value: "20", onChanging: "ringerVolumeChange"}
-					]},
+							{name: "ringer", content: "Ringer Volume ", class: "group-item"},
+							{name:"ringerSlider", kind: "onyx.Slider", value: "20", onChanging: "ringerVolumeChange"}
+						]},
 						{classes: "group-item", components: [
-						{name: "ringerPicker", kind: "onyx.Button", content: "Ring tone Picker ", classes: "group-item", ontap: "ringerPopup"},
-						
-					]},
+							{name: "ringerPicker", kind: "onyx.Button", content: "Ring tone Picker ", classes: "group-item", ontap: "ringerPopup"},
+						]},
 					]}
 				]}
 			]},
-
-			]},
-			{name: "ErrorPopup", kind: "onyx.Popup", classes: "error-popup", modal: true, style: "padding: 10px;", components: [
+		]},
+		{name: "ErrorPopup", kind: "onyx.Popup", classes: "error-popup", modal: true, style: "padding: 10px;", components: [
 				{name: "ErrorMessage", content: "", style: "display: inline;"}
 			]},
-			{name: "ringPickerPopup", kind: "onyx.Popup", classes: "popup", centered: true, floating: true,	components: [
+		{name: "ringPickerPopup", kind: "onyx.Popup", classes: "popup", centered: true, floating: true,	components: [
 				{kind: "pickRingTones", style: "height: 100%; width: 100%;"},
 			]},		// tone popup
 	],
@@ -115,8 +115,7 @@ enyo.kind({
 		/* set slider to */
 		this.$.volumeSlider.setValue(this.systemVolume);
 		this.$.ringerSlider.setValue(this.ringerVolume);
-		
-    },
+	},
 
 	//Action Functions
 	ringerPopup: function(inSender, inEvent){
@@ -126,6 +125,10 @@ enyo.kind({
 	},
 	closePopup: function(inSender, inEvent){
 		this.$.ringPickerPopup.hide();
+	},
+	tonepicked: function(inSender, inEvent){
+		this.log("sender:", inSender, ", event:", inEvent);	
+		this.$.ringerPicker.setContent("Ring tone -- " + inEvent);
 	},
 	//Utility Functions
 	
