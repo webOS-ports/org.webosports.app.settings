@@ -8,6 +8,9 @@ enyo.kind({
 	name: "DevOptions",
 	layoutKind: "FittableRowsLayout",
 	palm: false,
+	events: {
+        onBackbutton: "",
+    },
 	components:[
 		{
 			kind: "onyx.Toolbar",
@@ -75,8 +78,9 @@ enyo.kind({
 			]
 		},
 		{kind: "onyx.Toolbar", components:[
-			{name: "Grabber", kind: "onyx.Grabber"}
-	 	]},
+			{name: "Grabber", kind: "onyx.Grabber"},
+			{name: "backbutton", kind: "onyx.Button", style: "float: right;", showing: "true", content: "Back", ontap: "goBack"}
+		]},
 		{name: "GetStatus", kind: "DevModeService", method: "getStatus", onComplete: "onGetStatusResponse"},
 		{name: "SetStatus", kind: "DevModeService", method: "setStatus", onComplete: "onSetStatusResponse"},
 		{name: "EnableFpsCounter", kind: "enyo.PalmService", service: "luna://org.webosports.luna/", method: "setFpsCounter"}
@@ -89,6 +93,19 @@ enyo.kind({
 		}
 		this.palm = true;
 		this.$.GetStatus.send({});
+	},
+	reflow: function (inSender) {
+        this.inherited(arguments);
+        if (enyo.Panels.isScreenNarrow()){
+            this.$.Grabber.applyStyle("visibility", "hidden");
+            this.$.backbutton.setShowing(true);
+        }else{
+            this.$.Grabber.applyStyle("visibility", "visible");
+            this.$.backbutton.setShowing(false);
+        }
+    },
+    goBack: function(inSender, inEvent){
+		this.doBackbutton();
 	},
 	/* Control handlers */
 	onDevModeChanged: function(inSender, inEvent) {

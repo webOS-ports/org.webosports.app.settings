@@ -106,7 +106,8 @@ enyo.kind({
     layoutKind: "FittableRowsLayout",
     foundNetworks: null,
     events: {
-        onActiveChanged: ""
+        onActiveChanged: "",
+        onBackbutton: "",
     },
     currentSSID: "",
     palm: false,
@@ -541,7 +542,8 @@ enyo.kind({
                 }, // this is hacky
                 {
                     fit: true
-                }
+                },
+                {name: "backbutton", kind: "onyx.Button", showing: "true", content: "Back", ontap: "goBack"}
             ]
         },
     ],
@@ -576,10 +578,13 @@ enyo.kind({
     },
     reflow: function (inSender) {
         this.inherited(arguments);
-        if (enyo.Panels.isScreenNarrow())
+        if (enyo.Panels.isScreenNarrow()){
             this.$.Grabber.applyStyle("visibility", "hidden");
-        else
+            this.$.backbutton.setShowing(true);
+        }else{
             this.$.Grabber.applyStyle("visibility", "visible");
+            this.$.backbutton.setShowing(false);
+        }
     },
     //Action Handlers
     toggleButtonChanged: function (inSender, inEvent) {
@@ -797,6 +802,9 @@ enyo.kind({
 			this.$.waitPopup.hide();
 		}
     },
+    goBack: function(inSender, inEvent){
+		this.doBackbutton();
+	},
     //Utility Functions
     clearFoundNetworks: function () {
         this.foundNetworks = [];
