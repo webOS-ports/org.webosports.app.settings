@@ -43,6 +43,9 @@ enyo.kind({
 	kind: "Panels",
 	realtimeFit: true,
 	arrangerKind: "CollapsingArranger",
+	events: {
+		onBackbutton: "handleBackGesture",
+	},
 	components:[
 		{name: "MenuPanel",
 		style: "width: 33%",
@@ -85,10 +88,7 @@ enyo.kind({
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Core"},
 				{kind: "ListItem", icon: "icon.png", title: "Screen & Lock", ontap: "openPanel", targetPanel: "ScreenLockPanel"},
 				{kind: "ListItem", icon: "icon.png", title: "Date & Time", ontap: "openPanel", targetPanel: "DateTimePanel"},
-				{kind: "ListItem", icon: "inco.png", title: "Sound & Ringtones", ontap: "openPanel", targetPanel: "audioPanel", components: [
-					{name: "audioToggle", kind: "onyx.ToggleButton", style: "position: absolute; top: 11px; right: 9px; height: 31px;", onChange: "toggleButtonChanged", showing: "true"},
-					
-				]},
+				{kind: "ListItem", icon: "inco.png", title: "Sound & Ringtones", ontap: "openPanel", targetPanel: "audioPanel"},
 				{kind: "ListItem", icon: "icon.png", title: "Language & Input", ontap: "openPanel", targetPanel: "LanguageInputPanel"},
 				{kind: "ListItem", icon: "icon.png", title: "Developer Options", ontap: "openPanel", targetPanel: "DevOptionsPanel"},
 				{kind: "ListItem", icon: "icon.png", title: "About", ontap: "openPanel", targetPanel: "AboutPanel"}
@@ -131,7 +131,7 @@ enyo.kind({
 	selectContentPanel: function() {
 		if (enyo.Panels.isScreenNarrow())
 			this.selectPanelByName("ContentPanels");
-	}
+	},
 });
 
 enyo.kind({
@@ -139,7 +139,7 @@ enyo.kind({
 	layoutKind: "FittableRowsLayout",
 	components: [
 		{kind: "Signals",
-		onbackbutton: "handleBackGesture",
+		onBackbutton: "handleBackGesture",
 		onCoreNaviDragStart: "handleCoreNaviDragStart",
 		onCoreNaviDrag: "handleCoreNaviDrag",
 		onCoreNaviDragFinish: "handleCoreNaviDragFinish",},
@@ -154,14 +154,14 @@ enyo.kind({
 			this.$.AppPanels.setDraggable(false);
 			this.$.AppPanels.$.ContentPanels.applyStyle("box-shadow", "0");
 			this.$.AppPanels.$.WiFiToggle.setShowing(true);
-			this.$.AppPanels.$.audioToggle.setShowing(true);
+		//	this.$.AppPanels.$
 		}
 		else {
 			this.$.AppPanels.setArrangerKind("CollapsingArranger");
 			this.$.AppPanels.setDraggable(true);
 			this.$.AppPanels.$.ContentPanels.applyStyle("box-shadow", "-4px 0px 4px rgba(0,0,0,0.3)");
 			this.$.AppPanels.$.WiFiToggle.setShowing(false);
-			this.$.AppPanels.$.audioToggle.setShowing(false);
+		//	this.$.AppPanels.$.audioToggle.setShowing(false);
 		}
 	},
 	handleBackGesture: function(inSender, inEvent) {
