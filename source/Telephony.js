@@ -6,6 +6,9 @@ enyo.kind({
 enyo.kind({
 	name: "Telephony",
 	layoutKind: "FittableRowsLayout",
+	events: {
+        onBackbutton: "",
+    },
 	components:[
 		{
 			kind: "onyx.Toolbar",
@@ -36,7 +39,8 @@ enyo.kind({
 			]
 		},
 		{kind: "onyx.Toolbar", components:[
-			{name: "Grabber", kind: "onyx.Grabber"}
+			{name: "Grabber", kind: "onyx.Grabber"},
+			{name: "backbutton", kind: "onyx.Button", style: "float: right;", showing: "true", content: "Back", ontap: "goBack"}
 		]},
 		{kind: "WanService", method: "getstatus", name: "GetWanStatus", onComplete: "handleWanStatus"},
 		{kind: "WanService", method: "set", name: "SetWanProperty" }
@@ -49,6 +53,19 @@ enyo.kind({
 		}
 
 		this.$.GetWanStatus.send({});
+	},
+	reflow: function (inSender) {
+        this.inherited(arguments);
+        if (enyo.Panels.isScreenNarrow()){
+            this.$.Grabber.applyStyle("visibility", "hidden");
+            this.$.backbutton.setShowing(true);
+        }else{
+            this.$.Grabber.applyStyle("visibility", "visible");
+            this.$.backbutton.setShowing(false);
+        }
+    },
+    goBack: function(inSender, inEvent){
+		this.doBackbutton();
 	},
 	/* service response handlers */
 	handleWanStatus: function(inResponse) {

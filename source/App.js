@@ -154,14 +154,12 @@ enyo.kind({
 			this.$.AppPanels.setDraggable(false);
 			this.$.AppPanels.$.ContentPanels.applyStyle("box-shadow", "0");
 			this.$.AppPanels.$.WiFiToggle.setShowing(true);
-		//	this.$.AppPanels.$
 		}
 		else {
 			this.$.AppPanels.setArrangerKind("CollapsingArranger");
 			this.$.AppPanels.setDraggable(true);
 			this.$.AppPanels.$.ContentPanels.applyStyle("box-shadow", "-4px 0px 4px rgba(0,0,0,0.3)");
 			this.$.AppPanels.$.WiFiToggle.setShowing(false);
-		//	this.$.AppPanels.$.audioToggle.setShowing(false);
 		}
 	},
 	handleBackGesture: function(inSender, inEvent) {
