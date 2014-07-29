@@ -2,6 +2,9 @@ enyo.kind({
 	name: "DateTime",
 	layoutKind: "FittableRowsLayout",
 	palm: false,
+	events: {
+        onBackbutton: "",
+    },
 	components:[
 		{kind: "onyx.Toolbar",
 		style: "line-height: 36px;",
@@ -64,6 +67,7 @@ enyo.kind({
 		]},
 		{kind: "onyx.Toolbar", components:[
 			{name: "Grabber", kind: "onyx.Grabber"},
+			{name: "backbutton", kind: "onyx.Button", style: "float: right;", showing: "true", content: "Back", ontap: "goBack"}
 		]},
 		{kind: "SystemService", method: "getPreferences", name: "GetSystemPreferences", onComplete: "handleGetPreferencesResponse"},
 		{kind: "SystemService", method: "setPreferences", name: "SetSystemPreferences" },
@@ -105,10 +109,15 @@ enyo.kind({
 		this.inherited(arguments);
 		if(enyo.Panels.isScreenNarrow()) {
 			this.$.Grabber.applyStyle("visibility", "hidden");
+			this.$.backbutton.setShowing(true);
 		}
 		else {
 			this.$.Grabber.applyStyle("visibility", "visible");
+			this.$.backbutton.setShowing(false);
 		}
+	},
+	goBack: function(inSender, inEvent){
+		this.doBackbutton();
 	},
 	updateTimeControlStates: function() {
 		if (this.$.NetworkTimeToggle.value) {

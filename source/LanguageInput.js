@@ -1,46 +1,46 @@
 enyo.kind({
-    name: "LanguageInput",
-    layoutKind: "FittableRowsLayout",
-    palm: true,
-    keyboardState: { },
-    components: [
-        { kind: "onyx.Toolbar", style: "line-height: 36px;",
-            components:[ { content: "Language & Input" } ] },
-        { kind: "Scroller", touch: true, horizontal: "hidden", fit: true,
-          components:[
-            { tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true,
-              components: [
-                {kind: "onyx.Groupbox", components: [
-                    {kind: "onyx.GroupboxHeader", content: "Input"},
-                    {classes: "group-item", components:[
-                        {kind: "Control", content: "Auto capitalization", style: "display: inline-block; line-height: 32px;"},
-                        {name: "AutoCapitalization", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"},
-                    ]},
-                    {classes: "group-item", components:[
-                        {kind: "Control", content: "Auto completion", style: "display: inline-block; line-height: 32px;"},
-                        {name: "AutoCompletion", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"},
-                    ]},
-                    {classes: "group-item", components:[
-                        {kind: "Control", content: "Predictive text", style: "display: inline-block; line-height: 32px;"},
-                        {name: "PredictiveText", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"},
-                    ]},
-                    {classes: "group-item", components:[
-                        {kind: "Control", content: "Spell checking", style: "display: inline-block; line-height: 32px;"},
-                        {name: "SpellChecking", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"},
-                    ]},
-                    {classes: "group-item", components:[
-                        {kind: "Control", content: "Key press feedback", style: "display: inline-block; line-height: 32px;"},
-                        {name: "KeyPressFeedback", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"},
-                    ]},
-                ]}
-           ]}
-        ]},
-        { kind: "onyx.Toolbar", components:[ {name: "Grabber", kind: "onyx.Grabber"}, ] },
-        { name: "SetPreferences", kind: "enyo.PalmService", service: "palm://com.palm.systemservice", method: "setPreferences", subscribe: false,
-          onComplete: "onSetPreferencesCompleted" },
-        { name: "GetPreferences", kind: "enyo.PalmService", service: "palm://com.palm.systemservice", method: "getPreferences", subscribe: true,
-          onComplete: "onGetPreferencesCompleted" }
-    ],
+	name: "LanguageInput",
+	kind: "enyo.Control",
+	layoutKind: "FittableRowsLayout",
+	palm: true,
+	keyboardState: {},
+	events: {onBackbutton: ""},
+	components: [
+		{kind: "onyx.Toolbar", style: "line-height: 36px;", components: [
+			{content: "Language & Input"}
+		]},
+		{kind: "Scroller", touch: true, horizontal: "hidden", fit: true, components: [
+			{tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
+				{kind: "onyx.Groupbox", components: [
+					{kind: "onyx.GroupboxHeader", content: "Input"},
+					{classes: "group-item", components: [
+						{kind: "Control", content: "Auto capitalization", style: "display: inline-block; line-height: 32px;"},
+						{name: "AutoCapitalization", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"}
+					]},
+					{classes: "group-item", components: [
+						{kind: "Control", content: "Auto completion", style: "display: inline-block; line-height: 32px;"},
+						{name: "AutoCompletion", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"}
+					]},
+					{classes: "group-item", components: [
+						{kind: "Control", content: "Predictive text", style: "display: inline-block; line-height: 32px;"},
+						{name: "PredictiveText", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"}
+					]},
+					{classes: "group-item", components: [
+						{kind: "Control", content: "Spell checking", style: "display: inline-block; line-height: 32px;"},
+						{name: "SpellChecking", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"}
+					]},
+					{classes: "group-item", components: [
+						{kind: "Control", content: "Key press feedback", style: "display: inline-block; line-height: 32px;"},
+						{name: "KeyPressFeedback", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"}
+					]}
+				]}
+			]}
+		]},
+		{kind: "onyx.Toolbar", components: [
+			{name: "Grabber", kind: "onyx.Grabber"},
+			{name: "backbutton", kind: "onyx.Button", style: "float: right;", showing: "true", content: "Back", ontap: "goBack"}
+		]}
+	],
     // Handlers
     create: function(inSender, inEvent) {
         this.inherited(arguments);
@@ -57,6 +57,16 @@ enyo.kind({
         console.log("Fetching preferences from system service");
 
         this.$.GetPreferences.send({keys:["keyboard"]});
+    },
+    reflow: function (inSender) {
+        this.inherited(arguments);
+        if (enyo.Panels.isScreenNarrow()){
+            this.$.Grabber.applyStyle("visibility", "hidden");
+            this.$.backbutton.setShowing(true);
+        }else{
+            this.$.Grabber.applyStyle("visibility", "visible");
+            this.$.backbutton.setShowing(false);
+        }
     },
     // Control Action Handlers
     onInputPreferenceChanged: function(inSender, inEvent) {
@@ -98,5 +108,9 @@ enyo.kind({
         var response = inEvent.data;
         if (!response.returnValue)
             console.log("Failed to set keyboard preferences");
-    }
+    },
+	goBack: function(inSender, inEvent) {
+		// TO DO - Auto-generated code
+		this.doBackbutton();
+	}
 });

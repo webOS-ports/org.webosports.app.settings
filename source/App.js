@@ -43,6 +43,9 @@ enyo.kind({
 	kind: "Panels",
 	realtimeFit: true,
 	arrangerKind: "CollapsingArranger",
+	events: {
+		onBackbutton: "handleBackGesture",
+	},
 	components:[
 		{name: "MenuPanel",
 		style: "width: 33%",
@@ -128,7 +131,7 @@ enyo.kind({
 	selectContentPanel: function() {
 		if (enyo.Panels.isScreenNarrow())
 			this.selectPanelByName("ContentPanels");
-	}
+	},
 });
 
 enyo.kind({
@@ -136,7 +139,7 @@ enyo.kind({
 	layoutKind: "FittableRowsLayout",
 	components: [
 		{kind: "Signals",
-		onbackbutton: "handleBackGesture",
+		onBackbutton: "handleBackGesture",
 		onCoreNaviDragStart: "handleCoreNaviDragStart",
 		onCoreNaviDrag: "handleCoreNaviDrag",
 		onCoreNaviDragFinish: "handleCoreNaviDragFinish",},

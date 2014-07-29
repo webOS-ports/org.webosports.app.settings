@@ -2,6 +2,9 @@ enyo.kind({
     name: "DeviceSoftwareInformation",
     layoutKind: "FittableRowsLayout",
     palm: true,
+	events: {
+        onBackbutton: "",
+    },
     components: [
         { kind: "onyx.Toolbar", style: "line-height: 36px;",
             components:[ { content: "About" } ] },
@@ -34,7 +37,10 @@ enyo.kind({
                 {kind: "onyx.Button", content: "Software Licenses", style: "width: 100%", ontap: "onShowSoftwareLicenses" }
            ]}
         ]},
-        { kind: "onyx.Toolbar", components:[ {name: "Grabber", kind: "onyx.Grabber"}, ] },
+        { kind: "onyx.Toolbar", components:[
+			{name: "Grabber", kind: "onyx.Grabber"},
+			{name: "backbutton", kind: "onyx.Button", style: "float: right;", showing: "true", content: "Back", ontap: "goBack"}
+		]},
         { kind: "enyo.PalmService", name: "RetrieveVersion", service: "palm://org.webosports.service.update",
             method: "retrieveVersion", onComplete: "onVersionResponse" },
         { kind: "enyo.PalmService", name: "GetAndroidProperty", service: "palm://com.android.properties",
@@ -50,6 +56,19 @@ enyo.kind({
         }
         this.updateAll();
     },
+	reflow: function (inSender) {
+        this.inherited(arguments);
+        if (enyo.Panels.isScreenNarrow()){
+            this.$.Grabber.applyStyle("visibility", "hidden");
+            this.$.backbutton.setShowing(true);
+        }else{
+            this.$.Grabber.applyStyle("visibility", "visible");
+            this.$.backbutton.setShowing(false);
+        }
+    },
+    goBack: function(inSender, inEvent){
+		this.doBackbutton();
+	},
     updateAll: function() {
         this.$.RetrieveVersion.send({});
         this.$.GetAndroidProperty.send({keys:[
