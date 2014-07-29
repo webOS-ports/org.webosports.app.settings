@@ -18,5 +18,6 @@ enyo.depends(
 	"LanguageInput.js",
 	"About.js",
 	"Licenses.js",
-	"Sound.js"
+	"Sound.js",
+	"pickRingTones.js"
 );
