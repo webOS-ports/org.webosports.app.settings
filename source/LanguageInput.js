@@ -39,7 +39,11 @@ enyo.kind({
 		{kind: "onyx.Toolbar", components: [
 			{name: "Grabber", kind: "onyx.Grabber"},
 			{name: "backbutton", kind: "onyx.Button", style: "float: right;", showing: "true", content: "Back", ontap: "goBack"}
-		]}
+		]},
+		{ name: "SetPreferences", kind: "enyo.PalmService", service: "palm://com.palm.systemservice", method: "setPreferences", subscribe: false,
+          onComplete: "onSetPreferencesCompleted" },
+        { name: "GetPreferences", kind: "enyo.PalmService", service: "palm://com.palm.systemservice", method: "getPreferences", subscribe: true,
+          onComplete: "onGetPreferencesCompleted" }
 	],
     // Handlers
     create: function(inSender, inEvent) {
