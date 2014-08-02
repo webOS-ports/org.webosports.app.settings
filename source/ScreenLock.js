@@ -18,6 +18,7 @@ enyo.kind({
         onBackbutton: "",
     },
 	components:[
+		{kind: "Signals", onbackbutton: "handleBackGesture"},
 		{kind: "onyx.Toolbar",
 		style: "line-height: 36px;",
 		components:[
@@ -147,7 +148,6 @@ enyo.kind({
 		]},
 		{kind: "onyx.Toolbar", components:[
 			{name: "Grabber", kind: "onyx.Grabber"},
-			{name: "backbutton", kind: "onyx.Button", style: "float: right;", showing: "true", content: "Back", ontap: "goBack"}
 		]},
 		{name: "GetDisplayProperty", kind: "DisplayService", method: "getProperty", onComplete: "handleGetPropertiesResponse"},
 		{name: "SetDisplayProperty", kind: "DisplayService", method: "setProperty" },
@@ -173,14 +173,13 @@ enyo.kind({
 		this.inherited(arguments);
 		if(enyo.Panels.isScreenNarrow()) {
 			this.$.Grabber.applyStyle("visibility", "hidden");
-			this.$.backbutton.setShowing(true);
 		}
 		else {
 			this.$.Grabber.applyStyle("visibility", "visible");
-			this.$.backbutton.setShowing(false);
 		}
 	},
-    goBack: function(inSender, inEvent){
+    handleBackGesture: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);	
 		this.doBackbutton();
 	},
 	//Action Handlers

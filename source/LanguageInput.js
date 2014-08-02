@@ -6,6 +6,7 @@ enyo.kind({
 	keyboardState: {},
 	events: {onBackbutton: ""},
 	components: [
+		{kind: "Signals", onbackbutton: "handleBackGesture"},
 		{kind: "onyx.Toolbar", style: "line-height: 36px;", components: [
 			{content: "Language & Input"}
 		]},
@@ -38,7 +39,6 @@ enyo.kind({
 		]},
 		{kind: "onyx.Toolbar", components: [
 			{name: "Grabber", kind: "onyx.Grabber"},
-			{name: "backbutton", kind: "onyx.Button", style: "float: right;", showing: "true", content: "Back", ontap: "goBack"}
 		]},
 		{ name: "SetPreferences", kind: "enyo.PalmService", service: "palm://com.palm.systemservice", method: "setPreferences", subscribe: false,
           onComplete: "onSetPreferencesCompleted" },
@@ -66,10 +66,8 @@ enyo.kind({
         this.inherited(arguments);
         if (enyo.Panels.isScreenNarrow()){
             this.$.Grabber.applyStyle("visibility", "hidden");
-            this.$.backbutton.setShowing(true);
         }else{
             this.$.Grabber.applyStyle("visibility", "visible");
-            this.$.backbutton.setShowing(false);
         }
     },
     // Control Action Handlers
@@ -113,8 +111,8 @@ enyo.kind({
         if (!response.returnValue)
             console.log("Failed to set keyboard preferences");
     },
-	goBack: function(inSender, inEvent) {
-		// TO DO - Auto-generated code
+    handleBackGesture: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);	
 		this.doBackbutton();
-	}
+	},
 });

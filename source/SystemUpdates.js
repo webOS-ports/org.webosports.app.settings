@@ -12,7 +12,8 @@ enyo.kind({
 	events: {
         onBackbutton: "",
     },
-	components: [	
+	components: [
+		{kind: "Signals", onbackbutton: "handleBackGesture"},
 		//ui components:
 		{kind: "onyx.Toolbar", style: "line-height: 28px;", content: "System Update"},
 		
@@ -73,7 +74,6 @@ enyo.kind({
 				ontap: "doInstall",
 				showing: false
 			},
-			{name: "backbutton", kind: "onyx.Button", style: "float: right;", showing: "true", content: "Back", ontap: "goBack"}
 		]},
 		
 		//service caller:
@@ -107,10 +107,8 @@ enyo.kind({
         this.inherited(arguments);
         if (enyo.Panels.isScreenNarrow()){
             this.$.Grabber.applyStyle("visibility", "hidden");
-            this.$.backbutton.setShowing(true);
         }else{
             this.$.Grabber.applyStyle("visibility", "visible");
-            this.$.backbutton.setShowing(false);
         }
     },
 	//button callbacks:
@@ -130,7 +128,8 @@ enyo.kind({
 		this.currentRequest = this.$.initiateService.send({});
 		this.startActivity("Initiating reboot into system update state.");
 	},
-    goBack: function(inSender, inEvent){
+    handleBackGesture: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);	
 		this.doBackbutton();
 	},
 	//helper methods:

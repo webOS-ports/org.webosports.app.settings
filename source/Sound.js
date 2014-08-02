@@ -19,6 +19,7 @@ enyo.kind({
 	ringTone: "??",
 	
 	components: [
+		{kind: "Signals", onbackbutton: "handleBackGesture"},
 		{kind: "onyx.Toolbar", layoutKind: "FittableColumnsLayout", classes: "onyx-toolbar", style: "line-height: 28px;", components: [
 			{content: "Audio"},
 		]},
@@ -67,7 +68,6 @@ enyo.kind({
 		{kind: "onyx.Toolbar", layoutKind: "FittableColumnsLayout", components: [
             {name: "Grabber", kind: "onyx.Grabber" }, // this is hacky
             {fit: true },
-            {name: "backbutton", kind: "onyx.Button", showing: "true", content: "Back", ontap: "goBack"}
         ]},
 		{name: "ErrorPopup", kind: "onyx.Popup", classes: "error-popup", modal: true, style: "padding: 10px;", components: [
 				{name: "ErrorMessage", content: "", style: "display: inline;"}
@@ -98,13 +98,12 @@ enyo.kind({
         this.inherited(arguments);
         if (enyo.Panels.isScreenNarrow()){
             this.$.Grabber.applyStyle("visibility", "hidden");
-            this.$.backbutton.setShowing(true);
         }else{
             this.$.Grabber.applyStyle("visibility", "visible");
-            this.$.backbutton.setShowing(false);
         }
     },
-    goBack: function(inSender, inEvent){
+	handleBackGesture: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);	
 		this.doBackbutton();
 	},
     manage: function (inSender, inEvent){						// get every thing set up

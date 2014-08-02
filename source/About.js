@@ -39,7 +39,6 @@ enyo.kind({
         ]},
         { kind: "onyx.Toolbar", components:[
 			{name: "Grabber", kind: "onyx.Grabber"},
-			{name: "backbutton", kind: "onyx.Button", style: "float: right;", showing: "true", content: "Back", ontap: "goBack"}
 		]},
         { kind: "enyo.PalmService", name: "RetrieveVersion", service: "palm://org.webosports.service.update",
             method: "retrieveVersion", onComplete: "onVersionResponse" },
@@ -60,15 +59,11 @@ enyo.kind({
         this.inherited(arguments);
         if (enyo.Panels.isScreenNarrow()){
             this.$.Grabber.applyStyle("visibility", "hidden");
-            this.$.backbutton.setShowing(true);
         }else{
             this.$.Grabber.applyStyle("visibility", "visible");
-            this.$.backbutton.setShowing(false);
         }
     },
-    goBack: function(inSender, inEvent){
-		this.doBackbutton();
-	},
+
     updateAll: function() {
         this.$.RetrieveVersion.send({});
         this.$.GetAndroidProperty.send({keys:[
@@ -157,8 +152,10 @@ enyo.kind({
         this.$.ContentPanels.selectPanelByName(inEvent.targetPanel);
         this.selectContentPanel();
     },
-    selectContentPanel: function() {
-        if (enyo.Panels.isScreenNarrow())
-            this.selectPanelByName("ContentPanels");
+    selectContentPanel: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
+        //if (enyo.Panels.isScreenNarrow())
+        //	this.$.ContentPanels.;
+            //this.selectPanelByName("ContentPanels");
     }
 });

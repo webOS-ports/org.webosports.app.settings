@@ -114,6 +114,8 @@ enyo.kind({
     findNetworksRequest: null,
     autoscan: null,
     components: [
+		{kind: "Signals", onbackbutton: "handleBackGesture"},
+		
         /* Error popup */
         {
             name: "ErrorPopup",
@@ -543,7 +545,6 @@ enyo.kind({
                 {
                     fit: true
                 },
-                {name: "backbutton", kind: "onyx.Button", showing: "true", content: "Back", ontap: "goBack"}
             ]
         },
     ],
@@ -580,10 +581,8 @@ enyo.kind({
         this.inherited(arguments);
         if (enyo.Panels.isScreenNarrow()){
             this.$.Grabber.applyStyle("visibility", "hidden");
-            this.$.backbutton.setShowing(true);
         }else{
             this.$.Grabber.applyStyle("visibility", "visible");
-            this.$.backbutton.setShowing(false);
         }
     },
     //Action Handlers
@@ -802,9 +801,16 @@ enyo.kind({
 			this.$.waitPopup.hide();
 		}
     },
-    goBack: function(inSender, inEvent){
-		this.doBackbutton();
+    handleBackGesture: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);	
+		if(this.$.WiFiPanels.getIndex() !== 1){
+			this.$.WiFiPanels.setIndex(1);
+		}else{
+			this.doBackbutton();
+		}
+		
 	},
+
     //Utility Functions
     clearFoundNetworks: function () {
         this.foundNetworks = [];

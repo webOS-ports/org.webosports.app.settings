@@ -122,6 +122,7 @@ enyo.kind({
 	},
 	//Panel selection functions
 	openPanel: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
 		if (typeof inSender.targetPanel === 'undefined')
 			return;
 		this.$.ContentPanels.selectPanelByName(inSender.targetPanel);
@@ -139,7 +140,7 @@ enyo.kind({
 	layoutKind: "FittableRowsLayout",
 	components: [
 		{kind: "Signals",
-		onBackbutton: "handleBackGesture",
+		onbackbutton: "handleBackGestur",
 		onCoreNaviDragStart: "handleCoreNaviDragStart",
 		onCoreNaviDrag: "handleCoreNaviDrag",
 		onCoreNaviDragFinish: "handleCoreNaviDragFinish",},
@@ -163,16 +164,19 @@ enyo.kind({
 		}
 	},
 	handleBackGesture: function(inSender, inEvent) {
-		console.log("handleBackGesture");
+		this.log("sender:", inSender, ", event:", inEvent);
 		this.$.AppPanels.setIndex(0);
 	},
 	handleCoreNaviDragStart: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
 		this.$.AppPanels.dragstartTransition(this.$.AppPanels.draggable == false ? this.reverseDrag(inEvent) : inEvent);
 	},
 	handleCoreNaviDrag: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
 		this.$.AppPanels.dragTransition(this.$.AppPanels.draggable == false ? this.reverseDrag(inEvent) : inEvent);
 	},
 	handleCoreNaviDragFinish: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
 		this.$.AppPanels.dragfinishTransition(this.$.AppPanels.draggable == false ? this.reverseDrag(inEvent) : inEvent);
 	},
 	//Utility Functions
@@ -181,5 +185,5 @@ enyo.kind({
 		inEvent.ddx = -inEvent.ddx;
 		inEvent.xDirection = -inEvent.xDirection;
 		return inEvent;
-	}
+	},
 });
