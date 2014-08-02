@@ -94,7 +94,6 @@ enyo.kind({
 	closePpoup: function(inSender, inEvent) {
 		// TO DO - Auto-generated code
 		this.$.audio.pause();
-		this.doTone(this.pickedName);
 		this.doClose();
 		this.$.toneList.refresh();
 	},
