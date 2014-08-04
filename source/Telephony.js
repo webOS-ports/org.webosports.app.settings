@@ -36,7 +36,7 @@ enyo.kind({
 			]
 		},
 		{kind: "onyx.Toolbar", components:[
-			{name: "Grabber", kind: "onyx.Grabber"}
+			{name: "Grabber", kind: "onyx.Grabber"},
 		]},
 		{kind: "WanService", method: "getstatus", name: "GetWanStatus", onComplete: "handleWanStatus"},
 		{kind: "WanService", method: "set", name: "SetWanProperty" }
@@ -50,6 +50,15 @@ enyo.kind({
 
 		this.$.GetWanStatus.send({});
 	},
+	reflow: function (inSender) {
+        this.inherited(arguments);
+        if (enyo.Panels.isScreenNarrow()){
+            this.$.Grabber.applyStyle("visibility", "hidden");
+        }else{
+            this.$.Grabber.applyStyle("visibility", "visible");
+        }
+    },
+   
 	/* service response handlers */
 	handleWanStatus: function(inResponse) {
 		var result = inResponse.data;

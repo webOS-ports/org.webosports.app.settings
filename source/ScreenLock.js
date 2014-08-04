@@ -143,7 +143,7 @@ enyo.kind({
 			]},
 		]},
 		{kind: "onyx.Toolbar", components:[
-			{name: "Grabber", kind: "onyx.Grabber"}
+			{name: "Grabber", kind: "onyx.Grabber"},
 		]},
 		{name: "GetDisplayProperty", kind: "DisplayService", method: "getProperty", onComplete: "handleGetPropertiesResponse"},
 		{name: "SetDisplayProperty", kind: "DisplayService", method: "setProperty" },
@@ -174,7 +174,7 @@ enyo.kind({
 			this.$.Grabber.applyStyle("visibility", "visible");
 		}
 	},
-	//Action Handlers
+ 	//Action Handlers
 	brightnessChanged: function(inSender, inEvent) {
 		if(this.palm) {
 			this.$.SetDisplayProperty.send({maximumBrightness: parseInt(this.$.BrightnessSlider.value)});

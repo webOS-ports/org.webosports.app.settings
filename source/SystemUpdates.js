@@ -9,7 +9,7 @@ enyo.kind({
 	published: {
 		updateResults: null
 	},
-	components: [	
+	components: [
 		//ui components:
 		{kind: "onyx.Toolbar", style: "line-height: 28px;", content: "System Update"},
 		
@@ -69,7 +69,7 @@ enyo.kind({
 				content: "Install System Update",
 				ontap: "doInstall",
 				showing: false
-			}
+			},
 		]},
 		
 		//service caller:
@@ -99,7 +99,14 @@ enyo.kind({
 			onComplete: "initiateUpdateComplete"
 		}
 	],
-
+	reflow: function (inSender) {
+        this.inherited(arguments);
+        if (enyo.Panels.isScreenNarrow()){
+            this.$.Grabber.applyStyle("visibility", "hidden");
+        }else{
+            this.$.Grabber.applyStyle("visibility", "visible");
+        }
+    },
 	//button callbacks:
 	doCheck: function (inSender, inEvent) {
 		this.currentRequest = this.$.updateService.send({});
@@ -117,7 +124,7 @@ enyo.kind({
 		this.currentRequest = this.$.initiateService.send({});
 		this.startActivity("Initiating reboot into system update state.");
 	},
-
+    
 	//helper methods:
 	startActivity: function (msg) {
 		this.$.toolbarControls.hide();

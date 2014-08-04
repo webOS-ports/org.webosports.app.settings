@@ -106,13 +106,15 @@ enyo.kind({
     layoutKind: "FittableRowsLayout",
     foundNetworks: null,
     events: {
-        onActiveChanged: ""
+        onActiveChanged: "",
+        onBackbutton: ""
     },
     currentSSID: "",
     palm: false,
     findNetworksRequest: null,
     autoscan: null,
     components: [
+	
         /* Error popup */
         {
             name: "ErrorPopup",
@@ -541,7 +543,7 @@ enyo.kind({
                 }, // this is hacky
                 {
                     fit: true
-                }
+                },
             ]
         },
     ],
@@ -576,10 +578,11 @@ enyo.kind({
     },
     reflow: function (inSender) {
         this.inherited(arguments);
-        if (enyo.Panels.isScreenNarrow())
+        if (enyo.Panels.isScreenNarrow()){
             this.$.Grabber.applyStyle("visibility", "hidden");
-        else
+        }else{
             this.$.Grabber.applyStyle("visibility", "visible");
+        }
     },
     //Action Handlers
     toggleButtonChanged: function (inSender, inEvent) {
@@ -797,6 +800,18 @@ enyo.kind({
 			this.$.waitPopup.hide();
 		}
     },
+    handleBackGesture: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);	
+		
+		if(this.$.WiFiPanels.getIndex() > 1){
+			this.$.WiFiPanels.setIndex(1);
+		}else{
+			if( this.$.WiFiPanels.getIndex() === 1){
+				this.doBackbutton();
+			}
+		}
+	},
+
     //Utility Functions
     clearFoundNetworks: function () {
         this.foundNetworks = [];

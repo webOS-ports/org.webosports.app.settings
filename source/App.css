@@ -155,6 +155,7 @@
 .columns {
 		border: 2px solid red;
 }
+
 /* needed to make onyx-highlight more specific for highlighting to work */
 .onyx-highlight.list-sample-selected {
 	background-color: #dedfdf;

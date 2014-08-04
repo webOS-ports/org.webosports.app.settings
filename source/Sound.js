@@ -1,9 +1,8 @@
 
 enyo.kind({
 	name: "Sound",
-	kind: "enyo.Control",
+	kind: "enyo.FittableRows",
 	published: {},
-	events: {}, 
 	handlers: {
 		onClose: "closePopup",
 		onTone: "tonepicked"
@@ -15,16 +14,12 @@ enyo.kind({
 	systemVolume: 0,
 	ringerVolume: 0,
 	ringTone: "??",
-	
+	debug: false,
 	components: [
-		{kind: "onyx.Toolbar", layoutKind: "FittableColumnsLayout", classes: "onyx-toolbar", style: "height: 32px;", components: [
+		{kind: "onyx.Toolbar", layoutKind: "FittableColumnsLayout", classes: "onyx-toolbar", style: "line-height: 28px;", components: [
 			{content: "Audio"},
 		]},
-		{kind: "Scroller",
-		touch: true,
-		horizontal: "hidden",
-		fit: true,
-		components:[
+		{kind: "Scroller", touch: true,	horizontal: "hidden", fit: true, components:[
 			{tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
 				{kind: "enyo.FittableRows", classes: "content-wrapper", components: [
 					{name: "AudioList", kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout", classes: "content-aligner", fit: true, components: [
@@ -64,7 +59,12 @@ enyo.kind({
 					]}
 				]}
 			]},
+
 		]},
+		{kind: "onyx.Toolbar", layoutKind: "FittableColumnsLayout", components: [
+            {name: "Grabber", kind: "onyx.Grabber" }, // this is hacky
+            {fit: true },
+        ]},
 		{name: "ErrorPopup", kind: "onyx.Popup", classes: "error-popup", modal: true, style: "padding: 10px;", components: [
 				{name: "ErrorMessage", content: "", style: "display: inline;"}
 			]},
@@ -90,6 +90,15 @@ enyo.kind({
         this.manage();
       //  this.$.p.setShowing(0);
     },
+    reflow: function (inSender) {
+        this.inherited(arguments);
+        if (enyo.Panels.isScreenNarrow()){
+            this.$.Grabber.applyStyle("visibility", "hidden");
+        }else{
+            this.$.Grabber.applyStyle("visibility", "visible");
+        }
+    },
+    
     manage: function (inSender, inEvent){						// get every thing set up
 		this.log("sender:", inSender, ", event:", inEvent);
 

@@ -6,7 +6,7 @@ enyo.kind({
 		{kind: "onyx.Toolbar",
 		style: "line-height: 36px;",
 		components:[
-				{content: "Date & Time"},
+			{content: "Date & Time"},
 		]},
 		{kind: "Scroller",
 		touch: true,
