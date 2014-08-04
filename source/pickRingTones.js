@@ -56,11 +56,12 @@ enyo.kind({
 	},
 	
 	loadData: function(inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);
-		
-		// load data/ringtone file into var ringTones []
+	this.log("sender:", inSender, ", event:", inEvent);
+	// load data/ringtone file into var ringTones []
+	//TODO fix this properly for getting ringtones in /media/internal/ringtones (using Media Indexer?);
+	        this.ringTones = phonyringTones;
 	},
-	
+
 	setupItem: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
 		var i = inEvent.index;
@@ -93,7 +94,6 @@ enyo.kind({
 	closePpoup: function(inSender, inEvent) {
 		// TO DO - Auto-generated code
 		this.$.audio.pause();
-		this.doTone(this.pickedName);
 		this.doClose();
 		this.$.toneList.refresh();
 	},
