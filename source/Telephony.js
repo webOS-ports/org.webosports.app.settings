@@ -6,11 +6,7 @@ enyo.kind({
 enyo.kind({
 	name: "Telephony",
 	layoutKind: "FittableRowsLayout",
-	events: {
-        onBackbutton: "",
-    },
 	components:[
-		{kind: "Signals", onbackbutton: "handleBackGesture"},
 		{
 			kind: "onyx.Toolbar",
 			style: "line-height: 36px;",
@@ -62,9 +58,7 @@ enyo.kind({
             this.$.Grabber.applyStyle("visibility", "visible");
         }
     },
-    handleBackGesture: function(inSender, inEvent) {
-		this.doBackbutton();
-	},
+   
 	/* service response handlers */
 	handleWanStatus: function(inResponse) {
 		var result = inResponse.data;

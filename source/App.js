@@ -44,8 +44,12 @@ enyo.kind({
 	realtimeFit: true,
 	arrangerKind: "CollapsingArranger",
 	events: {
-		onBackbutton: "handleBackGesture",
+		onBackMain: "",
 	},
+	handlers: {
+		onBackbutton: "backButton"
+	},
+	debug: false,
 	components:[
 		{name: "MenuPanel",
 		style: "width: 33%",
@@ -125,6 +129,8 @@ enyo.kind({
 		this.log("sender:", inSender, ", event:", inEvent);
 		if (typeof inSender.targetPanel === 'undefined')
 			return;
+		
+		this.currentPanel = inSender.targetPanel;
 		this.$.ContentPanels.selectPanelByName(inSender.targetPanel);
 		this.selectContentPanel();
 	},
@@ -133,6 +139,26 @@ enyo.kind({
 		if (enyo.Panels.isScreenNarrow())
 			this.selectPanelByName("ContentPanels");
 	},
+	
+	handleBack: function(inSender, inEvent){
+		this.log("sender:", inSender, ", event:", inEvent);
+	
+		if( (this.currentPanel !== "AboutPanel") && (this.currentPanel !== "WiFiPanel") ){
+			this.setIndex(0);
+		}else{
+			if( this.currentPanel === "AboutPanel"){
+				this.$.AboutPanel.handleBackGesture();
+			}
+			if(this.currentPanel === "WiFiPanel" ){
+				this.$.WiFiPanel.handleBackGesture();
+			}
+		}
+	},
+	backButton: function(inSender, inEvent){
+		this.log("sender:", inSender, ", event:", inEvent);
+		this.setIndex(0);
+	}
+	
 });
 
 enyo.kind({
@@ -140,7 +166,7 @@ enyo.kind({
 	layoutKind: "FittableRowsLayout",
 	components: [
 		{kind: "Signals",
-		onbackbutton: "handleBackGestur",
+		onbackbutton: "handleBackGesture",
 		onCoreNaviDragStart: "handleCoreNaviDragStart",
 		onCoreNaviDrag: "handleCoreNaviDrag",
 		onCoreNaviDragFinish: "handleCoreNaviDragFinish",},
@@ -165,7 +191,9 @@ enyo.kind({
 	},
 	handleBackGesture: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
-		this.$.AppPanels.setIndex(0);
+		
+		this.$.AppPanels.handleBack();
+		return true;
 	},
 	handleCoreNaviDragStart: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);

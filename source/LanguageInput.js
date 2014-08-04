@@ -4,9 +4,7 @@ enyo.kind({
 	layoutKind: "FittableRowsLayout",
 	palm: true,
 	keyboardState: {},
-	events: {onBackbutton: ""},
 	components: [
-		{kind: "Signals", onbackbutton: "handleBackGesture"},
 		{kind: "onyx.Toolbar", style: "line-height: 36px;", components: [
 			{content: "Language & Input"}
 		]},
@@ -70,6 +68,7 @@ enyo.kind({
             this.$.Grabber.applyStyle("visibility", "visible");
         }
     },
+    
     // Control Action Handlers
     onInputPreferenceChanged: function(inSender, inEvent) {
         enyo.log("Input preferences changed");
@@ -111,8 +110,4 @@ enyo.kind({
         if (!response.returnValue)
             console.log("Failed to set keyboard preferences");
     },
-    handleBackGesture: function(inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);	
-		this.doBackbutton();
-	},
 });

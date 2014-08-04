@@ -3,9 +3,6 @@ enyo.kind({
 	name: "Sound",
 	kind: "enyo.FittableRows",
 	published: {},
-	events: {
-		onBackbutton: "",
-	}, 
 	handlers: {
 		onClose: "closePopup",
 		onTone: "tonepicked"
@@ -17,9 +14,8 @@ enyo.kind({
 	systemVolume: 0,
 	ringerVolume: 0,
 	ringTone: "??",
-	
+	debug: false,
 	components: [
-		{kind: "Signals", onbackbutton: "handleBackGesture"},
 		{kind: "onyx.Toolbar", layoutKind: "FittableColumnsLayout", classes: "onyx-toolbar", style: "line-height: 28px;", components: [
 			{content: "Audio"},
 		]},
@@ -102,10 +98,7 @@ enyo.kind({
             this.$.Grabber.applyStyle("visibility", "visible");
         }
     },
-	handleBackGesture: function(inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);	
-		this.doBackbutton();
-	},
+    
     manage: function (inSender, inEvent){						// get every thing set up
 		this.log("sender:", inSender, ", event:", inEvent);
 

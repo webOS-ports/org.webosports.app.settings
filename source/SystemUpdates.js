@@ -9,11 +9,7 @@ enyo.kind({
 	published: {
 		updateResults: null
 	},
-	events: {
-        onBackbutton: "",
-    },
 	components: [
-		{kind: "Signals", onbackbutton: "handleBackGesture"},
 		//ui components:
 		{kind: "onyx.Toolbar", style: "line-height: 28px;", content: "System Update"},
 		
@@ -128,10 +124,7 @@ enyo.kind({
 		this.currentRequest = this.$.initiateService.send({});
 		this.startActivity("Initiating reboot into system update state.");
 	},
-    handleBackGesture: function(inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);	
-		this.doBackbutton();
-	},
+    
 	//helper methods:
 	startActivity: function (msg) {
 		this.$.toolbarControls.hide();

@@ -107,15 +107,14 @@ enyo.kind({
     foundNetworks: null,
     events: {
         onActiveChanged: "",
-        onBackbutton: "",
+        onBackbutton: ""
     },
     currentSSID: "",
     palm: false,
     findNetworksRequest: null,
     autoscan: null,
     components: [
-		{kind: "Signals", onbackbutton: "handleBackGesture"},
-		
+	
         /* Error popup */
         {
             name: "ErrorPopup",
@@ -803,12 +802,14 @@ enyo.kind({
     },
     handleBackGesture: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);	
-		if(this.$.WiFiPanels.getIndex() !== 1){
+		
+		if(this.$.WiFiPanels.getIndex() > 1){
 			this.$.WiFiPanels.setIndex(1);
 		}else{
-			this.doBackbutton();
+			if( this.$.WiFiPanels.getIndex() === 1){
+				this.doBackbutton();
+			}
 		}
-		
 	},
 
     //Utility Functions

@@ -2,14 +2,10 @@ enyo.kind({
 	name: "DateTime",
 	layoutKind: "FittableRowsLayout",
 	palm: false,
-	events: {
-        onBackbutton: "",
-    },
 	components:[
 		{kind: "onyx.Toolbar",
 		style: "line-height: 36px;",
 		components:[
-			{kind: "Signals", onbackbutton: "handleBackGesture"},
 			{content: "Date & Time"},
 		]},
 		{kind: "Scroller",
@@ -113,10 +109,6 @@ enyo.kind({
 		else {
 			this.$.Grabber.applyStyle("visibility", "visible");
 		}
-	},
-    handleBackGesture: function(inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);	
-		this.doBackbutton();
 	},
 	updateTimeControlStates: function() {
 		if (this.$.NetworkTimeToggle.value) {

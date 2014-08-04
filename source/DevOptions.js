@@ -8,11 +8,7 @@ enyo.kind({
 	name: "DevOptions",
 	layoutKind: "FittableRowsLayout",
 	palm: false,
-	events: {
-        onBackbutton: "",
-    },
 	components:[
-		{kind: "Signals", onbackbutton: "handleBackGesture"},
 		{
 			kind: "onyx.Toolbar",
 			style: "line-height: 36px;",
@@ -102,10 +98,8 @@ enyo.kind({
             this.$.Grabber.applyStyle("visibility", "visible");
         }
     },
-    handleBackGesture: function(inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);	
-		this.doBackbutton();
-	},
+    
+
 	/* Control handlers */
 	onDevModeChanged: function(inSender, inEvent) {
 		if (!this.palm) {

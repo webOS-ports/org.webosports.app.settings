@@ -124,9 +124,16 @@ enyo.kind({
     name: "About",
     layoutKind: "FittableRowsLayout",
     palm: true,
+	events: {
+		onBackbutton: "",
+	},
+	handlers: {
+		onBackMain: "handleBackGesture",
+		onBack: "handleBack"
+	},
+	debug: false,
     components: [
-        { kind: "Signals", onbackbutton: "handleBackGesture" },
-        { kind: "Panels", name: "ContentPanels", fit: true, draggable: false,
+		{ kind: "Panels", name: "ContentPanels", fit: true, draggable: false,
           components: [
             { name: "Information", kind: "DeviceSoftwareInformation", onSwitchPanel: "switchPanel" },
             { name: "Licenses", kind: "Licenses", onSwitchPanel: "switchPanel" }
@@ -143,8 +150,22 @@ enyo.kind({
     },
     // Action Handlers
     handleBackGesture: function(inSender, inEvent) {
-        this.switchPanel(null, {targetPanel: "Information"});
+		this.log("sender:", inSender, ", event:", inEvent);
+		if(this.$.ContentPanels.getIndex() === 0){
+			this.doBackbutton();
+        }
+        
+		if(this.$.ContentPanels.getIndex() === 1){
+			//this.switchPanel(null, {targetPanel: "Information"});
+			this.$.Licenses.handleBackGesture();	
+		}
+		
+
     },
+    handleBack: function(inSender, inEvent){
+		this.log("sender:", inSender, ", event:", inEvent);
+		this.switchPanel(null, {targetPanel: "Information"});
+	},
     switchPanel: function(inSender, inEvent) {
         console.log("switchPanel: targetPanel=" + inEvent.targetPanel);
         if (typeof inEvent.targetPanel === 'undefined')
