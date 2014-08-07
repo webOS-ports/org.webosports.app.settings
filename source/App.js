@@ -129,7 +129,9 @@ enyo.kind({
 		this.log("sender:", inSender, ", event:", inEvent);
 		if (typeof inSender.targetPanel === 'undefined')
 			return;
-		
+		if(inSender.targetPanel === "WiFiPanel"){
+			this.$.WiFiPanel.wifistate(true);
+		}
 		this.currentPanel = inSender.targetPanel;
 		this.$.ContentPanels.selectPanelByName(inSender.targetPanel);
 		this.selectContentPanel();
