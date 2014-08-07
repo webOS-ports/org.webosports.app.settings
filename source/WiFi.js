@@ -735,7 +735,7 @@ enyo.kind({
         this.$.WiFiToggle.setValue(value);
     },
     showError: function (message) {
-		this.upadateSpinnerState();
+		this.updateSpinnerState();
         this.$.ErrorMessage.setContent(message);
         this.$.ErrorPopup.show();
     },
@@ -805,9 +805,11 @@ enyo.kind({
 		
 		if(this.$.WiFiPanels.getIndex() > 1){
 			this.$.WiFiPanels.setIndex(1);
+			this.updateSpinnerState();					// stop the spinner
 		}else{
 			if( this.$.WiFiPanels.getIndex() === 1){
 				this.doBackbutton();
+				this.updateSpinnerState();				// stop the spinner
 			}
 		}
 	},
@@ -827,7 +829,7 @@ enyo.kind({
         return pass;
     },
     startAutoscan: function() {
-        if (null === this.autoscan) {
+		if (null === this.autoscan) {
             console.log("Starting autoscan ...");
             this.autoscan = window.setInterval(enyo.bind(this, "triggerAutoscan"), 15000);
             if (!this.foundNetworks)
