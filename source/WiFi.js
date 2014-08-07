@@ -793,12 +793,15 @@ enyo.kind({
     },
     updateSpinnerState: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
-		var text = inEvent;
-		if (inSender === "start"){
-			this.$.waitPopup.show();
-			this.$.wpText.setContent(text);
-		}else{
-			this.$.waitPopup.hide();
+		if(this.$.WiFiPanels.hasFocus() !== undefined){
+			console.log("has",	this.$.WiFiPanels.hasFocus() );
+			var text = inEvent;
+			if (inSender === "start"){
+				this.$.waitPopup.show();
+				this.$.wpText.setContent(text);
+			}else{
+				this.$.waitPopup.hide();
+			}
 		}
     },
     handleBackGesture: function(inSender, inEvent) {
