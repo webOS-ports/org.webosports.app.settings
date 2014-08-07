@@ -791,7 +791,8 @@ enyo.kind({
 
         this.showNetworksList();
     },
-    updateSpinnerState: function(inSender, inEvent) {			
+    updateSpinnerState: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
 		var text = inEvent;
 		if (inSender === "start"){
 			this.$.waitPopup.show();
@@ -828,7 +829,8 @@ enyo.kind({
 
         return pass;
     },
-    startAutoscan: function() {
+    startAutoscan: function(inSender, inEvent) {
+    	this.log("sender:", inSender, ", event:", inEvent);
 		if (null === this.autoscan) {
             console.log("Starting autoscan ...");
             this.autoscan = window.setInterval(enyo.bind(this, "triggerAutoscan"), 15000);
@@ -837,8 +839,8 @@ enyo.kind({
         }
     },
     triggerAutoscan: function() {
-		this.updateSpinnerState();
-        if (!navigator.WiFiManager)
+		this.updateSpinnerState("start", "Scanning");
+		if (!navigator.WiFiManager)
             return;
         navigator.WiFiManager.retrieveNetworks(enyo.bind(this, "handleRetrieveNetworksResponse"),
                                                enyo.bind(this, "handleRetrieveNetworksFailed"));
