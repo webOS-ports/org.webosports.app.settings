@@ -113,6 +113,7 @@ enyo.kind({
     palm: false,
     findNetworksRequest: null,
     autoscan: null,
+    managepopup: false,
     components: [
 	
         /* Error popup */
@@ -586,10 +587,12 @@ enyo.kind({
     },
     //Action Handlers
     toggleButtonChanged: function (inSender, inEvent) {
-        if (inEvent.value == true)
+        if (inEvent.value == true){
             this.activateWiFi(this);
-        else
+        } else{
             this.deactivateWiFi(this);
+            this.managepopup = false;
+       }
         this.doActiveChanged(inEvent);
     },
     listItemTapped: function (inSender, inEvent) {
@@ -694,14 +697,16 @@ enyo.kind({
 
         // switch back to network list view
         this.showNetworksList();
-        delete password;
+		delete password;
         this.$.PasswordInput.setValue("");
+		this.updateSpinnerState();
     },
     onNetworkConnectAborted: function (inSender, inEvent) {
         // switch back to network list view
         this.showNetworksList(inSender, inEvent);
 
         this.$.PasswordInput.setValue("");
+        this.updateSpinnerState();
     },
     onOtherJoinCancelled: function (inSender, inEvent) {
         // switch back to network list view
@@ -726,6 +731,7 @@ enyo.kind({
     showJoinNetwork: function(inSender, inEvent) {
         this.$.WiFiPanels.setIndex(3);
         this.stopAutoscan();
+        this.updateSpinnerState();
     },
     showNetworkConfiguration: function (inSender, inEvent) {
         this.$.WiFiPanels.setIndex(4);
@@ -740,8 +746,9 @@ enyo.kind({
         this.$.ErrorPopup.show();
     },
     activateWiFi: function (inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
         this.showNetworksList();
-        if (!navigator.WiFiManager)
+		if (!navigator.WiFiManager)
             return;
         navigator.WiFiManager.enabled = true;
     },
@@ -755,6 +762,7 @@ enyo.kind({
 		this.updateSpinnerState();
     },
     handleNetworkConnectFailed: function() {
+		this.updateSpinnerState();
     },
     connectNetwork: function (inSender, inEvent) {
         console.log("connectNetwork " + JSON.stringify(inEvent));
@@ -793,16 +801,18 @@ enyo.kind({
     },
     updateSpinnerState: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
-		if(this.$.WiFiPanels.hasFocus() !== undefined){
-			console.log("has",	this.$.WiFiPanels.hasFocus() );
-			var text = inEvent;
-			if (inSender === "start"){
-				this.$.waitPopup.show();
-				this.$.wpText.setContent(text);
-			}else{
-				this.$.waitPopup.hide();
-			}
+		console.log("mangae popup",this.managepopup);
+		var text = inEvent;
+		if (inSender === "start" && this.managepopup !== false){
+			this.$.waitPopup.show();
+			this.$.wpText.setContent(text);
+		}else{
+			this.$.waitPopup.hide();
 		}
+    },
+    wifistate: function (inSender, inEvent){
+		this.log("sender:", inSender, ", event:", inEvent);
+		this.managepopup = inSender;
     },
     handleBackGesture: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);	
@@ -811,9 +821,10 @@ enyo.kind({
 			this.$.WiFiPanels.setIndex(1);
 			this.updateSpinnerState();					// stop the spinner
 		}else{
-			if( this.$.WiFiPanels.getIndex() === 1){
+			if( this.$.WiFiPanels.getIndex() === 1 || this.$.WiFiPanels.getIndex() === 0){
 				this.doBackbutton();
 				this.updateSpinnerState();				// stop the spinner
+				this.managepopup = false;
 			}
 		}
 	},
@@ -833,16 +844,20 @@ enyo.kind({
         return pass;
     },
     startAutoscan: function(inSender, inEvent) {
-    	this.log("sender:", inSender, ", event:", inEvent);
+		this.log("sender:", inSender, ", event:", inEvent);
 		if (null === this.autoscan) {
             console.log("Starting autoscan ...");
             this.autoscan = window.setInterval(enyo.bind(this, "triggerAutoscan"), 15000);
             if (!this.foundNetworks)
                 this.triggerAutoscan();
+                console.log("this.triggerAutoscan();");
         }
     },
     triggerAutoscan: function() {
-		this.updateSpinnerState("start", "Scanning");
+    	console.log(" current",this.currentNetwork);
+		if(this.managepopup === true && ( this.currentNetwork === null || this.currentNetwork === undefined) ){
+			this.updateSpinnerState("start", "Scanning");
+		}
 		if (!navigator.WiFiManager)
             return;
         navigator.WiFiManager.retrieveNetworks(enyo.bind(this, "handleRetrieveNetworksResponse"),
@@ -853,8 +868,8 @@ enyo.kind({
             console.log("Stopping autoscan ...");
             window.clearInterval(this.autoscan);
             this.autoscan = null;
-            this.updateSpinnerState();
         }
+        this.updateSpinnerState();
     },
     //Service Callbacks
     handleRetrieveNetworksResponse: function (networks) {
@@ -885,6 +900,7 @@ enyo.kind({
     },
     handleWiFiNetworksChanged: function(networks) {
         this.handleRetrieveNetworksResponse(networks);
+        this.stopAutoscan();
     },
     
 });
