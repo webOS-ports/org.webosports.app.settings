@@ -815,11 +815,8 @@ enyo.kind({
 		var text = inEvent;
 		if (inSender === "start" ){
 			this.$.networkSearch.show();
-		//	this.$.spin2.show();
-			//this.$.wpText.setContent(text);
 		}else{
 			this.$.networkSearch.hide();
-			//this.$.spin2.hide();
 		}
     },
 
@@ -833,7 +830,6 @@ enyo.kind({
 			if( this.$.WiFiPanels.getIndex() === 1 || this.$.WiFiPanels.getIndex() === 0){
 				this.doBackbutton();
 				this.updateSpinnerState();				// stop the spinner
-				this.managepopup = false;
 			}
 		}
 	},
