@@ -53,10 +53,14 @@
 .onyx-groupbox-header {
     padding: 3px 8px;
 }
+.group-item-wrapper{
+
+}
 .group-item {
-    padding: 8px;
-    min-height: 32px;
-    line-height: 32px;
+	
+    padding-right: 30px;
+    min-height: 50px;
+    line-height: 50px;
     border-bottom: 1px solid #AAAAAA;
 }
 .error-popup {
@@ -72,7 +76,9 @@
  *   WiFi
  */
  .wifi-list-icon {
-    margin-left: 8px;
+ 	padding-top: 15px;
+ 	padding-right: 3px;
+    margin-left: 10px;
 }
 .wifi-join-button {
     padding: 8px 0;

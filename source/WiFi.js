@@ -11,6 +11,7 @@ Array.prototype.contains = function(obj) {
 enyo.kind({
     name: "WiFiListItem",
     classes: "group-item-wrapper",
+    
     components: [
         {
             classes: "group-item",
@@ -21,12 +22,20 @@ enyo.kind({
                     content: "SSID",
                     fit: true
                 },
+                {	
+					name: "spin",
+                    kind: "onyx.Spinner", 
+                    showing: false,
+                    style: "padding: 30px;",
+                    classes: "onyx-light",
+                },
                 {
                     name: "StatusMessage",
                     content: "",
                     classes: "wifi-message-status",
                     showing: false
                 },
+
                 {
                     name: "Active",
                     kind: "Image",
@@ -113,7 +122,6 @@ enyo.kind({
     palm: false,
     findNetworksRequest: null,
     autoscan: null,
-    managepopup: false,
     components: [
 	
         /* Error popup */
@@ -131,21 +139,7 @@ enyo.kind({
                 }
             ]
         },
-        /* wait popup */
-        {
-			name: "waitPopup",
-			kind: "onyx.Popup",
-			centered: true,
-			floating: true, 
-			autoDismiss: false,
-			modal: true,
-			style: "text-align: center; padding: 20px; width: 200px;",
-			components: [
-				{kind: "onyx.Spinner", classes: "onyx-dark"},
-				{ name: "wpText", content: " "},
-			]
-		},
-        
+
         /* Top toolbar */
         {
             kind: "onyx.Toolbar",
@@ -202,7 +196,7 @@ enyo.kind({
                             components: [
                                 {
                                     kind: "onyx.GroupboxHeader",
-                                    content: "Choose a Network"
+                                    content: "Choose a Network",
                                 },
                                 {
                                     classes: "networks-scroll",
@@ -215,6 +209,7 @@ enyo.kind({
                                             kind: "Repeater",
                                             count: 0,
                                             onSetupItem: "setupSearchRow",
+                                            
                                             components: [
                                                 {
                                                     kind: "WiFiListItem",
@@ -223,6 +218,10 @@ enyo.kind({
                                             ]
                                     }]
                                 },
+                                {name: "networkSearch", kind: "enyo.FittableColumns", showing: false, classes: "wifi-join-button", components: [
+									{content: "Look for networks", fit: true},
+									{name: "spin2",	kind: "onyx.Spinner", showing: true, style: "padding: 30px;", classes: "onyx-light" },
+                                ]},				//network search spinner
                                 {
                                     name: "JoinButton",
                                     kind: "enyo.FittableColumns",
@@ -235,7 +234,8 @@ enyo.kind({
                                         {
                                             content: "Join Network",
                                             fit: true
-                                        }
+                                        },
+                                        
                                     ],
                                     ontap: "onJoinButtonTapped",
                                     handlers: {
@@ -249,9 +249,10 @@ enyo.kind({
                                     released: function () {
                                         this.removeClass("onyx-selected");
                                     }
-                                }
+                                },
+                               
                             ]
-                }]
+						}]
                 },
                 /* Network connect panel */
                 {
@@ -576,6 +577,7 @@ enyo.kind({
             handleWiFiEnabled();
 
         this.doActiveChanged({value: navigator.WiFiManager.enabled});
+        
     },
     reflow: function (inSender) {
         this.inherited(arguments);
@@ -648,23 +650,30 @@ enyo.kind({
             inEvent.item.$.wiFiListItem.$.Active.setShowing(false);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(true);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("Connecting ...");
+            inEvent.item.$.wiFiListItem.$.spin.setShowing(true);
+            this.updateSpinnerState();
             break;
         case "ready":
+
         case "online":
             inEvent.item.$.wiFiListItem.$.Active.setShowing(true);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(false);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("");
+            inEvent.item.$.wiFiListItem.$.spin.setShowing(false);
+            this.updateSpinnerState();
             break;
         case "failure":
             inEvent.item.$.wiFiListItem.$.Active.setShowing(false);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(true);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("Association failed!");
+            inEvent.item.$.wiFiListItem.$.spin.setShowing(false);
             break;
         case "idle":
         default:
             inEvent.item.$.wiFiListItem.$.Active.setShowing(false);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(false);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("");
+            inEvent.item.$.wiFiListItem.$.spin.setShowing(false);
             break;
         }
 
@@ -675,6 +684,7 @@ enyo.kind({
         if (this.foundNetworks[inEvent.index].strength) {
             var bars = this.signalStrengthToBars(this.foundNetworks[inEvent.index].strength);
             inEvent.item.$.wiFiListItem.$.Signal.setSrc("assets/wifi/signal-icon-" + bars + ".png");
+            this.updateSpinnerState();
         }
     },
     setupKnownNetworkRow: function (inSender, inEvent) {
@@ -684,7 +694,7 @@ enyo.kind({
     },
     onNetworkConnect: function (inSender, inEvent) {
 		var password = this.$.PasswordInput.getValue();
-		this.updateSpinnerState("start", "Connecting");
+		//this.updateSpinnerState("start", "Connecting");
 
         if (this.validatePassword(password)) {
             this.connectNetwork(this, {
@@ -801,19 +811,18 @@ enyo.kind({
     },
     updateSpinnerState: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
-		console.log("mangae popup",this.managepopup);
+		
 		var text = inEvent;
-		if (inSender === "start" && this.managepopup !== false){
-			this.$.waitPopup.show();
-			this.$.wpText.setContent(text);
+		if (inSender === "start" ){
+			this.$.networkSearch.show();
+		//	this.$.spin2.show();
+			//this.$.wpText.setContent(text);
 		}else{
-			this.$.waitPopup.hide();
+			this.$.networkSearch.hide();
+			//this.$.spin2.hide();
 		}
     },
-    wifistate: function (inSender, inEvent){
-		this.log("sender:", inSender, ", event:", inEvent);
-		this.managepopup = inSender;
-    },
+
     handleBackGesture: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);	
 		
@@ -854,10 +863,7 @@ enyo.kind({
         }
     },
     triggerAutoscan: function() {
-    	console.log(" current",this.currentNetwork);
-		if(this.managepopup === true && ( this.currentNetwork === null || this.currentNetwork === undefined) ){
-			this.updateSpinnerState("start", "Scanning");
-		}
+		this.updateSpinnerState("start");
 		if (!navigator.WiFiManager)
             return;
         navigator.WiFiManager.retrieveNetworks(enyo.bind(this, "handleRetrieveNetworksResponse"),
