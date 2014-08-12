@@ -577,7 +577,7 @@ enyo.kind({
             handleWiFiEnabled();
 
         this.doActiveChanged({value: navigator.WiFiManager.enabled});
-        
+        this.updateSpinnerState("start");
     },
     reflow: function (inSender) {
         this.inherited(arguments);
@@ -651,7 +651,7 @@ enyo.kind({
             inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(true);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("Connecting ...");
             inEvent.item.$.wiFiListItem.$.spin.setShowing(true);
-            this.updateSpinnerState();
+        //    this.updateSpinnerState();
             break;
         case "ready":
 
@@ -660,7 +660,7 @@ enyo.kind({
             inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(false);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("");
             inEvent.item.$.wiFiListItem.$.spin.setShowing(false);
-            this.updateSpinnerState();
+         //   this.updateSpinnerState();
             break;
         case "failure":
             inEvent.item.$.wiFiListItem.$.Active.setShowing(false);
@@ -684,8 +684,7 @@ enyo.kind({
         if (this.foundNetworks[inEvent.index].strength) {
             var bars = this.signalStrengthToBars(this.foundNetworks[inEvent.index].strength);
             inEvent.item.$.wiFiListItem.$.Signal.setSrc("assets/wifi/signal-icon-" + bars + ".png");
-            this.updateSpinnerState();
-        }
+		}
     },
     setupKnownNetworkRow: function (inSender, inEvent) {
         inEvent.item.$.wiFiListItem.$.SSID.setContent(this.knownNetworks[inEvent.index].name);
@@ -709,14 +708,14 @@ enyo.kind({
         this.showNetworksList();
 		delete password;
         this.$.PasswordInput.setValue("");
-		this.updateSpinnerState();
+	//	this.updateSpinnerState();
     },
     onNetworkConnectAborted: function (inSender, inEvent) {
         // switch back to network list view
         this.showNetworksList(inSender, inEvent);
 
         this.$.PasswordInput.setValue("");
-        this.updateSpinnerState();
+       // this.updateSpinnerState();
     },
     onOtherJoinCancelled: function (inSender, inEvent) {
         // switch back to network list view
@@ -731,7 +730,7 @@ enyo.kind({
         this.$.WiFiPanels.setIndex(0);
     },
     showNetworksList: function (inSender, inEvent) {
-        this.startAutoscan();
+		this.updateSpinnerState("start");
         return this.$.WiFiPanels.setIndex(1);
     },
     showNetworkConnect: function (inSender, inEvent) {
@@ -741,7 +740,7 @@ enyo.kind({
     showJoinNetwork: function(inSender, inEvent) {
         this.$.WiFiPanels.setIndex(3);
         this.stopAutoscan();
-        this.updateSpinnerState();
+      //  this.updateSpinnerState();
     },
     showNetworkConfiguration: function (inSender, inEvent) {
         this.$.WiFiPanels.setIndex(4);
@@ -757,6 +756,7 @@ enyo.kind({
     },
     activateWiFi: function (inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
+		this.updateSpinnerState("start");
         this.showNetworksList();
 		if (!navigator.WiFiManager)
             return;
@@ -769,10 +769,10 @@ enyo.kind({
         navigator.WiFiManager.enabled = false;
     },
     handleNetworkConnectSucceeded: function() {
-		this.updateSpinnerState();
+	//	this.updateSpinnerState();
     },
     handleNetworkConnectFailed: function() {
-		this.updateSpinnerState();
+	//	this.updateSpinnerState();
     },
     connectNetwork: function (inSender, inEvent) {
         console.log("connectNetwork " + JSON.stringify(inEvent));
@@ -887,7 +887,7 @@ enyo.kind({
     },
     handleConnectResponse: function (inSender, inResponse) {
         var result = inResponse.data;
-        this.updateSpinnerState();
+   //     this.updateSpinnerState();
         this.showError("Connection could not be established");
     },
     handleWiFiEnabled: function() {
