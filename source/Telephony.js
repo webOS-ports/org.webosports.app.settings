@@ -23,12 +23,12 @@ enyo.kind({
 				{tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
 					{kind: "onyx.Groupbox", components: [
 						{kind: "onyx.GroupboxHeader", content: "Network"},
-						{ classes: "group-item", style: "height: 42px;", components:[
-							{content: "Roaming allowed", fit: true, style: "display: inline-block; line-height: 42px;"},
+						{ classes: "group-item", components:[
+							{content: "Roaming allowed", fit: true, style: "display: inline-block; line-height: 32px; "},
 							{name: "RoamingAllowed", kind: "onyx.ToggleButton", style: "float: right;", onChange: "roamingAllowedChanged"},
 						]},
-						{ classes: "group-item", style: "height: 42px;", components:[
-							{content: "Data usage", fit: true, style: "display: inline-block; line-height: 42px;"},
+						{ classes: "group-item", components:[
+							{content: "Data usage", fit: true, style: "display: inline-block; line-height: 32px;" },
 							{name: "DataUsage", kind: "onyx.ToggleButton", style: "float: right;", onChange: "dataUsageChanged"},
 						]},
 					]},

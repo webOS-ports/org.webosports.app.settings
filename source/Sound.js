@@ -21,40 +21,49 @@ enyo.kind({
 		]},
 		{kind: "Scroller", touch: true,	horizontal: "hidden", fit: true, components:[
 			{tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
-				{kind: "enyo.FittableRows", classes: "content-wrapper", components: [
-					{name: "AudioList", kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout", classes: "content-aligner", fit: true, components: [
+				{kind: "enyo.FittableRows",
+			//	classes: "content-wrapper", 
+				components: [
+					{name: "AudioList", kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout", 
+					classes: "content-aligner",
+					fit: true, components: [
 						{kind: "onyx.GroupboxHeader", content: "Audio Settings"},
-						{classes: "group-item", components: [
-						{name: "volume", content: "Volume ", class: "group-item"},
-						{name: "volumeSlider", kind: "onyx.Slider", value: "20", onChanging: "volumeChange"}
-					]},
+						{kind: "enyo.FittableColumns", classes: "group-item", components: [
+							{name: "volume", content: "Volume "},
+							{style: "padding-top: 5px;", fit: true, components: [
+								{name: "volumeSlider", kind: "onyx.Slider", value: "20", onChanging: "volumeChange"}
+							]}
+						]},
 						{classes: "group-item", components: [
 						{kind: "enyo.FittableColumns", components: [
-							{name: "keys", content: "Keyboard Clicks"},
-							{fit: true, onchange: "create"},
-							{name: "keyClicksToggle",kind: "onyx.ToggleButton", onChange: "keyClicks"}
+							{name: "keys", fit: true, content: "Keyboard Clicks"},
+							{name: "keyClicksToggle", kind: "onyx.ToggleButton", onChange: "keyClicks"}
 						]}
 					]},
 						{classes: "group-item", components: [
 						{kind: "enyo.FittableColumns", components: [
-							{name: "vibrate", content: "Vibrate"},
-							{fit: true},
+							{name: "vibrate", fit: true, content: "Vibrate"},
 							{name: "vibrateToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "vib"}
 						]}
 					]},
-						{classes: "group-item", components: [
-						{kind: "enyo.FittableColumns", components: [
-							{content: "System Sounds "},
-							{fit: true},
+						{classes: "group-item", style: "padding-bottom: 5px", components: [
+						{kind: "enyo.FittableColumns", style: "padding-bottom: 5px", components: [
+							{content: "System Sounds ",fit: true},
 							{name: "systemSoundToggle", kind: "onyx.ToggleButton", onChange: "systemSounds"}
 						]}
 					]},
 						{classes: "group-item", components: [
-							{name: "ringer", content: "Ringer Volume ", class: "group-item"},
-							{name:"ringerSlider", kind: "onyx.Slider", value: "20", onChanging: "ringerVolumeChange"}
+							{kind: "enyo.FittableColumns", components: [
+								{name: "ringer", content: "Ringer Volume ", class: "group-item"},
+									{style: "padding-top: 10px;", fit: true, components: [
+								{name:"ringerSlider", kind: "onyx.Slider", value: "20", onChanging: "ringerVolumeChange"}
+								]}
+							]}
 						]},
-						{classes: "group-item", components: [
-							{name: "ringerPicker", kind: "onyx.Button", content: "Ring tone Picker ", classes: "group-item", ontap: "ringerPopup"},
+						{
+						//classes: "group-item",
+						style: "padding: 8px;", components: [
+							{name: "ringerPicker", kind: "onyx.Button", content: "Ring tone Picker ", style: "height: 100%", ontap: "ringerPopup"},
 						]},
 					]}
 				]}

@@ -31,8 +31,12 @@ enyo.kind({
 					{kind: "onyx.GroupboxHeader", content: "Screen"},
 					{classes: "group-item",
 					components:[
-						{content: "Brightness"},
-						{name: "BrightnessSlider", kind: "onyx.Slider", onChange: "brightnessChanged", onChanging: "brightnessChanged"}
+						{kind: "enyo.FittableColumns", components: [
+							{content: "Brightness"},
+							{ fit: true, components: [
+								{name: "BrightnessSlider", kind: "onyx.Slider", onChange: "brightnessChanged", onChanging: "brightnessChanged"}
+							]},
+						]}
 					]},
 					{classes: "group-item",
 					style: "height: 42px;",
@@ -55,7 +59,7 @@ enyo.kind({
 				{kind: "onyx.Groupbox", components: [
 					{kind: "onyx.GroupboxHeader", content: "Wallpaper"},
 					{classes: "group-item",
-					style: "padding: 0;",
+					style: "padding: 0; height: 212px; background-color: red",
 					components:[
 						/* {kind: "onyx.Button", style: "width: 100%;", content: "Change Wallpaper", ontap: "openWallpaperPicker"}, */
 						{kind: "enyo.Scroller",
@@ -111,6 +115,7 @@ enyo.kind({
 					components:[
 						{kind: "Control",
 						content: "Show When Locked",
+						classes: "padleft",
 						style: "display: inline-block; line-height: 32px;"},
 						{name: "AlertsToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "lockAlertsChanged"},
 					]},
@@ -119,6 +124,7 @@ enyo.kind({
 						{kind: "onyx.TooltipDecorator", components: [
 							{kind: "Control",
 							content: "Blink Notifications",
+							classes: "padleft",
 							style: "display: inline-block; line-height: 32px;"},
 							{name: "BlinkToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "blinkNotificationsChanged"},
 							{kind: "onyx.Tooltip", content: "Blinks the LED when new notifications arrive."}

@@ -57,10 +57,10 @@
 	padding-left: 10px;
 }
 .group-item {
-	
-    padding-right: 30px;
-    min-height: 50px;
-    line-height: 50px;
+	padding: 10px;
+
+    height: 52px; 
+    line-height: 32px;
     border-bottom: 1px solid #AAAAAA;
 }
 .error-popup {
@@ -71,6 +71,13 @@
     margin-left: 30%;
     margin-right: 30%;
     text-align: center;
+}
+.padleft {
+	padding: 8px;
+}
+.toggles {
+	float: right;
+	padding-top: 5px;
 }
 /*
  *   WiFi
@@ -130,11 +137,11 @@
     margin: 10px 0 0 0;
     width: 100%;
 }
-
+/*
 .popup  {
 	width: 350px;
 	height: 400px;
-}
+}*/
 
 .list-sample-list {
 	height: 365px;
@@ -159,7 +166,7 @@
 }
 
 .columns {
-		border: 2px solid red;
+	border: 2px solid red;
 }
 
 /* needed to make onyx-highlight more specific for highlighting to work */
