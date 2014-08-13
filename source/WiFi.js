@@ -651,7 +651,6 @@ enyo.kind({
             inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(true);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("Connecting ...");
             inEvent.item.$.wiFiListItem.$.spin.setShowing(true);
-        //    this.updateSpinnerState();
             break;
         case "ready":
 
@@ -660,8 +659,7 @@ enyo.kind({
             inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(false);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("");
             inEvent.item.$.wiFiListItem.$.spin.setShowing(false);
-         //   this.updateSpinnerState();
-            break;
+        	break;
         case "failure":
             inEvent.item.$.wiFiListItem.$.Active.setShowing(false);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(true);
@@ -693,8 +691,7 @@ enyo.kind({
     },
     onNetworkConnect: function (inSender, inEvent) {
 		var password = this.$.PasswordInput.getValue();
-		//this.updateSpinnerState("start", "Connecting");
-
+		
         if (this.validatePassword(password)) {
             this.connectNetwork(this, {
                 path: this.currentNetwork.path,
@@ -708,14 +705,12 @@ enyo.kind({
         this.showNetworksList();
 		delete password;
         this.$.PasswordInput.setValue("");
-	//	this.updateSpinnerState();
     },
     onNetworkConnectAborted: function (inSender, inEvent) {
         // switch back to network list view
         this.showNetworksList(inSender, inEvent);
 
         this.$.PasswordInput.setValue("");
-       // this.updateSpinnerState();
     },
     onOtherJoinCancelled: function (inSender, inEvent) {
         // switch back to network list view
@@ -740,7 +735,6 @@ enyo.kind({
     showJoinNetwork: function(inSender, inEvent) {
         this.$.WiFiPanels.setIndex(3);
         this.stopAutoscan();
-      //  this.updateSpinnerState();
     },
     showNetworkConfiguration: function (inSender, inEvent) {
         this.$.WiFiPanels.setIndex(4);
@@ -769,11 +763,9 @@ enyo.kind({
         navigator.WiFiManager.enabled = false;
     },
     handleNetworkConnectSucceeded: function() {
-	//	this.updateSpinnerState();
-    },
+	},
     handleNetworkConnectFailed: function() {
-	//	this.updateSpinnerState();
-    },
+	},
     connectNetwork: function (inSender, inEvent) {
         console.log("connectNetwork " + JSON.stringify(inEvent));
 
@@ -887,7 +879,7 @@ enyo.kind({
     },
     handleConnectResponse: function (inSender, inResponse) {
         var result = inResponse.data;
-   //     this.updateSpinnerState();
+   
         this.showError("Connection could not be established");
     },
     handleWiFiEnabled: function() {
