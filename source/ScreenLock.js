@@ -111,21 +111,16 @@ enyo.kind({
 				*/
 				{kind: "onyx.Groupbox", components: [
 					{kind: "onyx.GroupboxHeader", content: "Notifications"},
-					{classes: "group-item",
-					components:[
-						{kind: "Control",
-						content: "Show When Locked",
-						classes: "padleft",
-						style: "display: inline-block; line-height: 32px;"},
-						{name: "AlertsToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "lockAlertsChanged"},
+					{kind: "enyo.FittableColumns", classes: "group-item", components:[
+						{kind: "Control",  fit: true, content: "Show When Locked", style: "padding-top: 10px;"},
+						{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
+							{name: "AlertsToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "lockAlertsChanged"},
+							{kind: "onyx.Tooltip", content: "Blinks the LED when new notifications arrive."}
+						]},
 					]},
-					{classes: "group-item",
-					components:[
-						{kind: "onyx.TooltipDecorator", components: [
-							{kind: "Control",
-							content: "Blink Notifications",
-							classes: "padleft",
-							style: "display: inline-block; line-height: 32px;"},
+					{kind: "enyo.FittableColumns", classes: "group-item",components:[
+						{kind: "Control", fit: true, content: "Blink Notifications", style:  "padding-top: 10px;" },
+						{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
 							{name: "BlinkToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "blinkNotificationsChanged"},
 							{kind: "onyx.Tooltip", content: "Blinks the LED when new notifications arrive."}
 						]},
