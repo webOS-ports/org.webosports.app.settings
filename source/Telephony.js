@@ -23,13 +23,19 @@ enyo.kind({
 				{tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
 					{kind: "onyx.Groupbox", components: [
 						{kind: "onyx.GroupboxHeader", content: "Network"},
-						{ classes: "group-item", components:[
-							{content: "Roaming allowed", fit: true, style: "display: inline-block; line-height: 32px; "},
-							{name: "RoamingAllowed", kind: "onyx.ToggleButton", style: "float: right;", onChange: "roamingAllowedChanged"},
+						{ kind: "enyo.FittableColumns", classes: "group-item", components:[
+							{content: "Roaming allowed", fit: true, style: "padding-top: 10px;"},
+							{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
+								{name: "RoamingAllowed", kind: "onyx.ToggleButton", style: "float: right;", onChange: "roamingAllowedChanged"},
+								{kind: "onyx.Tooltip", content: "Allow Roaming"}
+							]}	
 						]},
-						{ classes: "group-item", components:[
-							{content: "Data usage", fit: true, style: "display: inline-block; line-height: 32px;" },
-							{name: "DataUsage", kind: "onyx.ToggleButton", style: "float: right;", onChange: "dataUsageChanged"},
+						{ kind: "enyo.FittableColumns", classes: "group-item", components:[
+							{content: "Data usage", fit: true, style: "padding-top: 10px;"},
+							{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
+								{name: "DataUsage", kind: "onyx.ToggleButton", style: "float: right;", onChange: "dataUsageChanged"},
+								{kind: "onyx.Tooltip", content: "Allow Data Usage"}
+							]}
 						]},
 					]},
 				]},

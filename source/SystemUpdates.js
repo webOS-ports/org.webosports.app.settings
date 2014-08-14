@@ -29,9 +29,10 @@ enyo.kind({
 			fit: true, components: [
 				{classes: "vspacer"},
 				{kind: "enyo.FittableColumns", fit: true, components: [
-					{style: "width: 50%" },
+					{style: "width: 40%" },
 					
 					{name: "spinner", kind: "onyx.Spinner", fit: true, showing: false, classes: "center; onyx-light" },
+					{style: "width: 40%" },
 				]},
 				{kind: "enyo.Scroller", fit: true, touch: true, components: [
 					{name: "changesDisplay", classes: "nice-padding center", style: "text-align: left;", allowHtml: true}

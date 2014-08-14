@@ -12,25 +12,40 @@ enyo.kind({
 			{tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
 				{kind: "onyx.Groupbox", components: [
 					{kind: "onyx.GroupboxHeader", content: "Input"},
-					{classes: "group-item", components: [
-						{kind: "Control", content: "Auto capitalization", style: "display: inline-block; line-height: 32px;"},
-						{name: "AutoCapitalization", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"}
+					{kind: "enyo.FittableColumns", classes: "group-item", style: "padding-top: 10px;", components: [
+						{kind: "Control", content: "Auto capitalization", style: "padding-top: 10px;"},
+						{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
+							{name: "AutoCapitalization", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"},
+							{kind: "onyx.Tooltip", content: "Auto Capitaliztion"}
+						]},
 					]},
-					{classes: "group-item", components: [
-						{kind: "Control", content: "Auto completion", style: "display: inline-block; line-height: 32px;"},
-						{name: "AutoCompletion", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"}
+					{kind: "enyo.FittableColumns", classes: "group-item", components: [
+						{kind: "Control", content: "Auto completion", style: "padding-top: 10px; "},
+						{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
+							{name: "AutoCompletion", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"},
+							{kind: "onyx.Tooltip", content: "Auto Completion"}
+						]}
 					]},
-					{classes: "group-item", components: [
-						{kind: "Control", content: "Predictive text", style: "display: inline-block; line-height: 32px;"},
-						{name: "PredictiveText", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"}
+					{kind: "enyo.FittableColumns", classes: "group-item", components: [
+						{kind: "Control", content: "Predictive text", style: "padding-top: 10px; "},
+						{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
+							{name: "PredictiveText", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"},
+							{kind: "onyx.Tooltip", content: "Predictive Text"}
+						]}
 					]},
-					{classes: "group-item", components: [
-						{kind: "Control", content: "Spell checking", style: "display: inline-block; line-height: 32px;"},
-						{name: "SpellChecking", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"}
+					{kind: "enyo.FittableColumns", classes: "group-item", components: [
+						{kind: "Control", content: "Spell checking", style: "padding-top: 10px; "},
+						{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
+							{name: "SpellChecking", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"},
+							{kind: "onyx.Tooltip", content: "Spell Checking"}
+						]}
 					]},
-					{classes: "group-item", components: [
-						{kind: "Control", content: "Key press feedback", style: "display: inline-block; line-height: 32px;"},
-						{name: "KeyPressFeedback", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"}
+					{kind: "enyo.FittableColumns", classes: "group-item", components: [
+						{kind: "Control", content: "Key press feedback", style: "padding-top: 10px; "},
+						{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
+							{name: "KeyPressFeedback", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"},
+							{kind: "onyx.Tooltip", content: "Key Press FeedBack"}
+						]}
 					]}
 				]}
 			]}

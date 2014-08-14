@@ -53,18 +53,22 @@ enyo.kind({
 								{tag: "div", style: "padding: 35px 10% 35px 10%;", components: [
 									{kind: "onyx.Groupbox", components: [
 										{kind: "onyx.GroupboxHeader", content: "Debugging"},
-										{classes: "group-item", components: [
-											{kind: "Control", content: "USB debugging",
-											 style: "display: inline-block; line-height: 32px"},
-											{kind: "onyx.ToggleButton", name: "UsbDebuggingToggle", style: "float: right;",
-											 onChange: "onUsbDebuggingChanged"}
+										{kind: "enyo.FittableColumns", classes: "group-item", components: [
+											{kind: "Control", content: "USB debugging", style: "padding-top: 10px;"},
+											{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
+												{kind: "onyx.ToggleButton", name: "UsbDebuggingToggle", style: "float: right;", onChange: "onUsbDebuggingChanged"},
+												{kind: "onyx.Tooltip", content: "USB debugging"}
+											]}
 										]}
 									]},
 									{kind: "onyx.Groupbox", components: [
 										{kind: "onyx.GroupboxHeader", content: "Graphics"},
-										{classes: "group-item", components:[
-											{kind: "Control", content: "Enable FPS counter", style: "display: inline-block; line-height: 32px;"},
-											{name: "FpsCounterToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onFpsCounterChanged"},
+										{kind: "enyo.FittableColumns", classes: "group-item", components:[
+											{kind: "Control", content: "Enable FPS counter", style: "padding-top: 10px;"},
+											{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
+												{name: "FpsCounterToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onFpsCounterChanged"},
+												{kind: "onyx.Tooltip", content: "Enable FPS counte"}
+											]}
 										]}
 									]}
 								]}
