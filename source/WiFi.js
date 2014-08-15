@@ -20,7 +20,8 @@ enyo.kind({
                 {
                     name: "SSID",
                     content: "SSID",
-                    fit: true
+                    fit: true,
+                    style: "padding-top: 10px;"
                 },
                 {	
 					name: "spin",
@@ -33,7 +34,8 @@ enyo.kind({
                     name: "StatusMessage",
                     content: "",
                     classes: "wifi-message-status",
-                    showing: false
+                    showing: false,
+                    style: "padding-top: 10px;"
                 },
 
                 {

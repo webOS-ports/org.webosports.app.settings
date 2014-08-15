@@ -13,7 +13,8 @@ enyo.kind({
                 {
                     name: "package",
                     content: "",
-                    fit: true
+                    fit: true,
+                    style: "padding-top: 10px;"
                 },
             ],
         }],

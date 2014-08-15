@@ -29,22 +29,15 @@ enyo.kind({
 			{tag: "div", style: "padding: 35px 10% 35px 10%;", components: [
 				{kind: "onyx.Groupbox", components: [
 					{kind: "onyx.GroupboxHeader", content: "Screen"},
-					{classes: "group-item",
-					components:[
-						{kind: "enyo.FittableColumns", components: [
-							{content: "Brightness"},
-							{ fit: true, components: [
-								{name: "BrightnessSlider", kind: "onyx.Slider", onChange: "brightnessChanged", onChanging: "brightnessChanged"}
-							]},
-						]}
+					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
+						{content: "Brightness", style:  "padding-top: 10px;",},
+						{ kind: "onyx.TooltipDecorator", fit: true, style: "padding-top: 12px;", components: [
+							{name: "BrightnessSlider", kind: "onyx.Slider", onChange: "brightnessChanged", onChanging: "brightnessChanged"}
+						]},
 					]},
-					{classes: "group-item",
-					style: "height: 42px;",
-					components:[
-						{content: "Turn off after",
-						fit: true,
-						style: "display: inline-block; line-height: 42px;"},
-						{kind: "onyx.PickerDecorator", style: "float: right;", components: [
+					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
+						{content: "Turn off after",	fit: true,	style: "padding-top: 10px;"},
+						{kind: "onyx.PickerDecorator", style: " padding-top: 12px; float: right;", components: [
 							{},
 							{name: "TimeoutPicker", kind: "onyx.Picker", onChange: "timeoutChanged", components: [
 								{content: "30 Seconds", active: true},

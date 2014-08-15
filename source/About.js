@@ -14,24 +14,24 @@ enyo.kind({
               components: [
                 {kind: "onyx.Groupbox", components: [
                     {kind: "onyx.GroupboxHeader", content: "Device"},
-                    {classes: "group-item", components:[
-                        {kind: "Control", content: "Name", style: "display: inline-block; line-height: 32px;"},
-                        {kind: "Control", name: "DeviceName", style: "float: right;", content: "Unknown"},
+                    { kind: "enyo.FittableColumns", classes: "group-item", components:[
+                        {kind: "Control", content: "Name", style: "padding-top: 10px;"},
+                        {kind: "Control", name: "DeviceName", style: "float: right; padding-top: 10px;", content: "Unknown"},
                     ]},
-                    {classes: "group-item", components:[
-                        {kind: "Control", content: "Serial number", style: "display: inline-block; line-height: 32px;"},
-                        {kind: "Control", name: "DeviceSerialNumber", style: "float: right;", content: "Unknown"},
+                    { kind: "enyo.FittableColumns", classes: "group-item", components:[
+                        {kind: "Control", content: "Serial number", style: "padding-top: 10px;"},
+                        {kind: "Control", name: "DeviceSerialNumber", style: "float: right; padding-top: 10px;", content: "Unknown"},
                     ]},
                 ]},
                 {kind: "onyx.Groupbox", components: [
                     {kind: "onyx.GroupboxHeader", content: "Software"},
-                    {classes: "group-item", components:[
-                        {kind: "Control", content: "Version", style: "display: inline-block; line-height: 32px;"},
-                        {kind: "Control", name: "SoftwareVersion", style: "float: right;", content: "Unknown"},
+                    { kind: "enyo.FittableColumns", classes: "group-item", components:[
+                        {kind: "Control", content: "Version", style: "padding-top: 10px;"},
+                        {kind: "Control", name: "SoftwareVersion", style: "float: right; padding-top: 10px;", content: "Unknown"},
                     ]},
-                    {classes: "group-item", components:[
-                        {kind: "Control", content: "Android version", style: "display: inline-block; line-height: 32px;"},
-                        {kind: "Control", name: "SoftwareAndroidVersion", style: "float: right;", content: "Unknown"},
+                    { kind: "enyo.FittableColumns", classes: "group-item", components:[
+                        {kind: "Control", content: "Android version", style: "padding-top: 10px;"},
+                        {kind: "Control", name: "SoftwareAndroidVersion", style: "float: right; padding-top: 10px;", content: "Unknown"},
                     ]},
                 ]},
                 {kind: "onyx.Button", content: "Software Licenses", style: "width: 100%", ontap: "onShowSoftwareLicenses" }
