@@ -37,11 +37,11 @@ enyo.kind({
 					]},
 					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
 						{content: "Time", fit: true, style: " padding-top: 10px;"},
-						{name: "TimePicker", kind: "onyx.TimePicker", disabled: true, style: "float: right;  padding-top: 10px;", onSelect: "dateTimeChanged"},
+						{name: "TimePicker", kind: "onyx.TimePicker", disabled: true, style: "float: right;  padding-top: 6px;", onSelect: "dateTimeChanged"},
 					]},
 					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
 						{content: "Date", fit: true, style: "padding-top: 10px;"},
-						{name: "DatePicker", kind: "onyx.DatePicker", disabled: true, style: "float: right;", onSelect: "dateTimeChanged"},
+						{name: "DatePicker", kind: "onyx.DatePicker", disabled: true, style: "float: right; padding-top: 6px;", onSelect: "dateTimeChanged"},
 					]}
 				]},
 				{kind: "onyx.Groupbox", components: [
