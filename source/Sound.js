@@ -30,7 +30,7 @@ enyo.kind({
 						{kind: "onyx.GroupboxHeader", content: "Audio Settings"},
 						{kind: "enyo.FittableColumns", classes: "group-item", components: [
 							{name: "volume", content: "Volume "},
-							{style: "padding-top: 2px;", fit: true, components: [
+							{style: "padding-top: 5px;", fit: true, components: [
 								{name: "volumeSlider", kind: "onyx.Slider", value: "20", onChanging: "volumeChange"}
 							]}
 						]},
@@ -55,7 +55,7 @@ enyo.kind({
 						{classes: "group-item", components: [
 							{kind: "enyo.FittableColumns", components: [
 								{name: "ringer", content: "Ringer Volume ", class: "group-item"},
-									{style: "padding-top: 2px;", fit: true, components: [
+									{style: "padding-top: 5px;", fit: true, components: [
 								{name:"ringerSlider", kind: "onyx.Slider", value: "20", onChanging: "ringerVolumeChange"}
 								]}
 							]}

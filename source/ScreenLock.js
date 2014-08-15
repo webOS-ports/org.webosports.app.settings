@@ -31,7 +31,7 @@ enyo.kind({
 					{kind: "onyx.GroupboxHeader", content: "Screen"},
 					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
 						{content: "Brightness", style:  "padding-top: 10px;",},
-						{ kind: "onyx.TooltipDecorator", fit: true, style: "padding-top: 12px;", components: [
+						{ kind: "onyx.TooltipDecorator", fit: true, style: "padding-top: 15px;", components: [
 							{name: "BrightnessSlider", kind: "onyx.Slider", onChange: "brightnessChanged", onChanging: "brightnessChanged"}
 						]},
 					]},
