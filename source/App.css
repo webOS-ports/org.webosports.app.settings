@@ -83,9 +83,10 @@
  *   WiFi
  */
  .wifi-list-icon {
- 	padding-top: 15px;
+ 	padding-top: 10px;
  	padding-right: 3px;
     margin-left: 10px;
+    padding-bottom: 10px;
 }
 .wifi-join-button {
     padding: 8px 0;
