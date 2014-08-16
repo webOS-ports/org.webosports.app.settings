@@ -24,9 +24,10 @@ enyo.kind({
 				{kind: "enyo.FittableRows", components: [
 					{name: "AudioList", kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout", classes: "content-aligner", fit: true, components: [
 						{kind: "onyx.GroupboxHeader", content: "Audio Settings"},
+						
 						{kind: "enyo.FittableColumns", classes: "group-item", components: [
-							{name: "volume", content: "Volume "},
-							{style: "padding-top: 0px;", fit: true, components: [
+							{name: "volume", style:  "padding-top: 0px;", content: "Volume "},
+							{ kind: "onyx.TooltipDecorator", style: "padding-top: 2.5px;", fit: true, components: [
 								{name: "volumeSlider", kind: "onyx.Slider", value: "20", onChanging: "volumeChange"}
 							]}
 						]},
@@ -52,9 +53,9 @@ enyo.kind({
 								{kind: "onyx.Tooltip", content: "System sound  on/off"}
 							]}
 						]},
-						{kind: "enyo.FittableColumns", style: "padding-bottom: 5px; ", classes: "group-item", components: [
-							{name: "ringer", content: "Ringer Volume ", style: "padding-bottom: 5px;"},
-							{style: "padding-top: 0px;", fit: true, components: [
+						{kind: "enyo.FittableColumns", classes: "group-item", components: [
+							{name: "ringer", content: "Ringer Volume ", style:  "padding-top: 0px;"},
+							{ kind: "onyx.TooltipDecorator", style: "padding-top: 2.5px;", fit: true, components: [
 								{name:"ringerSlider", kind: "onyx.Slider", value: "20", onChanging: "ringerVolumeChange"}
 							]}
 						]},
