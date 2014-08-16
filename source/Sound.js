@@ -30,13 +30,13 @@ enyo.kind({
 						{kind: "onyx.GroupboxHeader", content: "Audio Settings"},
 						{kind: "enyo.FittableColumns", classes: "group-item", components: [
 							{name: "volume", content: "Volume "},
-							{style: "padding-top: 5px;", fit: true, components: [
+							{style: "padding-top: 0px;", fit: true, components: [
 								{name: "volumeSlider", kind: "onyx.Slider", value: "20", onChanging: "volumeChange"}
 							]}
 						]},
 						{classes: "group-item", components: [
-						{kind: "enyo.FittableColumns", components: [
-							{name: "keys", fit: true, content: "Keyboard Clicks"},
+						{kind: "enyo.FittableColumns", style: "padding-bottom: 5px;", components: [
+							{name: "keys", fit: true, style: "padding-bottom: 5px;", content: "Keyboard Clicks"},
 							{name: "keyClicksToggle", kind: "onyx.ToggleButton", onChange: "keyClicks"}
 						]}
 					]},
@@ -46,24 +46,25 @@ enyo.kind({
 							{name: "vibrateToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "vib"}
 						]}
 					]},
-						{classes: "group-item", style: "padding-bottom: 5px", components: [
-						{kind: "enyo.FittableColumns", style: "padding-bottom: 5px", components: [
-							{content: "System Sounds ",fit: true},
-							{name: "systemSoundToggle", kind: "onyx.ToggleButton", onChange: "systemSounds"}
+						{classes: "group-item", components: [
+						{kind: "enyo.FittableColumns", style: "padding-bottom: 5px;", components: [
+							{name: "systemsounds", style: "padding-bottom: 5px;", content: "System Sounds"},
+							{name: "systemSoundToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "systemSounds"}
 						]}
 					]},
 						{classes: "group-item", components: [
-							{kind: "enyo.FittableColumns", components: [
-								{name: "ringer", content: "Ringer Volume ", class: "group-item"},
-									{style: "padding-top: 5px;", fit: true, components: [
+							{kind: "enyo.FittableColumns", style: "padding-bottom: 5px; ", components: [
+								{name: "ringer", content: "Ringer Volume ", style: "padding-bottom: 5px;"},
+									{style: "padding-top: 0px;", fit: true, components: [
 								{name:"ringerSlider", kind: "onyx.Slider", value: "20", onChanging: "ringerVolumeChange"}
 								]}
 							]}
 						]},
 						{
-						//classes: "group-item",
-						style: "padding: 8px;", components: [
-							{name: "ringerPicker", kind: "onyx.Button", content: "Ring tone Picker ", style: "height: 100%", ontap: "ringerPopup"},
+						classes: "group-item",
+						style: "padding-bottom: 8px;", 
+						components: [
+							{name: "ringerPicker", kind: "onyx.Button", content: "Ring tone Picker ", style: "height: 100%; padding-bottom: 8px;", ontap: "ringerPopup"},
 						]},
 					]}
 				]}
