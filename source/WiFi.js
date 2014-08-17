@@ -187,8 +187,7 @@ enyo.kind({
                 /* Network list panel */
                 {
                     kind: "enyo.FittableRows",
-                    classes: "content-wrapper",
-                    components: [
+                   	components: [
                         {
                             name: "NetworkList",
                             kind: "onyx.Groupbox",
