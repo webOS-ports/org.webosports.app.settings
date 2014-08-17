@@ -22,7 +22,7 @@ enyo.kind({
 		{kind: "Scroller", touch: true,	horizontal: "hidden", fit: true, components:[
 			{tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
 				{kind: "enyo.FittableRows", components: [
-					{name: "AudioList", kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout", classes: "content-aligner", fit: true, components: [
+					{name: "AudioList", kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout", fit: true, components: [
 						{kind: "onyx.GroupboxHeader", content: "Audio Settings"},
 						
 						{kind: "enyo.FittableColumns", classes: "group-item", components: [

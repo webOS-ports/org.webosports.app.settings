@@ -193,7 +193,7 @@ enyo.kind({
                             name: "NetworkList",
                             kind: "onyx.Groupbox",
                             layoutKind: "FittableRowsLayout",
-                            classes: "content-aligner",
+                         	style: "padding: 35px 10% 35px 10%;",
                             fit: true,
                             components: [
                                 {
