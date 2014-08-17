@@ -15,6 +15,7 @@ enyo.kind({
 		components:[
 			{tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
 				{kind: "onyx.Groupbox", components: [
+					{kind: "onyx.GroupboxHeader", content: "Time Settings"},
 					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
 						{content: "Time Format", fit: true,  style: "padding-top: 10px;"},
 						{kind: "onyx.PickerDecorator", style: "float: right; padding-top: 10px;", components: [
