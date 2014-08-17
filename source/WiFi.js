@@ -20,8 +20,11 @@ enyo.kind({
                 {
                     name: "SSID",
                     content: "SSID",
-                    fit: true,
-                    style: "padding-top: 10px;"
+                   
+                    style: "padding-top: 10px; max-width: 150px;"
+                },
+                {
+                 	fit: true,
                 },
                 {	
 					name: "spin",

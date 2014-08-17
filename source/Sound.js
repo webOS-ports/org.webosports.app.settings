@@ -31,10 +31,10 @@ enyo.kind({
 								{name: "volumeSlider", kind: "onyx.Slider", value: "20", onChanging: "volumeChange"}
 							]}
 						]},
-						{kind: "enyo.FittableColumns", classes: "group-item", components: [
+						{kind: "enyo.FittableColumns", classes: "group-item", style: "padding-bottom: 1px;", components: [
 							{name: "keys", fit: true, content: "Keyboard Clicks"},
 							{kind: "onyx.TooltipDecorator", components: [
-								{name: "keyClicksToggle", kind: "onyx.ToggleButton", onChange: "keyClicks"},
+								{name: "keyClicksToggle", kind: "onyx.ToggleButton", style: "float: right; ", onChange: "keyClicks"},
 								{kind: "onyx.Tooltip", content: "Keyboard Clicks on/off"}
 							]}
 					

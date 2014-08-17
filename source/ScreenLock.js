@@ -37,7 +37,7 @@ enyo.kind({
 					]},
 					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
 						{content: "Turn off after",	style: "padding-top: 10px;"},
-						{kind: "onyx.PickerDecorator", fit: true, style: " padding-top: 12px; float: right;", components: [
+						{kind: "onyx.PickerDecorator", fit: true, style: " padding-top: 12px; float: right; min-width: 125px;", components: [
 							{},
 							{name: "TimeoutPicker", kind: "onyx.Picker", onChange: "timeoutChanged", components: [
 								{content: "30 Seconds", active: true},

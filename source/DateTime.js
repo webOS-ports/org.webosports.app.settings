@@ -16,25 +16,26 @@ enyo.kind({
 			{tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
 				{kind: "onyx.Groupbox", components: [
 					{kind: "onyx.GroupboxHeader", content: "Time and Date Settings"},
+				
 					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
-						{content: "Time Format", fit: true,  style: "padding-top: 10px;"},
+						{content: "Time Format", fit: true,  style: "padding-top: 10px; min-width: 95px;"},
 						{kind: "onyx.PickerDecorator", style: "float: right; padding-top: 10px;", components: [
 							{},
 							{name: "TimeFormatPicker", kind: "onyx.Picker", onChange: "timeFormatChanged", components: [
 								{content: "12 Hour", active: true},
 								{content: "24 Hour"}
 							]},
-							{kind: "onyx.Tooltip", content: "Allow Roaming"}
+							{kind: "onyx.Tooltip", content: "12/24hr Setting"}
 						]}
 				
 					]},
+				
 					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
 						{content: "Network Time", fit: true, style: "padding-top: 10px;" },
 						{kind: "onyx.PickerDecorator", style: "float: right; padding-top: 10px;", components: [
 							{name: "NetworkTimeToggle", kind: "onyx.ToggleButton", value: true, style: "float: right;", onChange: "networkTimeChanged"},
 							{kind: "onyx.Tooltip", content: "Network Time"}
 						]}
-				
 					]},
 					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
 						{content: "Time", fit: true, style: " padding-top: 10px;"},
