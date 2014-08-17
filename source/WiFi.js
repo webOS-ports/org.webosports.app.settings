@@ -23,46 +23,46 @@ enyo.kind({
                    
                     style: "padding-top: 10px; max-width: 150px;"
                 },
-                {
-                 	fit: true,
-                },
-                {	
-					name: "spin",
-                    kind: "onyx.Spinner", 
-                    showing: false,
-                    style: "padding: 30px;",
-                    classes: "onyx-light",
-                },
-                {
-                    name: "StatusMessage",
-                    content: "",
-                    classes: "wifi-message-status",
-                    showing: false,
-                    style: "padding-top: 10px;"
-                },
+                { kind: "enyo.FittableColumns", fit: true, style: "float: right; ", components: [
+              
+					{	
+						name: "spin",
+                    	kind: "onyx.Spinner", 
+                    	showing: false,
+                    	style: "padding: 30px;",
+                    	classes: "onyx-light",
+            		},
+            		{
+						name: "StatusMessage",
+						content: "",
+						classes: "wifi-message-status",
+						showing: false,
+						style: "padding-top: 10px;"
+					},
 
-                {
-                    name: "Active",
-                    kind: "Image",
-                    src: "assets/wifi/checkmark.png",
-                    showing: false,
-                    classes: "wifi-list-icon"
-                },
-                {
-                    name: "Padlock",
-                    kind: "Image",
-                    src: "assets/wifi/secure-icon.png",
-                    showing: false,
-                    classes: "wifi-list-icon"
-                },
-                {
-                    name: "Signal",
-                    kind: "Image",
-                    src: "assets/wifi/signal-icon.png",
-                    classes: "wifi-list-icon"
-                }
-            ],
-        }],
+            		{
+                    	name: "Active",
+                    	kind: "Image",
+                    	src: "assets/wifi/checkmark.png",
+                    	showing: false,
+                    	classes: "wifi-list-icon"
+                	},
+            		{
+                    	name: "Padlock",
+                    	kind: "Image",
+                    	src: "assets/wifi/secure-icon.png",
+                		showing: false,
+						classes: "wifi-list-icon"
+                	},
+					{
+                    	name: "Signal",
+                    	kind: "Image",
+                    	src: "assets/wifi/signal-icon.png",
+                		classes: "wifi-list-icon"
+                	}
+                ]},
+            ]},
+	],
     handlers: {
         onmousedown: "pressed",
         ondragstart: "released",
