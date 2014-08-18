@@ -13,7 +13,7 @@ enyo.kind({
 		horizontal: "hidden",
 		fit: true,
 		components:[
-			{tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
+			{name: "div", tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
 				{kind: "onyx.Groupbox", components: [
 					{kind: "onyx.GroupboxHeader", content: "Time and Date Settings"},
 				
@@ -95,6 +95,7 @@ enyo.kind({
 		this.inherited(arguments);
 		if(enyo.Panels.isScreenNarrow()) {
 			this.$.Grabber.applyStyle("visibility", "hidden");
+			this.$.div.setStyle("padding: 35px 5% 35px 5%;");
 		}
 		else {
 			this.$.Grabber.applyStyle("visibility", "visible");

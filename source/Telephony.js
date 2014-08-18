@@ -14,13 +14,13 @@ enyo.kind({
 				{ content: "Telephony" },
 			]
 		},
-		{
+		{	
 			kind: "Scroller",
 			touch: true,
 			horizontal: "hidden",
 			fit: true,
 			components: [
-				{tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
+				{name: "div", tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
 					{kind: "onyx.Groupbox", components: [
 						{kind: "onyx.GroupboxHeader", content: "Network"},
 						{ kind: "enyo.FittableColumns", classes: "group-item", components:[
@@ -59,6 +59,7 @@ enyo.kind({
 	reflow: function (inSender) {
         this.inherited(arguments);
         if (enyo.Panels.isScreenNarrow()){
+        	this.$.div.setStyle("padding: 35px 5% 35px 5%;");
             this.$.Grabber.applyStyle("visibility", "hidden");
         }else{
             this.$.Grabber.applyStyle("visibility", "visible");

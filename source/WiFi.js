@@ -586,6 +586,7 @@ enyo.kind({
     reflow: function (inSender) {
         this.inherited(arguments);
         if (enyo.Panels.isScreenNarrow()){
+        	this.$.NetworkList.setStyle("padding: 35px 5% 35px 5%;");
             this.$.Grabber.applyStyle("visibility", "hidden");
         }else{
             this.$.Grabber.applyStyle("visibility", "visible");

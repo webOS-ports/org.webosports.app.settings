@@ -96,6 +96,8 @@ enyo.kind({
         this.inherited(arguments);
         if (enyo.Panels.isScreenNarrow()){
             this.$.Grabber.applyStyle("visibility", "hidden");
+            this.$.DevModeDisabled.setStyle("padding: 35px 5% 35px 5%;");
+            this.$.DevModeSettings.setStyle("padding: 35px 5% 35px 5%;");
         }else{
             this.$.Grabber.applyStyle("visibility", "visible");
         }
