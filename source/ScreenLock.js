@@ -26,21 +26,18 @@ enyo.kind({
 		horizontal: "hidden",
 		fit: true,
 		components:[
-			{tag: "div", style: "padding: 35px 10% 35px 10%;", components: [
+			{name: "div", tag: "div", style: "padding: 35px 10% 35px 10%;", components: [
 				{kind: "onyx.Groupbox", components: [
 					{kind: "onyx.GroupboxHeader", content: "Screen"},
-					{classes: "group-item",
-					components:[
-						{content: "Brightness"},
-						{name: "BrightnessSlider", kind: "onyx.Slider", onChange: "brightnessChanged", onChanging: "brightnessChanged"}
+					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
+						{content: "Brightness", style:  "padding-top: 10px;"},
+						{ kind: "onyx.TooltipDecorator", fit: true, style: "padding-top: 15px;", components: [
+							{name: "BrightnessSlider", kind: "onyx.Slider", onChange: "brightnessChanged", onChanging: "brightnessChanged"}
+						]},
 					]},
-					{classes: "group-item",
-					style: "height: 42px;",
-					components:[
-						{content: "Turn off after",
-						fit: true,
-						style: "display: inline-block; line-height: 42px;"},
-						{kind: "onyx.PickerDecorator", style: "float: right;", components: [
+					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
+						{content: "Turn off after",	style: "padding-top: 10px;"},
+						{kind: "onyx.PickerDecorator", fit: true, style: " padding-top: 12px; float: right; min-width: 125px;", components: [
 							{},
 							{name: "TimeoutPicker", kind: "onyx.Picker", onChange: "timeoutChanged", components: [
 								{content: "30 Seconds", active: true},
@@ -55,7 +52,7 @@ enyo.kind({
 				{kind: "onyx.Groupbox", components: [
 					{kind: "onyx.GroupboxHeader", content: "Wallpaper"},
 					{classes: "group-item",
-					style: "padding: 0;",
+					style: "padding: 0; height: 212px; background-color: red",
 					components:[
 						/* {kind: "onyx.Button", style: "width: 100%;", content: "Change Wallpaper", ontap: "openWallpaperPicker"}, */
 						{kind: "enyo.Scroller",
@@ -107,19 +104,16 @@ enyo.kind({
 				*/
 				{kind: "onyx.Groupbox", components: [
 					{kind: "onyx.GroupboxHeader", content: "Notifications"},
-					{classes: "group-item",
-					components:[
-						{kind: "Control",
-						content: "Show When Locked",
-						style: "display: inline-block; line-height: 32px;"},
-						{name: "AlertsToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "lockAlertsChanged"},
+					{kind: "enyo.FittableColumns", classes: "group-item", components:[
+						{kind: "Control",  fit: true, content: "Show When Locked", style: "padding-top: 10px;"},
+						{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
+							{name: "AlertsToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "lockAlertsChanged"},
+							{kind: "onyx.Tooltip", content: "Blinks the LED when new notifications arrive."}
+						]},
 					]},
-					{classes: "group-item",
-					components:[
-						{kind: "onyx.TooltipDecorator", components: [
-							{kind: "Control",
-							content: "Blink Notifications",
-							style: "display: inline-block; line-height: 32px;"},
+					{kind: "enyo.FittableColumns", classes: "group-item",components:[
+						{kind: "Control", fit: true, content: "Blink Notifications", style:  "padding-top: 10px;" },
+						{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
 							{name: "BlinkToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "blinkNotificationsChanged"},
 							{kind: "onyx.Tooltip", content: "Blinks the LED when new notifications arrive."}
 						]},
@@ -143,7 +137,7 @@ enyo.kind({
 			]},
 		]},
 		{kind: "onyx.Toolbar", components:[
-			{name: "Grabber", kind: "onyx.Grabber"}
+			{name: "Grabber", kind: "onyx.Grabber"},
 		]},
 		{name: "GetDisplayProperty", kind: "DisplayService", method: "getProperty", onComplete: "handleGetPropertiesResponse"},
 		{name: "SetDisplayProperty", kind: "DisplayService", method: "setProperty" },
@@ -169,12 +163,13 @@ enyo.kind({
 		this.inherited(arguments);
 		if(enyo.Panels.isScreenNarrow()) {
 			this.$.Grabber.applyStyle("visibility", "hidden");
+			this.$.div.setStyle("padding: 35px 5% 35px 5%;");
 		}
 		else {
 			this.$.Grabber.applyStyle("visibility", "visible");
 		}
 	},
-	//Action Handlers
+ 	//Action Handlers
 	brightnessChanged: function(inSender, inEvent) {
 		if(this.palm) {
 			this.$.SetDisplayProperty.send({maximumBrightness: parseInt(this.$.BrightnessSlider.value)});

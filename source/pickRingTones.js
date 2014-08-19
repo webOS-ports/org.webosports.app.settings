@@ -20,6 +20,7 @@ enyo.kind({
 	name: "pickRingTones",
 	kind: "enyo.Control",
 	published: {},
+	
 	events: {
 		onClose: "",
 		onTone: ""

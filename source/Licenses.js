@@ -1,4 +1,4 @@
-/*jslint sloppy: true */
+//*jslint sloppy: true */
 /*global enyo, console*/
 
 
@@ -13,7 +13,8 @@ enyo.kind({
                 {
                     name: "package",
                     content: "",
-                    fit: true
+                    fit: true,
+                    style: "padding-top: 10px;"
                 },
             ],
         }],
@@ -58,10 +59,15 @@ enyo.kind({
 	published: {
 		updateResults: null
 	},
-	components: [	
-		 /* Top toolbar */
-		{kind: "onyx.Toolbar", style: "line-height: 28px;", content: "Licenses"},
-		 /* License Panels */
+	events: {
+		onBack: ""
+	},
+
+	debug: false,
+	components: [
+		/* Top toolbar */
+		{kind: "onyx.Toolbar", style: "line-height: 28px;", content: "Licenses"},		
+		/* License Panels */
         {
             name: "licensePanels",
             kind: "Panels",
@@ -69,7 +75,7 @@ enyo.kind({
             fit: true,
             draggable: false,
             components: [
-            	/* Package List */
+				/* Package List */
                 {
                     kind: "enyo.FittableRows",
                     classes: "content-wrapper",
@@ -168,17 +174,6 @@ enyo.kind({
                     name: "Grabber",
                     kind: "onyx.Grabber"
                 }, // this is hacky
-                {
-                    fit: true
-                },
-                {
-					kind: "onyx.Button",
-					name: "btnBack",
-					classes: "center",
-					content: "Back",
-					ontap: "doBack",
-					showing: false
-				}
             ]
         },
 		{
@@ -224,13 +219,13 @@ enyo.kind({
     },
 
     loadPackages: function(){
-    	if (!window.PalmSystem) {
-    		// Setup some mock data
-    		this.packageList = ["Package 1", "Package 2", "Package 3", "Package 4", "Package 5", "Package 6", "Package 7", "Package 8", "Package 9", "Package 10"];
-    		this.$.packageRepeater.setCount(this.packageList.length);
-    	} else {
+		if (!window.PalmSystem) {
+			// Setup some mock data
+			this.packageList = ["Package 1", "Package 2", "Package 3", "Package 4", "Package 5", "Package 6", "Package 7", "Package 8", "Package 9", "Package 10"];
+			this.$.packageRepeater.setCount(this.packageList.length);
+		} else {
 			this.$.listPackagesService.send({});
-    	}
+	}
 
     },
 
@@ -291,23 +286,20 @@ enyo.kind({
     },
 
     showPackage: function() {
-    	this.$.licensePanels.setIndex(0);
-    	this.$.btnBack.hide();
-    	this.$.footer.reflow();
+		this.$.licensePanels.setIndex(0);
+		this.$.footer.reflow();
     },
 
     showLoading: function() {
-    	this.$.licensePanels.setIndex(1);
-    	this.$.btnBack.show();
-    	this.$.footer.reflow();
+		this.$.licensePanels.setIndex(1);
+		this.$.footer.reflow();
     },
 
     showLicense: function() {
-    	this.$.licensePanels.setIndex(2);
+		this.$.licensePanels.setIndex(2);
         this.$.licenseScroller.stabilize();
         this.$.licenseScroller.scrollToTop();
-    	this.$.btnBack.show();
-    	this.$.footer.reflow();
+        this.$.footer.reflow();
     },
 
 	setupPackageRow: function (inSender, inEvent) {
@@ -341,9 +333,13 @@ enyo.kind({
         return true;
 	},
 
-	doBack: function (inSender, inEvent) {
-		this.showPackage();
-	}
-
+	handleBackGesture: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);	
 	
+		if(this.$.licensePanels.getIndex() !== 0){
+			this.showPackage();
+		}else{
+			this.doBack();
+		}
+	},
 });

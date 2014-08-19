@@ -53,9 +53,13 @@
 .onyx-groupbox-header {
     padding: 3px 8px;
 }
+.networkSearch {
+	padding-left: 10px;
+	padding-top: 10px;
+}
 .group-item {
-    padding: 8px;
-    min-height: 32px;
+	padding: 10px;
+    height: 52px; 
     line-height: 32px;
     border-bottom: 1px solid #AAAAAA;
 }
@@ -68,11 +72,21 @@
     margin-right: 30%;
     text-align: center;
 }
+.padleft {
+	padding: 8px;
+}
+.toggles {
+	float: right;
+	padding-top: 5px;
+}
 /*
  *   WiFi
  */
  .wifi-list-icon {
+ 	padding-top: 10px;
+ 	padding-right: 3px;
     margin-left: 8px;
+    padding-bottom: 10px;
 }
 .wifi-join-button {
     padding: 8px 0;
@@ -153,8 +167,9 @@
 }
 
 .columns {
-		border: 2px solid red;
+	border: 2px solid red;
 }
+
 /* needed to make onyx-highlight more specific for highlighting to work */
 .onyx-highlight.list-sample-selected {
 	background-color: #dedfdf;

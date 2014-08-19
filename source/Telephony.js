@@ -14,29 +14,35 @@ enyo.kind({
 				{ content: "Telephony" },
 			]
 		},
-		{
+		{	
 			kind: "Scroller",
 			touch: true,
 			horizontal: "hidden",
 			fit: true,
 			components: [
-				{tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
+				{name: "div", tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
 					{kind: "onyx.Groupbox", components: [
 						{kind: "onyx.GroupboxHeader", content: "Network"},
-						{ classes: "group-item", style: "height: 42px;", components:[
-							{content: "Roaming allowed", fit: true, style: "display: inline-block; line-height: 42px;"},
-							{name: "RoamingAllowed", kind: "onyx.ToggleButton", style: "float: right;", onChange: "roamingAllowedChanged"},
+						{ kind: "enyo.FittableColumns", classes: "group-item", components:[
+							{content: "Roaming allowed", fit: true, style: "padding-top: 10px;"},
+							{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
+								{name: "RoamingAllowed", kind: "onyx.ToggleButton", style: "float: right;", onChange: "roamingAllowedChanged"},
+								{kind: "onyx.Tooltip", content: "Allow Roaming"}
+							]}	
 						]},
-						{ classes: "group-item", style: "height: 42px;", components:[
-							{content: "Data usage", fit: true, style: "display: inline-block; line-height: 42px;"},
-							{name: "DataUsage", kind: "onyx.ToggleButton", style: "float: right;", onChange: "dataUsageChanged"},
+						{ kind: "enyo.FittableColumns", classes: "group-item", components:[
+							{content: "Data usage", fit: true, style: "padding-top: 10px;"},
+							{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
+								{name: "DataUsage", kind: "onyx.ToggleButton", style: "float: right;", onChange: "dataUsageChanged"},
+								{kind: "onyx.Tooltip", content: "Allow Data Usage"}
+							]}
 						]},
 					]},
 				]},
 			]
 		},
 		{kind: "onyx.Toolbar", components:[
-			{name: "Grabber", kind: "onyx.Grabber"}
+			{name: "Grabber", kind: "onyx.Grabber"},
 		]},
 		{kind: "WanService", method: "getstatus", name: "GetWanStatus", onComplete: "handleWanStatus"},
 		{kind: "WanService", method: "set", name: "SetWanProperty" }
@@ -50,6 +56,16 @@ enyo.kind({
 
 		this.$.GetWanStatus.send({});
 	},
+	reflow: function (inSender) {
+        this.inherited(arguments);
+        if (enyo.Panels.isScreenNarrow()){
+        	this.$.div.setStyle("padding: 35px 5% 35px 5%;");
+            this.$.Grabber.applyStyle("visibility", "hidden");
+        }else{
+            this.$.Grabber.applyStyle("visibility", "visible");
+        }
+    },
+   
 	/* service response handlers */
 	handleWanStatus: function(inResponse) {
 		var result = inResponse.data;

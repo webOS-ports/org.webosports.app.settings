@@ -1,9 +1,8 @@
 
 enyo.kind({
 	name: "Sound",
-	kind: "enyo.Control",
+	kind: "enyo.FittableRows",
 	published: {},
-	events: {}, 
 	handlers: {
 		onClose: "closePopup",
 		onTone: "tonepicked"
@@ -15,62 +14,68 @@ enyo.kind({
 	systemVolume: 0,
 	ringerVolume: 0,
 	ringTone: "??",
-	
+	debug: false,
 	components: [
-		{kind: "onyx.Toolbar", layoutKind: "FittableColumnsLayout", classes: "onyx-toolbar", style: "height: 32px;", components: [
+		{kind: "onyx.Toolbar", layoutKind: "FittableColumnsLayout", classes: "onyx-toolbar", style: "line-height: 28px;", components: [
 			{content: "Audio"},
 		]},
-		{kind: "Scroller",
-		touch: true,
-		horizontal: "hidden",
-		fit: true,
-		components:[
-			{tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
-				{kind: "enyo.FittableRows", classes: "content-wrapper", components: [
-					{name: "AudioList", kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout", classes: "content-aligner", fit: true, components: [
+		{kind: "Scroller", touch: true,	horizontal: "hidden", fit: true, components:[
+			{name: "div", tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
+				{kind: "enyo.FittableRows", components: [
+					{name: "AudioList", kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout", fit: true, components: [
 						{kind: "onyx.GroupboxHeader", content: "Audio Settings"},
-						{classes: "group-item", components: [
-						{name: "volume", content: "Volume ", class: "group-item"},
-						{name: "volumeSlider", kind: "onyx.Slider", value: "20", onChanging: "volumeChange"}
-					]},
-						{classes: "group-item", components: [
-						{kind: "enyo.FittableColumns", components: [
-							{name: "keys", content: "Keyboard Clicks"},
-							{fit: true, onchange: "create"},
-							{name: "keyClicksToggle",kind: "onyx.ToggleButton", onChange: "keyClicks"}
-						]}
-					]},
-						{classes: "group-item", components: [
-						{kind: "enyo.FittableColumns", components: [
-							{name: "vibrate", content: "Vibrate"},
-							{fit: true},
-							{name: "vibrateToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "vib"}
-						]}
-					]},
-						{classes: "group-item", components: [
-						{kind: "enyo.FittableColumns", components: [
-							{content: "System Sounds "},
-							{fit: true},
-							{name: "systemSoundToggle", kind: "onyx.ToggleButton", onChange: "systemSounds"}
-						]}
-					]},
-						{classes: "group-item", components: [
-							{name: "ringer", content: "Ringer Volume ", class: "group-item"},
-							{name:"ringerSlider", kind: "onyx.Slider", value: "20", onChanging: "ringerVolumeChange"}
+						
+						{kind: "enyo.FittableColumns", classes: "group-item", components: [
+							{name: "volume", style:  "padding-top: 0px;", content: "Volume "},
+							{ kind: "onyx.TooltipDecorator", style: "padding-top: 2.5px;", fit: true, components: [
+								{name: "volumeSlider", kind: "onyx.Slider", value: "20", onChanging: "volumeChange"}
+							]}
 						]},
-						{classes: "group-item", components: [
-							{name: "ringerPicker", kind: "onyx.Button", content: "Ring tone Picker ", classes: "group-item", ontap: "ringerPopup"},
+						{kind: "enyo.FittableColumns", classes: "group-item", style: "padding-bottom: 1px;", components: [
+							{name: "keys", fit: true, content: "Keyboard Clicks"},
+							{kind: "onyx.TooltipDecorator", components: [
+								{name: "keyClicksToggle", kind: "onyx.ToggleButton", style: "float: right; ", onChange: "keyClicks"},
+								{kind: "onyx.Tooltip", content: "Keyboard Clicks on/off"}
+							]}
+					
+						]},
+						{kind: "enyo.FittableColumns", classes: "group-item", components: [
+							{name: "vibrate", fit: true, content: "Vibrate"},
+							{kind: "onyx.TooltipDecorator", components: [
+								{name: "vibrateToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "vib"},
+								{kind: "onyx.Tooltip", content: "Keyboard Vibrate on/off"}
+							]}
+						]},
+						{kind: "enyo.FittableColumns", classes: "group-item", components: [
+							{name: "systemsounds", fit: true, content: "System Sounds"},
+							{kind: "onyx.TooltipDecorator", components: [
+								{name: "systemSoundToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "systemSounds"},
+								{kind: "onyx.Tooltip", content: "System sound  on/off"}
+							]}
+						]},
+						{kind: "enyo.FittableColumns", classes: "group-item", components: [
+							{name: "ringer", content: "Ringer Volume ", style:  "padding-top: 0px;"},
+							{ kind: "onyx.TooltipDecorator", style: "padding-top: 2.5px;", fit: true, components: [
+								{name:"ringerSlider", kind: "onyx.Slider", value: "20", onChanging: "ringerVolumeChange"}
+							]}
+						]},
+						{ kind: "enyo.FittableColumns", classes: "group-item", style: "padding: 0px;", components: [
+							{name: "ringerPicker", kind: "onyx.Button", fit: true,  content: "Ring tone Picker ", ontap: "ringerPopup"},
 						]},
 					]}
 				]}
 			]},
 		]},
+		{kind: "onyx.Toolbar", layoutKind: "FittableColumnsLayout", components: [
+            {name: "Grabber", kind: "onyx.Grabber" }, // this is hacky
+            {fit: true },
+        ]},
 		{name: "ErrorPopup", kind: "onyx.Popup", classes: "error-popup", modal: true, style: "padding: 10px;", components: [
-				{name: "ErrorMessage", content: "", style: "display: inline;"}
-			]},
+			{name: "ErrorMessage", content: "", style: "display: inline;"}
+		]},
 		{name: "ringPickerPopup", kind: "onyx.Popup", classes: "popup", centered: true, floating: true,	components: [
-				{kind: "pickRingTones", style: "height: 100%; width: 100%;"},
-			]},		// tone popup
+			{kind: "pickRingTones", style: "height: 100%; width: 100%;"},
+		]},		// tone popup
 	],
 	//Handlers
 	create: function() {
@@ -90,6 +95,16 @@ enyo.kind({
         this.manage();
       //  this.$.p.setShowing(0);
     },
+    reflow: function (inSender) {
+        this.inherited(arguments);
+        if (enyo.Panels.isScreenNarrow()){
+            this.$.Grabber.applyStyle("visibility", "hidden");
+            this.$.div.setStyle("padding: 35px 5% 35px 5%;");
+        }else{
+            this.$.Grabber.applyStyle("visibility", "visible");
+        }
+    },
+    
     manage: function (inSender, inEvent){						// get every thing set up
 		this.log("sender:", inSender, ", event:", inEvent);
 

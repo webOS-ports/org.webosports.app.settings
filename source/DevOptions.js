@@ -50,21 +50,23 @@ enyo.kind({
 							horizontal: "hidden",
 							fit: true,
 							components: [
-								{tag: "div", style: "padding: 35px 10% 35px 10%;", components: [
-									{kind: "onyx.Groupbox", components: [
-										{kind: "onyx.GroupboxHeader", content: "Debugging"},
-										{classes: "group-item", components: [
-											{kind: "Control", content: "USB debugging",
-											 style: "display: inline-block; line-height: 32px"},
-											{kind: "onyx.ToggleButton", name: "UsbDebuggingToggle", style: "float: right;",
-											 onChange: "onUsbDebuggingChanged"}
+								{kind: "onyx.Groupbox", components: [
+									{kind: "onyx.GroupboxHeader", content: "Debugging"},
+									{kind: "enyo.FittableColumns", classes: "group-item", components: [
+											{kind: "Control", content: "USB debugging", style: "padding-top: 10px;"},
+											{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
+												{kind: "onyx.ToggleButton", name: "UsbDebuggingToggle", style: "float: right;", onChange: "onUsbDebuggingChanged"},
+												{kind: "onyx.Tooltip", content: "USB debugging"}
+											]}
 										]}
-									]},
-									{kind: "onyx.Groupbox", components: [
-										{kind: "onyx.GroupboxHeader", content: "Graphics"},
-										{classes: "group-item", components:[
-											{kind: "Control", content: "Enable FPS counter", style: "display: inline-block; line-height: 32px;"},
+								]},
+								{kind: "onyx.Groupbox", components: [
+									{kind: "onyx.GroupboxHeader", content: "Graphics"},
+									{kind: "enyo.FittableColumns", classes: "group-item", components:[
+										{kind: "Control", content: "Enable FPS counter", style: "padding-top: 10px;"},
+										{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
 											{name: "FpsCounterToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onFpsCounterChanged"},
+											{kind: "onyx.Tooltip", content: "Enable FPS counte"}
 										]}
 									]}
 								]}
@@ -75,8 +77,8 @@ enyo.kind({
 			]
 		},
 		{kind: "onyx.Toolbar", components:[
-			{name: "Grabber", kind: "onyx.Grabber"}
-	 	]},
+			{name: "Grabber", kind: "onyx.Grabber"},
+		]},
 		{name: "GetStatus", kind: "DevModeService", method: "getStatus", onComplete: "onGetStatusResponse"},
 		{name: "SetStatus", kind: "DevModeService", method: "setStatus", onComplete: "onSetStatusResponse"},
 		{name: "EnableFpsCounter", kind: "enyo.PalmService", service: "luna://org.webosports.luna/", method: "setFpsCounter"}
@@ -90,6 +92,18 @@ enyo.kind({
 		this.palm = true;
 		this.$.GetStatus.send({});
 	},
+	reflow: function (inSender) {
+        this.inherited(arguments);
+        if (enyo.Panels.isScreenNarrow()){
+            this.$.Grabber.applyStyle("visibility", "hidden");
+            this.$.DevModeDisabled.setStyle("padding: 35px 5% 35px 5%;");
+            this.$.DevModeSettings.setStyle("padding: 35px 5% 35px 5%;");
+        }else{
+            this.$.Grabber.applyStyle("visibility", "visible");
+        }
+    },
+    
+
 	/* Control handlers */
 	onDevModeChanged: function(inSender, inEvent) {
 		if (!this.palm) {

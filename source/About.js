@@ -2,39 +2,44 @@ enyo.kind({
     name: "DeviceSoftwareInformation",
     layoutKind: "FittableRowsLayout",
     palm: true,
+	events: {
+        onBackbutton: "",
+    },
     components: [
         { kind: "onyx.Toolbar", style: "line-height: 36px;",
             components:[ { content: "About" } ] },
         { kind: "Scroller", touch: true, horizontal: "hidden", fit: true,
           components:[
-            { tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true,
+            {name: "div", tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true,
               components: [
                 {kind: "onyx.Groupbox", components: [
                     {kind: "onyx.GroupboxHeader", content: "Device"},
-                    {classes: "group-item", components:[
-                        {kind: "Control", content: "Name", style: "display: inline-block; line-height: 32px;"},
-                        {kind: "Control", name: "DeviceName", style: "float: right;", content: "Unknown"},
+                    { kind: "enyo.FittableColumns", classes: "group-item", components:[
+                        {kind: "Control", content: "Name", style: "padding-top: 10px;"},
+                        {kind: "Control", name: "DeviceName", style: "float: right; padding-top: 10px;", content: "Unknown"},
                     ]},
-                    {classes: "group-item", components:[
-                        {kind: "Control", content: "Serial number", style: "display: inline-block; line-height: 32px;"},
-                        {kind: "Control", name: "DeviceSerialNumber", style: "float: right;", content: "Unknown"},
+                    { kind: "enyo.FittableColumns", classes: "group-item", components:[
+                        {kind: "Control", content: "Serial number", style: "padding-top: 10px;"},
+                        {kind: "Control", name: "DeviceSerialNumber", style: "float: right; padding-top: 10px;", content: "Unknown"},
                     ]},
                 ]},
                 {kind: "onyx.Groupbox", components: [
                     {kind: "onyx.GroupboxHeader", content: "Software"},
-                    {classes: "group-item", components:[
-                        {kind: "Control", content: "Version", style: "display: inline-block; line-height: 32px;"},
-                        {kind: "Control", name: "SoftwareVersion", style: "float: right;", content: "Unknown"},
+                    { kind: "enyo.FittableColumns", classes: "group-item", components:[
+                        {kind: "Control", content: "Version", style: "padding-top: 10px;"},
+                        {kind: "Control", name: "SoftwareVersion", style: "float: right; padding-top: 10px;", content: "Unknown"},
                     ]},
-                    {classes: "group-item", components:[
-                        {kind: "Control", content: "Android version", style: "display: inline-block; line-height: 32px;"},
-                        {kind: "Control", name: "SoftwareAndroidVersion", style: "float: right;", content: "Unknown"},
+                    { kind: "enyo.FittableColumns", classes: "group-item", components:[
+                        {kind: "Control", content: "Android version", style: "padding-top: 10px;"},
+                        {kind: "Control", name: "SoftwareAndroidVersion", style: "float: right; padding-top: 10px;", content: "Unknown"},
                     ]},
                 ]},
                 {kind: "onyx.Button", content: "Software Licenses", style: "width: 100%", ontap: "onShowSoftwareLicenses" }
            ]}
         ]},
-        { kind: "onyx.Toolbar", components:[ {name: "Grabber", kind: "onyx.Grabber"}, ] },
+        { kind: "onyx.Toolbar", components:[
+			{name: "Grabber", kind: "onyx.Grabber"},
+		]},
         { kind: "enyo.PalmService", name: "RetrieveVersion", service: "palm://org.webosports.service.update",
             method: "retrieveVersion", onComplete: "onVersionResponse" },
         { kind: "enyo.PalmService", name: "GetAndroidProperty", service: "palm://com.android.properties",
@@ -50,6 +55,16 @@ enyo.kind({
         }
         this.updateAll();
     },
+	reflow: function (inSender) {
+        this.inherited(arguments);
+        if (enyo.Panels.isScreenNarrow()){
+            this.$.Grabber.applyStyle("visibility", "hidden");
+            this.$.div.setStyle("padding: 35px 5% 35px 5%;");
+        }else{
+            this.$.Grabber.applyStyle("visibility", "visible");
+        }
+    },
+
     updateAll: function() {
         this.$.RetrieveVersion.send({});
         this.$.GetAndroidProperty.send({keys:[
@@ -110,9 +125,16 @@ enyo.kind({
     name: "About",
     layoutKind: "FittableRowsLayout",
     palm: true,
+	events: {
+		onBackbutton: "",
+	},
+	handlers: {
+		onBackMain: "handleBackGesture",
+		onBack: "handleBack"
+	},
+	debug: false,
     components: [
-        { kind: "Signals", onbackbutton: "handleBackGesture" },
-        { kind: "Panels", name: "ContentPanels", fit: true, draggable: false,
+		{ kind: "Panels", name: "ContentPanels", fit: true, draggable: false,
           components: [
             { name: "Information", kind: "DeviceSoftwareInformation", onSwitchPanel: "switchPanel" },
             { name: "Licenses", kind: "Licenses", onSwitchPanel: "switchPanel" }
@@ -129,8 +151,22 @@ enyo.kind({
     },
     // Action Handlers
     handleBackGesture: function(inSender, inEvent) {
-        this.switchPanel(null, {targetPanel: "Information"});
+		this.log("sender:", inSender, ", event:", inEvent);
+		if(this.$.ContentPanels.getIndex() === 0){
+			this.doBackbutton();
+        }
+        
+		if(this.$.ContentPanels.getIndex() === 1){
+			//this.switchPanel(null, {targetPanel: "Information"});
+			this.$.Licenses.handleBackGesture();	
+		}
+		
+
     },
+    handleBack: function(inSender, inEvent){
+		this.log("sender:", inSender, ", event:", inEvent);
+		this.switchPanel(null, {targetPanel: "Information"});
+	},
     switchPanel: function(inSender, inEvent) {
         console.log("switchPanel: targetPanel=" + inEvent.targetPanel);
         if (typeof inEvent.targetPanel === 'undefined')
@@ -138,8 +174,10 @@ enyo.kind({
         this.$.ContentPanels.selectPanelByName(inEvent.targetPanel);
         this.selectContentPanel();
     },
-    selectContentPanel: function() {
-        if (enyo.Panels.isScreenNarrow())
-            this.selectPanelByName("ContentPanels");
+    selectContentPanel: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
+        //if (enyo.Panels.isScreenNarrow())
+        //	this.$.ContentPanels.;
+            //this.selectPanelByName("ContentPanels");
     }
 });
