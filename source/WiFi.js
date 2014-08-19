@@ -127,6 +127,7 @@ enyo.kind({
     palm: false,
     findNetworksRequest: null,
     autoscan: null,
+    debug: false,
     components: [
 	
         /* Error popup */
@@ -647,7 +648,18 @@ enyo.kind({
         return 0;
     },
     setupSearchRow: function (inSender, inEvent) {
-        inEvent.item.$.wiFiListItem.$.SSID.setContent(this.foundNetworks[inEvent.index].name);
+    	var ssid = "";
+    	if(enyo.Panels.isScreenNarrow()){
+    		if(this.foundNetworks[inEvent.index].name.length >= 12){					// if the SSID is longer shortten it for the narrow page only
+    			ssid = this.foundNetworks[inEvent.index].name.slice(0,12) + "...";
+    		}else{
+    			ssid = this.foundNetworks[inEvent.index].name;
+    		}
+    	}else{
+    		ssid = this.foundNetworks[inEvent.index].name;
+    	}
+    	
+        inEvent.item.$.wiFiListItem.$.SSID.setContent( ssid );
 
         switch (this.foundNetworks[inEvent.index].state) {
         case "association":
@@ -690,7 +702,17 @@ enyo.kind({
 		}
     },
     setupKnownNetworkRow: function (inSender, inEvent) {
-        inEvent.item.$.wiFiListItem.$.SSID.setContent(this.knownNetworks[inEvent.index].name);
+    	var ssid = "";	
+		if(enyo.Panels.isScreenNarrow()){
+    		if(this.foundNetworks[inEvent.index].name.length >= 12){					// if the SSID is longer shortten it for the narrow page only
+    			ssid = this.foundNetworks[inEvent.index].name.slice(0,12) + "...";
+    		}else{
+    			ssid = this.foundNetworks[inEvent.index].name;
+    		}
+    	}else{
+    		ssid = this.foundNetworks[inEvent.index].name;
+    	}
+        inEvent.item.$.wiFiListItem.$.SSID.setContent( ssid );
         inEvent.item.$.wiFiListItem.$.Security.setContent(this.knownNetworks[inEvent.index].security);
         inEvent.item.$.wiFiListItem.$.Signal.setShowing(false);
     },
