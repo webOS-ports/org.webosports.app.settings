@@ -160,19 +160,45 @@ enyo.kind({
 	
 });
 
+
+
+/* call with pannel names below
+* 
+*	EmptyPanel
+* 	WiFiPanel 
+*	SystemUpdatesPanel
+*	ScreenLockPanel
+*	DateTimePanel
+*	audioPanel 
+*	DevOptionsPanel
+*	TelephonyPanel 
+*	LanguageInputPanel
+*	AboutPanel
+*/
+
 enyo.kind({
 	name: "App",
 	layoutKind: "FittableRowsLayout",
+	page: [
+		targetPanel = ""
+	],
 	components: [
 		{kind: "Signals",
 		onbackbutton: "handleBackGesture",
 		onCoreNaviDragStart: "handleCoreNaviDragStart",
 		onCoreNaviDrag: "handleCoreNaviDrag",
-		onCoreNaviDragFinish: "handleCoreNaviDragFinish",},
+		onCoreNaviDragFinish: "handleCoreNaviDragFinish",
+		onrelaunch: "handlerelaunch",
+		},
 		{name: "AppPanels", kind: "AppPanels", fit: true},
 		{kind: "CoreNavi", fingerTracking: true}
 	],
 	//Handlers
+	create: function() {
+        this.inherited(arguments);
+        // put MyWorker to work
+       // this.handlerelaunch("audioPanel");   				//  testing the handlerelaunch
+    },
 	reflow: function(inSender) {
 		this.inherited(arguments);
 		if(enyo.Panels.isScreenNarrow()) {
@@ -187,6 +213,11 @@ enyo.kind({
 			this.$.AppPanels.$.ContentPanels.applyStyle("box-shadow", "-4px 0px 4px rgba(0,0,0,0.3)");
 			this.$.AppPanels.$.WiFiToggle.setShowing(false);
 		}
+	},
+	handlerelaunch: function(page) {
+		this.log("Page", page);
+		this.page.targetPanel = page;
+		this.$.AppPanels.openPanel(this.page);
 	},
 	handleBackGesture: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
