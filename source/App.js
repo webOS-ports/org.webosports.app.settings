@@ -177,7 +177,7 @@ enyo.kind({
 */
 
 enyo.kind({
-	name: "App",
+	name: "Settings",
 	layoutKind: "FittableRowsLayout",
 	page: [
 		targetPanel = ""
