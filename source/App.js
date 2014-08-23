@@ -29,7 +29,7 @@ enyo.kind({
 });
 
 enyo.kind({
-	name: "EmptyPanel",
+	name: "Empty",
 	layoutKind: "FittableRowsLayout",
 	style: "background-color: #555;",
 	components:[
@@ -75,27 +75,27 @@ enyo.kind({
 			components:[
 				//Connectivity
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Connectivity"},
-				{kind: "ListItem", icon: "icon.png", title: "Wi-Fi", ontap: "openPanel", targetPanel: "WiFiPanel",
+				{kind: "ListItem", icon: "icon.png", title: "Wi-Fi", ontap: "openPanel", targetPanel: "WiFi",
 				components:[
 					{name: "WiFiToggle",
 					kind: "onyx.ToggleButton",
 					ontap: "wifiToggleChanged",
 					style: "position: absolute; top: 11px; right: 9px; height: 31px;" }
 				]},
-				{kind: "ListItem", icon: "icon.png", title: "Telephony", ontap: "openPanel", targetPanel: "TelephonyPanel"},
+				{kind: "ListItem", icon: "icon.png", title: "Telephony", ontap: "openPanel", targetPanel: "Telephony"},
 
 				//Services
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Services"},
-				{kind: "ListItem", icon: "icon.png", title: "System Updates", ontap: "openPanel", targetPanel: "SystemUpdatesPanel"},
+				{kind: "ListItem", icon: "icon.png", title: "System Updates", ontap: "openPanel", targetPanel: "SystemUpdates"},
 				
 				//Core Settings
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Core"},
-				{kind: "ListItem", icon: "icon.png", title: "Screen & Lock", ontap: "openPanel", targetPanel: "ScreenLockPanel"},
-				{kind: "ListItem", icon: "icon.png", title: "Date & Time", ontap: "openPanel", targetPanel: "DateTimePanel"},
-				{kind: "ListItem", icon: "inco.png", title: "Sound & Ringtones", ontap: "openPanel", targetPanel: "audioPanel"},
-				{kind: "ListItem", icon: "icon.png", title: "Language & Input", ontap: "openPanel", targetPanel: "LanguageInputPanel"},
-				{kind: "ListItem", icon: "icon.png", title: "Developer Options", ontap: "openPanel", targetPanel: "DevOptionsPanel"},
-				{kind: "ListItem", icon: "icon.png", title: "About", ontap: "openPanel", targetPanel: "AboutPanel"}
+				{kind: "ListItem", icon: "icon.png", title: "Screen & Lock", ontap: "openPanel", targetPanel: "ScreenLock"},
+				{kind: "ListItem", icon: "icon.png", title: "Date & Time", ontap: "openPanel", targetPanel: "DateTime"},
+				{kind: "ListItem", icon: "inco.png", title: "Sound & Ringtones", ontap: "openPanel", targetPanel: "Audio"},
+				{kind: "ListItem", icon: "icon.png", title: "Language & Input", ontap: "openPanel", targetPanel: "LanguageInput"},
+				{kind: "ListItem", icon: "icon.png", title: "Developer Options", ontap: "openPanel", targetPanel: "DevOptions"},
+				{kind: "ListItem", icon: "icon.png", title: "About", ontap: "openPanel", targetPanel: "About"}
 			]}
 		]},
 		{name: "ContentPanels",
@@ -105,16 +105,16 @@ enyo.kind({
 		classes: "onyx",
 		index: 1,
 		components:[
-			{kind: "EmptyPanel"},
-			{name: "WiFiPanel", kind: "WiFi", onActiveChanged: "wifiActiveChanged"},
-			{name: "SystemUpdatesPanel", kind: "SystemUpdates"},
-			{name: "ScreenLockPanel", kind: "ScreenLock"},
-			{name: "DateTimePanel", kind: "DateTime"},
-			{name: "audioPanel", kind: "Sound"},
-			{name: "DevOptionsPanel", kind: "DevOptions"},
-			{name: "TelephonyPanel", kind: "Telephony"},
-			{name: "LanguageInputPanel", kind: "LanguageInput"},
-			{name: "AboutPanel", kind: "About"}
+			{kind: "Empty"},
+			{name: "WiFi", kind: "WiFi", onActiveChanged: "wifiActiveChanged"},
+			{name: "SystemUpdates", kind: "SystemUpdates"},
+			{name: "ScreenLock", kind: "ScreenLock"},
+			{name: "DateTime", kind: "DateTime"},
+			{name: "Audio", kind: "Sound"},
+			{name: "DevOptions", kind: "DevOptions"},
+			{name: "Telephony", kind: "Telephony"},
+			{name: "LanguageInput", kind: "LanguageInput"},
+			{name: "About", kind: "About"}
 		]}
 	],
 	//Action Functions
@@ -142,14 +142,14 @@ enyo.kind({
 	handleBack: function(inSender, inEvent){
 		this.log("sender:", inSender, ", event:", inEvent);
 	
-		if( (this.currentPanel !== "AboutPanel") && (this.currentPanel !== "WiFiPanel") ){
+		if( (this.currentPanel !== "About") && (this.currentPanel !== "WiFi") ){
 			this.setIndex(0);
 		}else{
-			if( this.currentPanel === "AboutPanel"){
-				this.$.AboutPanel.handleBackGesture();
+			if( this.currentPanel === "About"){
+				this.$.About.handleBackGesture();
 			}
-			if(this.currentPanel === "WiFiPanel" ){
-				this.$.WiFiPanel.handleBackGesture();
+			if(this.currentPanel === "WiFi" ){
+				this.$.WiFi.handleBackGesture();
 			}
 		}
 	},
@@ -164,16 +164,16 @@ enyo.kind({
 
 /* call with pannel names below
 * 
-*	EmptyPanel
-* 	WiFiPanel 
-*	SystemUpdatesPanel
-*	ScreenLockPanel
-*	DateTimePanel
-*	audioPanel 
-*	DevOptionsPanel
-*	TelephonyPanel 
-*	LanguageInputPanel
-*	AboutPanel
+*	Empty
+* 	WiFi
+*	SystemUpdates
+*	ScreenLock
+*	DateTime
+*	Audio
+*	DevOptions
+*	Telephony
+*	LanguageInput
+*	About
 */
 
 enyo.kind({
