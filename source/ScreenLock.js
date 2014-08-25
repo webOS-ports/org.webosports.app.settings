@@ -270,7 +270,7 @@ enyo.kind({
 			this.$.BlinkToggle.setValue(result.BlinkNotifications);
 	},
 	pickWallpaper: function(inSender, inResponse) {
-		var wallpaperPath = "file:///usr/lib/luna/system/luna-systemui/images/wallpapers/";
+		var wallpaperPath = "file:///usr/share/wallpapers/";
 		this.$.ImportWallpaper.send({"target": wallpaperPath + inSender.filename});
 
 	},
