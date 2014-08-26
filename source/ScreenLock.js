@@ -20,7 +20,7 @@ enyo.kind({
 		components:[
 				{content: "Screen & Lock"},
 		]},
-		/* {name: "ImagePicker", kind: "FilePicker", fileType:["image"], onPickFile: "selectedImageFile", autoDismiss: true}, */
+		{name: "ImagePicker", kind: "FilePicker", fileType:["image"], onPickFile: "selectedImageFile", autoDismiss: true},
 		{kind: "Scroller",
 		touch: true,
 		horizontal: "hidden",
@@ -52,37 +52,9 @@ enyo.kind({
 				{kind: "onyx.Groupbox", components: [
 					{kind: "onyx.GroupboxHeader", content: "Wallpaper"},
 					{classes: "group-item",
-					style: "padding: 0; height: 212px; background-color: red",
+					style: "padding: 5;",
 					components:[
-						/* {kind: "onyx.Button", style: "width: 100%;", content: "Change Wallpaper", ontap: "openWallpaperPicker"}, */
-						{kind: "enyo.Scroller",
-						touch: true,
-						horizontal: "hidden",
-						style: "width: 100%; height: 212px;",
-						components: [
-							{style: "width: 100%;",
-							defaultKind: enyo.kind({
-								kind: "ListItem",
-								title: "",
-								filename: "",
-								style: "margin: 0;",
-								ontap: "pickWallpaper"
-							}),
-							components: [
-								{title: "Blue Rocks", filename: "bluerocks.png"},
-								{title: "Bubbles", filename: "bubbles.png"},
-								{title: "Butterfly", filename: "butterfly.png"},
-								{title: "Dew", filename: "plant.png"},
-								{title: "Flowers", filename: "flowers.png"},
-								{title: "Ice Plant", filename: "iceplant.png"},
-								{title: "Ice Veins", filename: "iceveins.png"},
-								{title: "Milky Way", filename: "milkyway.png"},
-								{title: "Moonrise", filename: "moonrise.png"},
-								{title: "Orange Sunset", filename: "orangesunset.png"},
-								{title: "Snow Tracks", filename: "snowtracks.png"},
-								{title: "Wyoming", filename: "wyoming.png"},
-							]}
-						]}
+						{kind: "onyx.Button", style: "width: 95%;", content: "Change Wallpaper", ontap: "openWallpaperPicker"},
 					]},
 				]},
 				/* Disabled because the preference isn't returning anything (and it's standard functionality now)
