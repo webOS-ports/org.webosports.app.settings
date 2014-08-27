@@ -156,8 +156,7 @@ enyo.kind({
 	backButton: function(inSender, inEvent){
 		this.log("sender:", inSender, ", event:", inEvent);
 		this.setIndex(0);
-	}
-	
+	},
 });
 
 
@@ -197,7 +196,11 @@ enyo.kind({
 	create: function() {
         this.inherited(arguments);
         // put MyWorker to work
-       // this.handlerelaunch("audioPanel");   				//  testing the handlerelaunch
+		if( window.PalmSystem) {
+			if(PalmSystem.launchParams !== null){
+				this.handlerelaunch();
+			}
+		}
     },
 	reflow: function(inSender) {
 		this.inherited(arguments);
@@ -214,14 +217,50 @@ enyo.kind({
 			this.$.AppPanels.$.WiFiToggle.setShowing(false);
 		}
 	},
-	handlerelaunch: function(page) {
-		this.log("Page", page);
-		this.page.targetPanel = page;
-		this.$.AppPanels.openPanel(this.page);
+	handlerelaunch: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
+		var params = PalmSystem.launchParams; 
+
+		if( params.match("WiFi")){
+			this.page.targetPanel = "WiFi";
+			this.$.AppPanels.openPanel(this.page);
+		}
+		if( params.match("SystemUpdates")){
+			this.page.targetPanel = "SystemUpdates";
+			this.$.AppPanels.openPanel(this.page);
+		}
+		if( params.match("ScreenLock")){
+			this.page.targetPanel = "ScreenLock";
+			this.$.AppPanels.openPanel(this.page);
+		}
+		if( params.match("DateTime")){
+			this.page.targetPanel = "DateTime";
+			this.$.AppPanels.openPanel(this.page);
+		}
+		if( params.match("Audio")){
+			this.page.targetPanel = "Audio";
+			this.$.AppPanels.openPanel(this.page);
+		}
+		if( params.match("DevOptions")){
+			this.page.targetPanel = "DevOptions";
+			this.$.AppPanels.openPanel(this.page);
+		}
+		if( params.match("Telephony")){
+			this.page.targetPanel = "Telephony";
+			this.$.AppPanels.openPanel(this.page);
+		}		
+		if( params.match("LanguageInput")){
+			this.page.targetPanel = "LanguageInput";
+			this.$.AppPanels.openPanel(this.page);
+		}
+		if( params.match("About")){
+			this.page.targetPanel = "About";
+			this.$.AppPanels.openPanel(this.page);
+		}
+
 	},
 	handleBackGesture: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
-		
 		this.$.AppPanels.handleBack();
 		return true;
 	},
