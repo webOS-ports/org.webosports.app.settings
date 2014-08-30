@@ -1,10 +1,4 @@
 enyo.kind({
-	name: "DevModeService",
-	kind: "enyo.PalmService",
-	service: "palm://org.webosports.service.devmode/"
-});
-
-enyo.kind({
 	name: "DevOptions",
 	layoutKind: "FittableRowsLayout",
 	palm: false,
@@ -128,7 +122,7 @@ enyo.kind({
 	onGetStatusResponse: function (inSender, inResponse) {
 		var result = inResponse.data;
 		console.log(JSON.stringify(result));
-		if (result.usbDebugging === "enabled") {
+		if (result.status === "enabled") {
 			this.$.DevModeToggle.setValue(true);
 			this.$.DevModePanels.setIndex(1);
 		}
@@ -140,6 +134,6 @@ enyo.kind({
 		this.$.UsbDebuggingToggle.setValue(result.usbDebugging === "enabled");
 	},
 	onSetStatusResponse: function(inSender, inEvent) {
-		this.$.GetStatus({});
+		this.$.GetStatus.send({});
 	}
 });

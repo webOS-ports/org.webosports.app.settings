@@ -94,7 +94,7 @@ enyo.kind({
 				{kind: "ListItem", icon: "icon.png", title: "Date & Time", ontap: "openPanel", targetPanel: "DateTimePanel"},
 				{kind: "ListItem", icon: "inco.png", title: "Sound & Ringtones", ontap: "openPanel", targetPanel: "AudioPanel"},
 				{kind: "ListItem", icon: "icon.png", title: "Language & Input", ontap: "openPanel", targetPanel: "LanguageInputPanel"},
-				{kind: "ListItem", icon: "icon.png", title: "Developer Options", ontap: "openPanel", targetPanel: "DevOptionsPanel"},
+				{kind: "ListItem", name: "DevModemListItem", icon: "icon.png", title: "Developer Options", ontap: "openPanel", targetPanel: "DevOptionsPanel", showing: false},
 				{kind: "ListItem", icon: "icon.png", title: "About", ontap: "openPanel", targetPanel: "AboutPanel"}
 			]}
 		]},
@@ -115,14 +115,31 @@ enyo.kind({
 			{name: "TelephonyPanel", kind: "Telephony"},
 			{name: "LanguageInputPanel", kind: "LanguageInput"},
 			{name: "AboutPanel", kind: "About"}
-		]}
+		]},
+		{name: "GetDevModeStatus", kind: "DevModeService", method: "getStatus", onComplete: "onDevModeGetStatusResponse"},
 	],
+	create: function() {
+		this.inherited(arguments);
+		this.$.GetDevModeStatus.send({});
+	},
 	//Action Functions
 	wifiActiveChanged: function(inSender, inEvent) {
 		this.$.WiFiToggle.setValue(inEvent.value);
 	},
 	wifiToggleChanged: function(inSender) {
 		this.$.WiFiPanel.setToggleValue(inSender.value);
+	},
+	onDevModeGetStatusResponse: function(inSender, inEvent) {
+		var result = inEvent.data;
+		console.log(JSON.stringify(result));
+		if (result.status === "enabled") {
+			console.log("DevMode enabled, showing devmode list item");
+			this.$.DevModemListItem.show();
+		}
+		else {
+			console.log("DevMode disabled, hiding devmode list item");
+			this.$.DevModemListItem.hide();
+		}
 	},
 	//Panel selection functions
 	openPanel: function(inSender, inEvent) {
