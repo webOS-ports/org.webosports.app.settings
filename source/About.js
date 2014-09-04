@@ -30,6 +30,18 @@ enyo.kind({
                         {kind: "Control", name: "SoftwareVersion", style: "float: right; padding-top: 10px;", content: "Unknown"},
                     ]},
                     { kind: "enyo.FittableColumns", classes: "group-item", components:[
+                        {kind: "Control", content: "Codename", style: "padding-top: 10px;"},
+                        {kind: "Control", name: "Codename", style: "float: right; padding-top: 10px;", content: "Unknown"},
+                    ]},
+                    { kind: "enyo.FittableColumns", classes: "group-item", components:[
+                        {kind: "Control", content: "Build Tree", style: "padding-top: 10px;"},
+                        {kind: "Control", name: "BuildTree", style: "float: right; padding-top: 10px;", content: "Unknown"},
+                    ]},
+                    { kind: "enyo.FittableColumns", classes: "group-item", components:[
+                        {kind: "Control", content: "Build Number", style: "padding-top: 10px;"},
+                        {kind: "Control", name: "BuildNumber", style: "float: right; padding-top: 10px;", content: "Unknown"},
+                    ]},
+                    { kind: "enyo.FittableColumns", classes: "group-item", components:[
                         {kind: "Control", content: "Android version", style: "padding-top: 10px;"},
                         {kind: "Control", name: "SoftwareAndroidVersion", style: "float: right; padding-top: 10px;", content: "Unknown"},
                     ]},
@@ -84,15 +96,14 @@ enyo.kind({
         if (!response || !response.returnValue)
             return;
 
-        if (response.localVersion && response.codename) {
-            this.$.SoftwareVersion.setContent(response.codename + " (" + response.localVersion + ")");
-        } else {
-            if (response.localVersion)
-                this.$.SoftwareVersion.setContent(response.localVersion);
-            if (response.codename) {
-                this.$.SoftwareVersion.setContent(response.codename);
-            }
-        }
+        if (response.localVersion)
+            this.$.SoftwareVersion.setContent("" + response.localVersion);
+        if (response.codename)
+            this.$.Codename.setContent(response.codename);
+        if (response.buildTree)
+            this.$.BuildTree.setContent(response.buildTree);
+        if (response.buildNumber)
+            this.$.BuildNumber.setContent(response.buildNumber);
     },
     onGetAndroidPropertyResponse: function(inSender, inEvent) {
         var response = inEvent.data;
