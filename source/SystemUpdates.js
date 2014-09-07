@@ -22,25 +22,21 @@ enyo.kind({
 			allowHtml: true,
 			content: "There is currently no update available. Please check again later."
 		},
+		// display change info
 		{
 			name: "changesDisplayContainer", 
 			kind: "enyo.FittableRows", 
 			classes: "changes-display", 
 			fit: true, components: [
 				{classes: "vspacer"},
-				{kind: "enyo.FittableColumns", fit: true, components: [
-					{style: "width: 40%" },
-					
-					{name: "spinner", kind: "onyx.Spinner", fit: true, showing: false, classes: "center; onyx-light" },
-					{style: "width: 40%" },
-				]},
+				
 				{kind: "enyo.Scroller", fit: true, touch: true, components: [
 					{name: "changesDisplay", classes: "nice-padding center", style: "text-align: left;", allowHtml: true}
 				]},
 				{classes: "vspacer"}
 			]
 		},
-		
+
 		//buttons:
 		{name: "toolbarControls", kind: "onyx.Toolbar", classes: "center", components: [
 			{name: "Grabber", kind: "onyx.Grabber", style: "position: absolute; left: 0%; padding-left: 40px;"},
@@ -102,7 +98,11 @@ enyo.kind({
 			method: "initiateUpdate",
 			subscribe: false,
 			onComplete: "initiateUpdateComplete"
-		}
+		},
+		// spinner
+		{name: "spinnerPop", kind: "onyx.Popup", centered: true, floating: true, style: "padding: 10px;", components: [
+			{name: "spinner", kind: "onyx.Spinner", classes: "center; onyx-light"}
+		]},
 	],
 	reflow: function (inSender) {
         this.inherited(arguments);
@@ -134,8 +134,8 @@ enyo.kind({
 	startActivity: function (msg) {
 		this.$.toolbarControls.hide();
 		this.$.changesDisplay.hide();
-		this.$.spinner.show();
-		this.$.spinner.start();
+		this.$.spinnerPop.show();
+
 		if (msg) {
 			this.updateStatus(msg);
 		}
@@ -147,8 +147,7 @@ enyo.kind({
 		}
 		this.$.toolbarControls.show();
 		this.$.changesDisplay.show();
-		this.$.spinner.hide();
-		this.$.spinner.stop();
+		this.$.spinnerPop.hide();
 		this.render();
 	},
 
