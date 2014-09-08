@@ -135,20 +135,23 @@ enyo.kind({
 		this.$.toolbarControls.hide();
 		this.$.changesDisplay.hide();
 		this.$.spinnerPop.show();
-
+		
 		if (msg) {
 			this.updateStatus(msg);
 		}
-		this.render();
+		this.$.toolbarControls.render();
+		this.$.changesDisplay.render();
 	},
 	stopActivity: function () {
+	
 		if (this.currentRequest) {
 			this.currentRequest.cancel();
 		}
 		this.$.toolbarControls.show();
 		this.$.changesDisplay.show();
 		this.$.spinnerPop.hide();
-		this.render();
+		this.$.toolbarControls.render();
+		this.$.changesDisplay.render();
 	},
 
 	updateStatus: function (msg) {
