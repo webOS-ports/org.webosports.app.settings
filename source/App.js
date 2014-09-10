@@ -128,6 +128,7 @@ enyo.kind({
 	},
 	wifiToggleChanged: function(inSender) {
 		this.$.WiFiPanel.setToggleValue(inSender.value);
+		return true;
 	},
 	onDevModeGetStatusResponse: function(inSender, inEvent) {
 		var result = inEvent.data;
