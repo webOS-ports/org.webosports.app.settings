@@ -21,10 +21,17 @@ enyo.kind({
                     name: "SSID",
                     content: "SSID",
                    
-                    style: "padding-top: 10px; max-width: 150px;"
+                    style: "padding-top: 10px; max-width: 170px; overflow: hidden;  background-color: red;"
                 },
-                { kind: "enyo.FittableColumns", fit: true, style: "float: right; ", components: [
+                {name: "itemColumns", kind: "enyo.FittableColumns", fit: true, style: "float: right;", components: [
               
+					{
+                    	name: "Signal",
+                    	kind: "Image",
+                    	src: "assets/wifi/signal-icon.png",
+                		classes: "wifi-list-icon",
+                		style: "float: right;",
+                	},
 					{	
 						name: "spin",
                     	kind: "onyx.Spinner", 
@@ -39,14 +46,6 @@ enyo.kind({
 						showing: false,
 						style: "padding-top: 10px;"
 					},
-
-            		{
-                    	name: "Active",
-                    	kind: "Image",
-                    	src: "assets/wifi/checkmark.png",
-                    	showing: false,
-                    	classes: "wifi-list-icon"
-                	},
             		{
                     	name: "Padlock",
                     	kind: "Image",
@@ -54,12 +53,14 @@ enyo.kind({
                 		showing: false,
 						classes: "wifi-list-icon"
                 	},
-					{
-                    	name: "Signal",
+            		{
+                    	name: "Active",
                     	kind: "Image",
-                    	src: "assets/wifi/signal-icon.png",
-                		classes: "wifi-list-icon"
-                	}
+                    	src: "assets/wifi/checkmark.png",
+                    	showing: false,
+                    	classes: "wifi-list-icon",
+                    	style: "float: right;",
+                	},
                 ]},
             ]},
 	],
@@ -67,6 +68,15 @@ enyo.kind({
         onmousedown: "pressed",
         ondragstart: "released",
         onmouseup: "released"
+    },
+	reflow: function (inSender) {
+        this.inherited(arguments);
+        console.log("NANA");
+        if (enyo.Panels.isScreenNarrow()){
+        	this.$.itemColumns.addStyles("min-width: 170px; background-color: yellow;");
+      	}else{
+           this.$.itemColumns.addStyles("min-width: 270px; background-color: yellow;");
+        }
     },
     pressed: function () {
         this.addClass("onyx-selected");
@@ -78,7 +88,7 @@ enyo.kind({
 
 var phonyFoundNetworks = [
     {
-            "name": "BTWiFi",
+            "name": "12345678901234567890",
             "security": [ "none" ],
             "strength": 77,
             "state": "ready"
