@@ -110,7 +110,7 @@ enyo.kind({
 
 var phonyFoundNetworks = [
     {
-            "name": "123456789012345678901234567890123",
+            "name": "BTWiFi",
             "security": [ "none" ],
             "strength": 77,
             "state": "ready"
@@ -128,7 +128,7 @@ var phonyFoundNetworks = [
             "strength": 86
     },
     {
-            "name": "12345678901234567890123456789",
+            "name": "SKY13476",
             "state": "association",
             "security": [ "psk" ],
             "strength": 86
