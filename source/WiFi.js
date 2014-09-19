@@ -72,7 +72,7 @@ enyo.kind({
 	reflow: function (inSender) {
         this.inherited(arguments);
         var width = 0;
-       	var currentWidth = 425;
+       	var currentWidth = 325;
         var widthSingnal = 43;
         var widthSpin = 55;
         var widthLock = 26;
