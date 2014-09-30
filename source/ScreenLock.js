@@ -48,6 +48,12 @@ enyo.kind({
 						]}
 					
 					]},
+					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
+						{content: "Keep screen on when connected to USB",	style: "padding-top: 10px;"},
+						{ style: "float: right; padding-top: 10px;", components: [
+							{ kind:"onyx.ToggleButton", classes: "onyx-toggle-button", onChange:"screenOffToggleChanged" },
+						]}
+					]}
 				]},
 				{kind: "onyx.Groupbox", components: [
 					{kind: "onyx.GroupboxHeader", content: "Wallpaper"},
@@ -213,6 +219,18 @@ enyo.kind({
 		}*/
 
 		this.$.ImportWallpaper.send(params);
+	},
+	screenOffToggleChanged: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
+		if(this.palm) {
+			if(inEvent.value === true) {
+				this.$.SetDisplayProperty.send({onWhenConnected: true});
+			}else {
+				this.$.SetDisplayProperty.send({onWhenConnected: false});
+			}
+		}else {
+			enyo.log(parseInt(this.$.BrightnessSlider.value));
+		}
 	},
 
 	//Service Callbacks
