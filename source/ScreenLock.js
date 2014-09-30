@@ -49,9 +49,9 @@ enyo.kind({
 					
 					]},
 					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
-						{content: "Keep screen on when connected to USB",	style: "padding-top: 10px;"},
+						{ content: "Screen on when connected to USB", style: "padding-top: 10px;"},
 						{ style: "float: right; padding-top: 10px;", components: [
-							{ kind:"onyx.ToggleButton", classes: "onyx-toggle-button", onChange:"screenOffToggleChanged" },
+							{ name: "screenOffToggle", kind:"onyx.ToggleButton", classes: "onyx-toggle-button", onChange:"screenOffToggleChanged" },
 						]}
 					]}
 				]},
@@ -125,14 +125,15 @@ enyo.kind({
 	],
 	//Handlers
 	create: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
 		this.inherited(arguments);
 
 		if(!window.PalmSystem) {
 			enyo.log("Non-palm platform, service requests disabled.");
-			return
+			return;
 		}
 
-		this.$.GetDisplayProperty.send({properties: ["maximumBrightness", "timeout"]});
+		this.$.GetDisplayProperty.send({properties: ["maximumBrightness", "timeout", "onWhenConnected"]});
 		this.$.GetSystemPreferences.send({keys: ["showAlertsWhenLocked", "BlinkNotifications"]});
 
 		this.palm = true;
@@ -225,7 +226,7 @@ enyo.kind({
 		if(this.palm) {
 			if(inEvent.value === true) {
 				this.$.SetDisplayProperty.send({onWhenConnected: true});
-			}else {
+		    }else {
 				this.$.SetDisplayProperty.send({onWhenConnected: false});
 			}
 		}else {
@@ -250,6 +251,10 @@ enyo.kind({
 				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[2]);
 			if(result.timeout == 180)
 				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[3]);
+			
+		}
+		if(result.onWhenConnected !== undefined) {
+			this.$.screenOffToggle.setValue(result.onWhenConnected);
 		}
 	},
 	handleGetPreferencesResponse: function(inSender, inResponse) {
