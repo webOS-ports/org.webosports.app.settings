@@ -62,9 +62,9 @@ enyo.kind({
 											]},
 										]},
 										{ kind: "enyo.FittableColumns", classes: "group-item", components:[
-											{ content: "Screen on when connected to USB", style: "padding-top: 10px;"},
+											{ content: "Screen is always on when USB is connected", style: "padding-top: 10px; word-wrap: break-word max-width: 100px"},
 											{ style: "float: right; padding-top: 10px;", components: [
-												{ name: "screenOffToggle", kind:"onyx.ToggleButton", classes: "onyx-toggle-button", onChange:"screenOffToggleChanged" },
+												{ name: "screenOffToggle", kind:"onyx.ToggleButton", onContent: "Yes", offContent: "No", classes: "onyx-toggle-button", onChange:"screenOffToggleChanged" },
 											]}
 										]}
 								]},
