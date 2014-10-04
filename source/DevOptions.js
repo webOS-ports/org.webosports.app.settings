@@ -61,8 +61,8 @@ enyo.kind({
 												{kind: "onyx.Tooltip", content: "USB debugging"}
 											]},
 										]},
-										{ kind: "enyo.FittableColumns", classes: "group-item", components:[
-											{ content: "Screen is always on when USB is connected", style: "padding-top: 10px; word-wrap: break-word max-width: 100px"},
+										{ name: "ScreenOnGroup", kind: "enyo.FittableColumns", classes: "group-item", components:[
+											{name: "ScreenOnUsb ", content: "Screen is always on when USB is connected", style: "padding-top: 10px;"},
 											{ style: "float: right; padding-top: 10px;", components: [
 												{ name: "screenOffToggle", kind:"onyx.ToggleButton", onContent: "Yes", offContent: "No", classes: "onyx-toggle-button", onChange:"screenOffToggleChanged" },
 											]}
@@ -110,6 +110,8 @@ enyo.kind({
             this.$.Grabber.applyStyle("visibility", "hidden");
             this.$.DevModeDisabled.setStyle("padding: 35px 5% 35px 5%;");
             this.$.DevModeSettings.setStyle("padding: 35px 5% 35px 5%;");
+            this.$.ScreenOnUsb.addStyle("word-wrap: break-word; max-width: 250px");
+            this.$.ScreenOnGroup.applyStyle("height: 104px;");
         }else{
             this.$.Grabber.applyStyle("visibility", "visible");
         }
