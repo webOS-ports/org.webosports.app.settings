@@ -54,13 +54,12 @@ enyo.kind({
 												{kind: "onyx.Tooltip", content: "USB debugging"}
 											]},
 										]},
-										{ name: "ScreenOnGroup", kind: "enyo.FittableColumns", classes: "group-item", components:[
-											{name: "ScreenOnUsb", content: "Screen is always on when USB is connected", style: "padding-top: 10px;"},
-											{ style: "float: right; padding-top: 10px;", components: [
-												{ name: "screenOffToggle", kind:"onyx.ToggleButton", onContent: "Yes", offContent: "No", classes: "onyx-toggle-button", onChange:"screenOffToggleChanged" },
-											]}
-										]}
+										
+										
+										
+
 								]},
+	
 								{kind: "onyx.Groupbox", components: [
 									{kind: "onyx.GroupboxHeader", content: "Graphics"},
 									{kind: "enyo.FittableColumns", classes: "group-item", components:[
@@ -69,7 +68,13 @@ enyo.kind({
 											{name: "FpsCounterToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onFpsCounterChanged"},
 											{kind: "onyx.Tooltip", content: "Enable FPS counte"}
 										]}
-									]}
+									]},		
+									{ name: "ScreenOnGroup", kind: "enyo.FittableColumns", classes: "group-item", style: "word-wrap: break-word; height: 52px;", components:[
+										{name: "ScreenOnUsb", content: "Screen is always on when USB is connected", style: "padding-top: 10px;" },
+										{ style: "float: right; padding-top: 10px;", components: [
+											{ name: "screenOffToggle", kind:"onyx.ToggleButton", onContent: "Yes", offContent: "No", classes: "onyx-toggle-button", onChange:"screenOffToggleChanged" },
+										]}
+									]},
 								]}
 							]
 						}
@@ -103,9 +108,9 @@ enyo.kind({
             this.$.Grabber.applyStyle("visibility", "hidden");
             this.$.DevModeDisabled.setStyle("padding: 35px 5% 35px 5%;");
             this.$.DevModeSettings.setStyle("padding: 35px 5% 35px 5%;");
-            this.$.ScreenOnUsb.addStyle("word-wrap: break-word; max-width: 250px");
-            this.$.ScreenOnGroup.applyStyle("height: 104px;");
-        }else{
+			this.$.ScreenOnGroup.addStyles("height: 104px;");
+			this.$.ScreenOnUsb.addStyles("max-width: 250px;");
+		}else{
             this.$.Grabber.applyStyle("visibility", "visible");
         }
     },

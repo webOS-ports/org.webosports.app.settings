@@ -123,7 +123,7 @@ enyo.kind({
 
 		if(!window.PalmSystem) {
 			enyo.log("Non-palm platform, service requests disabled.");
-			return
+			return;
 		}
 
 		this.$.GetDisplayProperty.send({properties: ["maximumBrightness", "timeout"]});
