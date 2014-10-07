@@ -48,7 +48,6 @@ enyo.kind({
 						]}
 					
 					]},
-
 				]},
 				{kind: "onyx.Groupbox", components: [
 					{kind: "onyx.GroupboxHeader", content: "Wallpaper"},
@@ -120,15 +119,14 @@ enyo.kind({
 	],
 	//Handlers
 	create: function(inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);
 		this.inherited(arguments);
 
 		if(!window.PalmSystem) {
 			enyo.log("Non-palm platform, service requests disabled.");
-			return;
+			return
 		}
 
-		this.$.GetDisplayProperty.send({properties: ["maximumBrightness", "timeout", "onWhenConnected"]});
+		this.$.GetDisplayProperty.send({properties: ["maximumBrightness", "timeout"]});
 		this.$.GetSystemPreferences.send({keys: ["showAlertsWhenLocked", "BlinkNotifications"]});
 
 		this.palm = true;
@@ -234,10 +232,6 @@ enyo.kind({
 				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[2]);
 			if(result.timeout == 180)
 				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[3]);
-			
-		}
-		if(result.onWhenConnected !== undefined) {
-			this.$.screenOffToggle.setValue(result.onWhenConnected);
 		}
 	},
 	handleGetPreferencesResponse: function(inSender, inResponse) {
