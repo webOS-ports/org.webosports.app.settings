@@ -109,7 +109,7 @@ enyo.kind({
             this.$.DevModeDisabled.setStyle("padding: 35px 5% 35px 5%;");
             this.$.DevModeSettings.setStyle("padding: 35px 5% 35px 5%;");
 			this.$.ScreenOnGroup.addStyles("height: 104px;");
-			this.$.ScreenOnUsb.addStyles("max-width: 250px;");
+			this.$.ScreenOnUsb.addStyles("max-width: 200px;");
 		}else{
             this.$.Grabber.applyStyle("visibility", "visible");
         }
