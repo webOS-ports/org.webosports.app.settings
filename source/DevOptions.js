@@ -108,7 +108,7 @@ enyo.kind({
             this.$.Grabber.applyStyle("visibility", "hidden");
             this.$.DevModeDisabled.setStyle("padding: 35px 5% 35px 5%;");
             this.$.DevModeSettings.setStyle("padding: 35px 5% 35px 5%;");
-			this.$.ScreenOnGroup.addStyles("height: 104px;");
+			this.$.ScreenOnGroup.addStyles("height: 90px;");
 			this.$.ScreenOnUsb.addStyles("max-width: 200px;");
 		}else{
             this.$.Grabber.applyStyle("visibility", "visible");
