@@ -1,3 +1,4 @@
+
 enyo.kind({
 	name: "DevOptions",
 	layoutKind: "FittableRowsLayout",
@@ -51,9 +52,14 @@ enyo.kind({
 											{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
 												{kind: "onyx.ToggleButton", name: "UsbDebuggingToggle", style: "float: right;", onChange: "onUsbDebuggingChanged"},
 												{kind: "onyx.Tooltip", content: "USB debugging"}
-											]}
-										]}
+											]},
+										]},
+										
+										
+										
+
 								]},
+	
 								{kind: "onyx.Groupbox", components: [
 									{kind: "onyx.GroupboxHeader", content: "Graphics"},
 									{kind: "enyo.FittableColumns", classes: "group-item", components:[
@@ -62,7 +68,13 @@ enyo.kind({
 											{name: "FpsCounterToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onFpsCounterChanged"},
 											{kind: "onyx.Tooltip", content: "Enable FPS counte"}
 										]}
-									]}
+									]},		
+									{ name: "ScreenOnGroup", kind: "enyo.FittableColumns", classes: "group-item", style: "word-wrap: break-word; height: 52px;", components:[
+										{name: "ScreenOnUsb", content: "Screen is always on when USB is connected", style: "padding-top: 10px;" },
+										{ name: "screenOffToggle", style: "float: right; padding-top: 10px;", components: [
+											{  kind:"onyx.ToggleButton", onContent: "Yes", offContent: "No", classes: "onyx-toggle-button", onChange:"screenOffToggleChanged" },
+										]}
+									]},
 								]}
 							]
 						}
@@ -75,7 +87,9 @@ enyo.kind({
 		]},
 		{name: "GetStatus", kind: "DevModeService", method: "getStatus", onComplete: "onGetStatusResponse"},
 		{name: "SetStatus", kind: "DevModeService", method: "setStatus", onComplete: "onSetStatusResponse"},
-		{name: "EnableFpsCounter", kind: "enyo.PalmService", service: "luna://org.webosports.luna/", method: "setFpsCounter"}
+		{name: "EnableFpsCounter", kind: "enyo.PalmService", service: "luna://org.webosports.luna/", method: "setFpsCounter"},
+		{name: "GetDisplayProperty", kind: "DisplayService", method: "getProperty", onComplete: "handleGetPropertiesResponse"},
+		{name: "SetDisplayProperty", kind: "DisplayService", method: "setProperty" }
 	],
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
@@ -83,6 +97,8 @@ enyo.kind({
 			enyo.log("Non-palm platform, service requests disabled.");
 			return;
 		}
+	
+		this.$.GetDisplayProperty.send({properties: ["maximumBrightness", "timeout", "onWhenConnected"]});
 		this.palm = true;
 		this.$.GetStatus.send({});
 	},
@@ -92,12 +108,29 @@ enyo.kind({
             this.$.Grabber.applyStyle("visibility", "hidden");
             this.$.DevModeDisabled.setStyle("padding: 35px 5% 35px 5%;");
             this.$.DevModeSettings.setStyle("padding: 35px 5% 35px 5%;");
-        }else{
+			this.$.ScreenOnGroup.addStyles("height: 90px;");
+			this.$.ScreenOnUsb.addStyles("max-width: 200px;");
+			this.screenOffToggleChanged.addStyle("padding-top: 25px;")
+		}else{
             this.$.Grabber.applyStyle("visibility", "visible");
         }
     },
     
-
+	screenOffToggleChanged: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
+	
+		if(this.palm) {
+			
+			if(inEvent.value === true) {
+				this.$.SetDisplayProperty.send({onWhenConnected: true});
+			}else {
+				this.$.SetDisplayProperty.send({onWhenConnected: false});
+			}
+		}else {
+			enyo.log(parseInt(this.$.BrightnessSlider.value));
+		}
+	},
+	
 	/* Control handlers */
 	onDevModeChanged: function(inSender, inEvent) {
 		if (!this.palm) {
@@ -135,5 +168,14 @@ enyo.kind({
 	},
 	onSetStatusResponse: function(inSender, inEvent) {
 		this.$.GetStatus.send({});
+	},
+	handleGetPropertiesResponse: function(inSender, inResponse) {
+		enyo.log("Handling Get Properties Response");
+		var result = inResponse.data;
+		enyo.log(JSON.stringify(result));
+
+		if(result.onWhenConnected !== undefined) {
+			this.$.screenOffToggle.setValue(result.onWhenConnected);
+		}
 	}
 });
