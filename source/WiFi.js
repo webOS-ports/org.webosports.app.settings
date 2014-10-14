@@ -17,14 +17,21 @@ enyo.kind({
             classes: "group-item",
             layoutKind: "FittableColumnsLayout",
             components: [
-                {
+				{
                     name: "SSID",
                     content: "SSID",
                    
-                    style: "padding-top: 10px; max-width: 150px;"
+                    style: "padding-top: 10px;  overflow: hidden; "
                 },
-                { kind: "enyo.FittableColumns", fit: true, style: "float: right; ", components: [
+				{name: "itemColumns", kind: "enyo.FittableColumns", style: "float: right;", components: [
               
+					{
+                    	name: "Signal",
+                    	kind: "Image",
+                    	src: "assets/wifi/signal-icon.png",
+                		classes: "wifi-list-icon",
+                		style: "float: right;",
+                	},
 					{	
 						name: "spin",
                     	kind: "onyx.Spinner", 
@@ -39,14 +46,6 @@ enyo.kind({
 						showing: false,
 						style: "padding-top: 10px;"
 					},
-
-            		{
-                    	name: "Active",
-                    	kind: "Image",
-                    	src: "assets/wifi/checkmark.png",
-                    	showing: false,
-                    	classes: "wifi-list-icon"
-                	},
             		{
                     	name: "Padlock",
                     	kind: "Image",
@@ -54,26 +53,59 @@ enyo.kind({
                 		showing: false,
 						classes: "wifi-list-icon"
                 	},
-					{
-                    	name: "Signal",
+            		{
+                    	name: "Active",
                     	kind: "Image",
-                    	src: "assets/wifi/signal-icon.png",
-                		classes: "wifi-list-icon"
-                	}
+                    	src: "assets/wifi/checkmark.png",
+                    	showing: false,
+                    	classes: "wifi-list-icon",
+                    	style: "float: right;",
+                	},
                 ]},
-            ]},
+		]},
 	],
     handlers: {
         onmousedown: "pressed",
         ondragstart: "released",
-        onmouseup: "released"
+        onmouseup: "released",
+	},
+	reflow: function (inSender) {
+        this.inherited(arguments);
+        var width = 0;
+       	var currentWidth = 325;
+        var widthSingnal = 43;
+        var widthSpin = 55;
+        var widthLock = 26;
+		var widthActive = 48;
+        var widthMessage = 94;
+        var wideWidth = 445;
+        if(this.$.Active.getShowing() === true ){
+        	width = width + widthActive;
+       	}
+		if(this.$.spin.getShowing() === true ){
+			width = width + widthSpin;
+		}
+		if(this.$.StatusMessage.getShowing() === true ){
+        	width = width + widthMessage;
+		}
+        if(this.$.Padlock.getShowing() === true ){
+        	width = width + widthLock ;
+		}        
+        if (enyo.Panels.isScreenNarrow()){
+      		this.$.SSID.addStyles("width:" + (currentWidth - (width + widthSingnal) ) + "px;");
+			this.render;
+        }else{
+      		this.$.SSID.addStyles("width:" + (wideWidth - (width + widthSingnal) ) + "px;");
+      		this.$.itemColumns.addStyles("min-width: 43px;");
+			this.render;
+        }
     },
     pressed: function () {
         this.addClass("onyx-selected");
     },
     released: function () {
         this.removeClass("onyx-selected");
-    }
+    },
 });
 
 var phonyFoundNetworks = [
@@ -121,7 +153,7 @@ enyo.kind({
     foundNetworks: null,
     events: {
         onActiveChanged: "",
-        onBackbutton: ""
+        onBackbutton: "",
     },
     currentSSID: "",
     palm: false,
@@ -649,16 +681,8 @@ enyo.kind({
     },
     setupSearchRow: function (inSender, inEvent) {
     	var ssid = "";
-    	if(enyo.Panels.isScreenNarrow()){
-    		if(this.foundNetworks[inEvent.index].name.length >= 18){					// if the SSID is longer shortten it for the narrow page only
-    			ssid = this.foundNetworks[inEvent.index].name.slice(0,18) + "..";
-    		}else{
-    			ssid = this.foundNetworks[inEvent.index].name;
-    		}
-    	}else{
-    		ssid = this.foundNetworks[inEvent.index].name;
-    	}
-    	
+    	ssid = this.foundNetworks[inEvent.index].name;
+    
         inEvent.item.$.wiFiListItem.$.SSID.setContent( ssid );
 
         switch (this.foundNetworks[inEvent.index].state) {
@@ -684,6 +708,7 @@ enyo.kind({
             inEvent.item.$.wiFiListItem.$.spin.setShowing(false);
             break;
         case "idle":
+        	break;
         default:
             inEvent.item.$.wiFiListItem.$.Active.setShowing(false);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(false);
@@ -703,15 +728,8 @@ enyo.kind({
     },
     setupKnownNetworkRow: function (inSender, inEvent) {
     	var ssid = "";	
-		if(enyo.Panels.isScreenNarrow()){
-    		if(this.foundNetworks[inEvent.index].name.length >= 18){					// if the SSID is longer shortten it for the narrow page only
-    			ssid = this.foundNetworks[inEvent.index].name.slice(0,18) + "..";
-    		}else{
-    			ssid = this.foundNetworks[inEvent.index].name;
-    		}
-    	}else{
-    		ssid = this.foundNetworks[inEvent.index].name;
-    	}
+		ssid = this.foundNetworks[inEvent.index].name;
+    	
         inEvent.item.$.wiFiListItem.$.SSID.setContent( ssid );
         inEvent.item.$.wiFiListItem.$.Security.setContent(this.knownNetworks[inEvent.index].security);
         inEvent.item.$.wiFiListItem.$.Signal.setShowing(false);
