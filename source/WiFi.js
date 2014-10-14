@@ -92,10 +92,10 @@ enyo.kind({
         	width = width + widthLock ;
 		}        
         if (enyo.Panels.isScreenNarrow()){
-      		this.$.SSID.addStyles("width:" + (currentWidth - width - widthSingnal ) + "px;");
+      		this.$.SSID.addStyles("width:" + (currentWidth - (width + widthSingnal) ) + "px;");
 			this.render;
         }else{
-      		this.$.SSID.addStyles("width:" + (wideWidth - width - widthSingnal ) + "px;");
+      		this.$.SSID.addStyles("width:" + (wideWidth - (width + widthSingnal) ) + "px;");
       		this.$.itemColumns.addStyles("min-width: 43px;");
 			this.render;
         }
