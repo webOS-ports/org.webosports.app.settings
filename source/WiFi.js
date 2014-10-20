@@ -73,7 +73,8 @@ enyo.kind({
         this.inherited(arguments);
         var width = 0;
        	var currentWidth = 325;
-        var widthSingnal = 43;
+        var widthSignal = 43;
+        widthSignal
         var widthSpin = 55;
         var widthLock = 26;
 		var widthActive = 48;
@@ -92,10 +93,10 @@ enyo.kind({
         	width = width + widthLock ;
 		}        
         if (enyo.Panels.isScreenNarrow()){
-      		this.$.SSID.addStyles("width:" + (currentWidth - (width + widthSingnal) ) + "px;");
+      		this.$.SSID.addStyles("width:" + (currentWidth - (width + widthSignal) ) + "px;");
 			this.render;
         }else{
-      		this.$.SSID.addStyles("width:" + (wideWidth - (width + widthSingnal) ) + "px;");
+      		this.$.SSID.addStyles("width:" + (wideWidth - (width + widthSignal) ) + "px;");
       		this.$.itemColumns.addStyles("min-width: 43px;");
 			this.render;
         }
