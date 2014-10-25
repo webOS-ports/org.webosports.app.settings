@@ -425,16 +425,20 @@ enyo.kind({
                                     components: [
                                         {
                                             kind: "FittableColumns",
-                                            classes: "group-item",
+                                            classes: "group-item ",
+                                            style: "padding-top: 25px;",
                                             components: [
                                                 {
                                                     content: "Automatic IP Setings",
-                                                    fit: true
+                                                    fit: true,
                                                 },
-                                                {
-                                                    kind: "onyx.ToggleButton",
-                                                    value: true
+                                                { 
+                                                   	kind: "onyx.ToggleButton",
+                                                    value: true,
+                                                    style: "height: 32px; ",
+                                                 
                                                 },
+                                           
                                             ]
                                         }
                                     ]
