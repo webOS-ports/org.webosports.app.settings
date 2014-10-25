@@ -3,3 +3,4 @@ enyo.kind({
 	kind: "enyo.PalmService",
 	service: "palm://org.webosports.service.devmode/"
 });
+
