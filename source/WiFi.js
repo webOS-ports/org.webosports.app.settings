@@ -60,7 +60,7 @@ enyo.kind({
         var width = 0;
        	var currentWidth = 325;
         var widthSignal = 43;
-        var widthSpin = 55;
+        var widthSpin = 20;
         var widthLock = 26;
 		var widthActive = 48;
         var widthMessage = 94;
