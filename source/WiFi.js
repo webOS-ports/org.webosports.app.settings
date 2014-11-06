@@ -6,7 +6,7 @@ Array.prototype.contains = function(obj) {
         }
     }
     return false;
-}
+};
 
 enyo.kind({
     name: "WiFiListItem",
@@ -17,29 +17,14 @@ enyo.kind({
             classes: "group-item",
             layoutKind: "FittableColumnsLayout",
             components: [
-                {
-                    name: "SSID",
-                    content: "SSID",
-                   
-                    style: "padding-top: 10px; max-width: 150px;"
-                },
-                { kind: "enyo.FittableColumns", fit: true, style: "float: right; ", components: [
-              
-					{	
-						name: "spin",
-                    	kind: "onyx.Spinner", 
-                    	showing: false,
-                    	style: "padding: 30px;",
-                    	classes: "onyx-light",
-            		},
-            		{
-						name: "StatusMessage",
-						content: "",
-						classes: "wifi-message-status",
-						showing: false,
-						style: "padding-top: 10px;"
-					},
-
+				{name: "SSID", content: "SSID", style: "padding-top: 10px; max-width: 150px;"},
+                { kind: "enyo.FittableColumns", fit: true, components: [
+					{
+                    	name: "Signal",
+                    	kind: "Image",
+                    	src: "assets/wifi/signal-icon.png",
+                		classes: "wifi-list-icon"
+                	},
             		{
                     	name: "Active",
                     	kind: "Image",
@@ -47,22 +32,60 @@ enyo.kind({
                     	showing: false,
                     	classes: "wifi-list-icon"
                 	},
-            		{
+					{
                     	name: "Padlock",
                     	kind: "Image",
                     	src: "assets/wifi/secure-icon.png",
                 		showing: false,
 						classes: "wifi-list-icon"
                 	},
+					{name: "spin", kind: "enyo.FittableColumns", style: "width: 15px; float: right; ", showing: false, components: [
+						{kind:"jmtk.Spinner", color: "000000", diameter: "14", fit: true, style: "padding-top: 15px;"},
+					]},
 					{
-                    	name: "Signal",
-                    	kind: "Image",
-                    	src: "assets/wifi/signal-icon.png",
-                		classes: "wifi-list-icon"
-                	}
+						name: "StatusMessage",
+						content: "",
+						classes: "wifi-message-status",
+						showing: false,
+						style: "padding-top: 10px; float: right; "
+					},
                 ]},
-            ]},
+            ]
+        }
 	],
+	
+	reflow: function (inSender) {
+        this.inherited(arguments);
+        console.log("reflowing");
+        var width = 0;
+       	var currentWidth = 325;
+        var widthSignal = 43;
+        var widthSpin = 55;
+        var widthLock = 26;
+		var widthActive = 48;
+        var widthMessage = 94;
+        var wideWidth = 445;
+        if(this.$.Active.getShowing() === true ){
+        	width = width + widthActive;
+       	}
+		if(this.$.spin.getShowing() === true ){
+			width = width + widthSpin;
+		}
+		if(this.$.StatusMessage.getShowing() === true ){
+        	width = width + widthMessage;
+		}
+        if(this.$.Padlock.getShowing() === true ){
+        	width = width + widthLock ;
+		}        
+        if (enyo.Panels.isScreenNarrow()){
+      		this.$.SSID.addStyles("width:" + (currentWidth - (width + widthSignal) ) + "px;");
+			this.render;
+        }else{
+      		this.$.SSID.addStyles("width:" + (wideWidth - (width + widthSignal) ) + "px;");
+       		this.render;
+        }
+    },
+
     handlers: {
         onmousedown: "pressed",
         ondragstart: "released",
@@ -216,7 +239,7 @@ enyo.kind({
                                             onSetupItem: "setupSearchRow",
                                             
                                             components: [
-                                                {
+                                                {//name: "wfl",
                                                     kind: "WiFiListItem",
                                                     ontap: "listItemTapped"
                                                 }
@@ -700,6 +723,7 @@ enyo.kind({
             var bars = this.signalStrengthToBars(this.foundNetworks[inEvent.index].strength);
             inEvent.item.$.wiFiListItem.$.Signal.setSrc("assets/wifi/signal-icon-" + bars + ".png");
 		}
+		inEvent.item.$.wiFiListItem.reflow();
     },
     setupKnownNetworkRow: function (inSender, inEvent) {
     	var ssid = "";	
