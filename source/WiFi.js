@@ -20,11 +20,16 @@ enyo.kind({
                 {
                     name: "SSID",
                     content: "SSID",
-                   
-                    style: "padding-top: 10px; max-width: 150px;"
+                    fit: true,
+                    style: "padding-top: 10px; max-width: 150px; overflow: hidden;"
                 },
-                { kind: "enyo.FittableColumns", fit: true, style: "float: right; ", components: [
-              
+                { kind: "enyo.FittableColumns", style: "float: right; ", components: [
+					{
+                    	name: "Signal",
+                    	kind: "Image",
+                    	src: "assets/wifi/signal-icon.png",
+                		classes: "wifi-list-icon"
+                	},              
 					{	
 						name: "spin",
                     	kind: "onyx.Spinner", 
@@ -54,15 +59,15 @@ enyo.kind({
                 		showing: false,
 						classes: "wifi-list-icon"
                 	},
-					{
-                    	name: "Signal",
-                    	kind: "Image",
-                    	src: "assets/wifi/signal-icon.png",
-                		classes: "wifi-list-icon"
-                	}
+
                 ]},
             ]},
 	],
+	reflow: function (inSender) {
+		this.inherited(arguments);
+		this.render;
+	},
+	
     handlers: {
         onmousedown: "pressed",
         ondragstart: "released",
@@ -927,4 +932,10 @@ enyo.kind({
         this.stopAutoscan();
     },
     
+});
+
+enyo.kind({
+	name : "",
+	kind : "Control",
+	components : []
 });
