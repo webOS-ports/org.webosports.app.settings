@@ -162,7 +162,8 @@ enyo.kind({
                     name: "WiFiToggle",
                     kind: "onyx.ToggleButton",
                     onChange: "toggleButtonChanged",
-                    showing: "true"
+                    showing: "true",
+                    style: "height: 31px;"
                 }
             ]
         },
@@ -426,6 +427,7 @@ enyo.kind({
                                         {
                                             kind: "FittableColumns",
                                             classes: "group-item",
+                                            style: "height: 40px; padding-top: 15px;",
                                             components: [
                                                 {
                                                     content: "Automatic IP Setings",
@@ -433,7 +435,8 @@ enyo.kind({
                                                 },
                                                 {
                                                     kind: "onyx.ToggleButton",
-                                                    value: true
+                                                    value: true,
+                                                    style: "height: 31px;"
                                                 },
                                             ]
                                         }
