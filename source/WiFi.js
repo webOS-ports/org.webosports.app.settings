@@ -24,12 +24,7 @@ enyo.kind({
                     style: "padding-top: 10px; max-width: 150px; overflow: hidden;"
                 },
                 { kind: "enyo.FittableColumns", style: "float: right; ", components: [
-					{
-                    	name: "Signal",
-                    	kind: "Image",
-                    	src: "assets/wifi/signal-icon.png",
-                		classes: "wifi-list-icon"
-                	},              
+             
 					{	
 						name: "spin",
                     	kind: "onyx.Spinner", 
@@ -59,7 +54,12 @@ enyo.kind({
                 		showing: false,
 						classes: "wifi-list-icon"
                 	},
-
+					{
+                    	name: "Signal",
+                    	kind: "Image",
+                    	src: "assets/wifi/signal-icon.png",
+                		classes: "wifi-list-icon"
+                	}
                 ]},
             ]},
 	],
