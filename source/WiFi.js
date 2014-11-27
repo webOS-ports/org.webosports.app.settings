@@ -933,9 +933,3 @@ enyo.kind({
     },
     
 });
-
-enyo.kind({
-	name : "",
-	kind : "Control",
-	components : []
-});
