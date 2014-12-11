@@ -643,6 +643,22 @@ enyo.kind({
             });
         }
     },
+    triggerWifiConnect: function () {
+        var path = "";
+        for (i = 0; i < this.foundNetworks.length; i++) {
+            if (this.foundNetworks[i].name === this.wifiTarget.ssid) {
+                path = this.foundNetworks[i].path;
+            }
+        }
+        this.currentNetwork = {
+            ssid: this.wifiTarget.ssid,
+            path: path,
+            security: this.wifiTarget.securityType
+        };
+        this.connecting = true;
+        this.$.PopupSSID.setContent(this.currentNetwork.ssid);
+        this.showNetworkConnect();
+    },
     onJoinButtonTapped: function (inSender, inEvent) {
 		this.showJoinNetwork();
     },
@@ -907,6 +923,9 @@ enyo.kind({
         if (networks) {
             this.foundNetworks = networks;
             this.$.SearchRepeater.setCount(this.foundNetworks.length);
+            if (this.wifiTarget && this.connecting != true) {
+                this.triggerWifiConnect();
+            }
         }
     },
     handleRetrieveNetworksFailed: function() {
