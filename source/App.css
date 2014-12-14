@@ -59,8 +59,8 @@
 }
 .group-item {
 	padding: 10px;
-    height: 52px; 
-    line-height: 32px;
+   
+    line-height: 44px;
     border-bottom: 1px solid #AAAAAA;
 }
 .error-popup {
@@ -82,11 +82,10 @@
 /*
  *   WiFi
  */
- .wifi-list-icon {
- 	padding-top: 10px;
- 	padding-right: 3px;
-    margin-left: 8px;
-    padding-bottom: 10px;
+.wifi-list-icon {
+	vertical-align: middle;
+ 	padding: 10px;
+ 
 }
 .wifi-join-button {
     padding: 8px 0;

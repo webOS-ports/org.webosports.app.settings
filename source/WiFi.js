@@ -1,3 +1,5 @@
+/*jslint sloppy: true, stupid: true */
+
 Array.prototype.contains = function(obj) {
     var i = this.length;
     while (i--) {
@@ -6,79 +8,88 @@ Array.prototype.contains = function(obj) {
         }
     }
     return false;
-}
+};
 
 enyo.kind({
-    name: "WiFiListItem",
-    classes: "group-item-wrapper",
-    
-    components: [
-        {
-            classes: "group-item",
-            layoutKind: "FittableColumnsLayout",
-            components: [
-                {
-                    name: "SSID",
-                    content: "SSID",
-                    fit: true,
-                    style: "padding-top: 10px; max-width: 150px; overflow: hidden;"
-                },
-                { kind: "enyo.FittableColumns", style: "float: right; ", components: [
-             
-					{	
-						name: "spin",
-                    	kind: "onyx.Spinner", 
-                    	showing: false,
-                    	style: "padding: 30px;",
-                    	classes: "onyx-light",
-            		},
-            		{
-						name: "StatusMessage",
-						content: "",
-						classes: "wifi-message-status",
-						showing: false,
-						style: "padding-top: 10px;"
-					},
-
-            		{
-                    	name: "Active",
-                    	kind: "Image",
-                    	src: "assets/wifi/checkmark.png",
-                    	showing: false,
-                    	classes: "wifi-list-icon"
-                	},
-            		{
-                    	name: "Padlock",
-                    	kind: "Image",
-                    	src: "assets/wifi/secure-icon.png",
-                		showing: false,
-						classes: "wifi-list-icon"
-                	},
+	name: "WiFiListItem",
+	classes: "group-item-wrapper",
+	components: [
+	{
+		classes: "group-item",
+		layoutKind: "enyo.FittableRowsLayout",
+		components: [
+		{
+			kind: "enyo.FittableColumns",
+			fit: true,
+			components: [
+				{
+					name: "SSID",
+					content: "SSID"
+				}, //ssid
+				{
+					kind: "enyo.FittableColumns",
+					style: "float: right; height: 44px;",
+					components: [
 					{
-                    	name: "Signal",
-                    	kind: "Image",
-                    	src: "assets/wifi/signal-icon.png",
-                		classes: "wifi-list-icon"
-                	}
-                ]},
-            ]},
+						name: "Active",
+						kind: "Image",
+						src: "assets/wifi/checkmark.png",
+						showing: false,
+						classes: "wifi-list-icon"
+					},
+					{
+						name: "Padlock",
+						kind: "Image",
+						src: "assets/wifi/secure-icon.png",
+						showing: false,
+						classes: "wifi-list-icon"
+					},
+					{
+						name: "Signal",
+						kind: "Image",
+						src: "assets/wifi/signal-icon.png",
+						classes: "wifi-list-icon"
+					}]
+				} // icons
+			]
+		},
+		{
+			kind: "enyo.FittableColumns",
+			fit: true,
+			components: [
+			{
+				name: "StatusMessage",
+				content: "",
+				classes: "wifi-message-status",
+				showing: false,
+				style: "padding-top: 10px;"
+			},
+			{
+				name: "spin",
+				kind: "onyx.Spinner",
+				showing: false,
+				style: "padding: 30px; float: right;",
+				classes: "onyx-light"
+			}]
+		}]
+	}
 	],
-	reflow: function (inSender) {
+	reflow: function(inSender , inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
 		this.inherited(arguments);
 		this.render;
 	},
-	
-    handlers: {
-        onmousedown: "pressed",
-        ondragstart: "released",
-        onmouseup: "released"
-    },
-    pressed: function () {
-        this.addClass("onyx-selected");
-    },
-    released: function () {
-        this.removeClass("onyx-selected");
-    }
+	handlers: {
+		onmousedown: "pressed",
+		ondragstart: "released",
+		onmouseup: "released"
+	},
+	pressed: function() {
+		this.addClass("onyx-selected");
+	},
+	released: function() {
+		this.removeClass("onyx-selected");
+	}
 });
 
 var phonyFoundNetworks = [
