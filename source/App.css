@@ -63,6 +63,12 @@
     line-height: 32px;
     border-bottom: 1px solid #AAAAAA;
 }
+.group-item-timezone{
+	padding: 10px;
+    height: 96px; 
+    line-height: 20px;
+    border-bottom: 1px solid #AAAAAA;
+}
 .error-popup {
     position: absolute;
     left: 0;

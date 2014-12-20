@@ -2,12 +2,12 @@
 var utcOffSets = [
     {
             "utc": "-12:00",
-            "loc": "Baker Island",
+            "loc": "Baker Island, Howland Island (both uninhabited)",
             "tz": "",
 	},
     {
             "utc": "-11:00",
-            "loc": "American Samoa",
+            "loc": "American Samoa, Niue",
             "tz": "",
           
     },
@@ -20,32 +20,32 @@ var utcOffSets = [
     },
     {
             "utc": "-9:30",
-            "loc": "Baker Island",
+            "loc": "Marquesas Islands",
             "tz": "",
 	},
 	{
             "utc": "-9:00",
-            "loc": "Baker Island",
+            "loc": "Gambier Islands",
             "tz": "",
 	},
 	{
             "utc": "-8:00",
-            "loc": "Baker Island",
+            "loc": "British Columbia, Mexico Baja, California, Nevada, Oregon, Washington (state)",
             "tz": "",
 	},
 	{
             "utc": "-7:00",
-            "loc": "Baker Island",
+            "loc": "northeastern British Columbia, Mexico (Sonora), United States (Arizona)",
             "tz": "",
 	},
 	{
             "utc": "-6:00",
-            "loc": "Baker Island",
+            "loc": "Saskatchewan, Costa Rica, El Salvador, Ecuador, Guatemala, Honduras",
             "tz": "",
 	},
 	{
             "utc": "-5:00",
-            "loc": " ",
+            "loc": "Colombia, Cuba, Ecuador (continental), Jamaica, Panama, Peru",
             "tz": "",
 	},
 	{
@@ -55,42 +55,47 @@ var utcOffSets = [
 	},
 	{
             "utc": "-4:00",
-            "loc": "Baker Island",
+            "loc": "Brazil, South Georgia and the South Sandwich Islands",
+            "tz": "",
+	},
+	{
+            "utc": "-3:30",
+            "loc": "Newfoundland",
             "tz": "",
 	},
 	{
             "utc": "-3:00",
-            "loc": "Baker Island",
+            "loc": "Argentina, Paraguay",
             "tz": "",
 	},
 	{
             "utc": "-2:00",
-            "loc": "Baker Island",
+            "loc": "Brazil (Fernando de Noronha), South Georgia and the South Sandwich Islands",
             "tz": "",
 	},
 	{
             "utc": "-1:00",
-            "loc": "Baker Island",
+            "loc": "Cape Verde",
             "tz": "",
 	},
 	{
             "utc": "-0:00",
-            "loc": "Baker Island",
+            "loc": "Côte d'Ivoire, Ghana, Iceland, Senegal, Saint Helena",
             "tz": "",
 	},
 	{
             "utc": "1:00",
-            "loc": "Baker Island",
+            "loc": "Algeria, Angola, Benin, Cameroon, Gabon, Niger, Nigeria, Tunisia",
             "tz": "",
 	},
 	{
             "utc": "2:00",
-            "loc": "Baker Island",
+            "loc": "Burundi, Egypt, Malawi, Mozambique, Kaliningrad Oblast, Rwanda, South Africa, Swaziland, Zambia, Zimbabwe",
             "tz": "",
 	},
 	{
             "utc": "3:00",
-            "loc": "Baker Island",
+            "loc": "Belarus, Djibouti, Eritrea, Ethiopia, Iraq, Kenya, Madagascar, Russia (European), Saudi Arabia, Somalia, South Sudan, Sudan, Tanzania, Uganda, Yemen|",
             "tz": "",
 	},
 	{
@@ -100,102 +105,102 @@ var utcOffSets = [
 	},
 	{
             "utc": "4:00",
-            "loc": "Baker Island",
+            "loc": "Armenia, Azerbaijan, Georgia, Mauritius, Oman, Seychelles, United Arab Emirates",
             "tz": "",
 	},
 	{
             "utc": "4:30",
-            "loc": "Baker Island",
+            "loc": "Afghanistan",
             "tz": "",
 	},
 	{
             "utc": "5:00",
-            "loc": "Baker Island",
+            "loc": "Kazakhstan (west), Maldives, Pakistan, Uzbekistan",
             "tz": "",
 	},
 	{
             "utc": "5:30",
-            "loc": "Baker Island",
+            "loc": "India, Sri Lanka",
             "tz": "",
 	},
 	{
             "utc": "5:45",
-            "loc": "Baker Island",
+            "loc": "Nepal",
             "tz": "",
 	},
 	{
             "utc": "6:00",
-            "loc": "Baker Island",
+            "loc": "Kazakhstan (most), Bangladesh, Bhutan, Russia (Ural: Sverdlovsk Oblast, Chelyabinsk Oblast)",
             "tz": "",
 	},
 	{
             "utc": "6:30",
-            "loc": "Baker Island",
+            "loc": "Cocos Islands, Myanmar",
             "tz": "",
 	},
 	{
             "utc": "7:00",
-            "loc": "Baker Island",
+            "loc": "Western Indonesia, Russia (Novosibirsk Oblast), Thailand, Vietnam, Cambodia,Laos",
             "tz": "",
 	},
 	{
             "utc": "8:00",
-            "loc": "Baker Island",
+            "loc": "Hong Kong, Central Indonesia, China, (Krasnoyarsk Krai), Malaysia, Philippines, Singapore, Taiwan, Mongolia, Western Australia, (Eucla) official, Macau,Brunei",
             "tz": "",
 	},
 	{
             "utc": "8:45",
-            "loc": "Baker Island",
+            "loc": "Australia (Eucla) unofficial",
             "tz": "",
 	},
 	{
             "utc": "9:00",
-            "loc": "Baker Island",
+            "loc": "Eastern Indonesia, East Timor, Russia (Irkutsk Oblast), Japan, North Korea, South Korea",
             "tz": "",
 	},
 	{
             "utc": "9:30",
-            "loc": "Baker Island",
+            "loc": "Australia (Northern Territory)",
             "tz": "",
 	},
 	{
             "utc": "10:00",
-            "loc": "Baker Island",
+            "loc": "Russia (Zabaykalsky Krai), Papua New Guinea, Australia (Queensland)",
             "tz": "",
 	},
 	{
             "utc": "10:30",
-            "loc": "Baker Island",
+            "loc": "Lord Howe Island",
             "tz": "",
 	},
 	{
             "utc": "11:00",
-            "loc": "Baker Island",
+            "loc": "New Caledonia, Russia (Primorsky Krai), Solomon Islands",
             "tz": "",
 	},
 	{
             "utc": "11:30",
-            "loc": "Baker Island",
+            "loc": "Norfolk Island",
             "tz": "",
 	},
 	{
             "utc": "12:00",
-            "loc": "Baker Island",
+            "loc": "Kiribati (Gilbert Islands), Fiji, Russia (Kamchatka Krai)",
             "tz": "",
 	},
 	{
             "utc": "12:45",
-            "loc": "Baker Island",
+            "loc": "Chatham Islands",
             "tz": "",
 	},
 	{
             "utc": "13:00",
-            "loc": "Baker Island",
+            "loc": "Kiribati (Phoenix Islands), Tonga, Tokelau",
             "tz": "",
 	},
 	{
             "utc": "14:00",
-            "loc": "Baker Island",
+            "loc": "Kiribati (Line Islands)",
             "tz": "",
 	},
     
@@ -203,14 +208,14 @@ var utcOffSets = [
 
 enyo.kind({
 	name: "TimeZoneListItem", kind: "enyo.Control", classes: "group-item-wrapper", components: [
-				{classes: "group-item", layoutKind: "FittableColumnsLayout", components: [
-						{kind: "enyo.FittableColumns", components: [
-								{content: "", classes: "timezone-item", name: "Utc"},
-								{content: "", classes: "timezone-item", name: "locations"},
-								{content: "", classes: "timezone-item", name: "Tz"}
-							]},
-				]}
-			],
+		{classes: "group-item-timezone", layoutKind: "FittableColumnsLayout", components: [
+			{kind: "enyo.FittableRows", components: [
+				{content: "", classes: "timezone-item",name: "Utc"},
+				{content: "", classes: "timezone-item", name: "locations"},
+				{content: "", classes: "timezone-item", name: "Tz"}
+			]},
+		]}
+	],
     handlers: {
         onmousedown: "pressed",
         ondragstart: "released",
