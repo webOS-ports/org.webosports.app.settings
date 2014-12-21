@@ -4,6 +4,7 @@ enyo.kind({
 	palm: false,
 	handlers: {
 		onClose: "closePopup",
+		onTapped: "timeZoneChanged"
 	},
 	components:[
 		{kind: "onyx.Toolbar",
@@ -160,14 +161,16 @@ enyo.kind({
 		}
 	},
 	timeZoneChanged: function(inSender, inEvent) {
-		var newTimeZone = this.$.TimeZonePicker.selected.zoneId;
-
+		var newTimeZone = this.$.timeZonePicker.ZoneId;
+		
 		console.log("New time zone is " + newTimeZone);
 
 		if (!this.palm)
 			return;
 
 		this.$.SetSystemPreferences.send({timeZone: newTimeZone});
+		
+		this.$.TimeZoneItem.setContent(newTimeZone);
 	},
 	changeTimezone: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);	
