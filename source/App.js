@@ -92,14 +92,14 @@ enyo.kind({
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Core"},
 				{kind: "ListItem", icon: "icon.png", title: "Screen & Lock", ontap: "openPanel", targetPanel: "ScreenLockPanel"},
 				{kind: "ListItem", icon: "icon.png", title: "Date & Time", ontap: "openPanel", targetPanel: "DateTimePanel"},
-				{kind: "ListItem", icon: "inco.png", title: "Sound & Ringtones", ontap: "openPanel", targetPanel: "AudioPanel"},
+				{kind: "ListItem", icon: "icon.png", title: "Sound & Ringtones", ontap: "openPanel", targetPanel: "AudioPanel"},
 				{kind: "ListItem", icon: "icon.png", title: "Language & Input", ontap: "openPanel", targetPanel: "LanguageInputPanel"},
 				{kind: "ListItem", name: "DevModemListItem", icon: "icon.png", title: "Developer Options", ontap: "openPanel", targetPanel: "DevOptionsPanel", showing: false},
 				{kind: "ListItem", icon: "icon.png", title: "About", ontap: "openPanel", targetPanel: "AboutPanel"}
 			]}
 		]},
 		{name: "ContentPanels",
-		kind: "Panels",
+		kind: "enyo.Panels",
 		arrangerKind: "CardArranger",
 		draggable: false,
 		classes: "onyx",
