@@ -1,11 +1,13 @@
 enyo.kind({
 	name: "WanService",
 	kind: "enyo.PalmService",
+	service: "palm://com.palm.wan/"
 });
 
 enyo.kind({
 	name: "Telephony",
 	layoutKind: "FittableRowsLayout",
+	palm: false,
 	components:[
 		{
 			kind: "onyx.Toolbar",
@@ -44,56 +46,56 @@ enyo.kind({
 		{kind: "onyx.Toolbar", components:[
 			{name: "Grabber", kind: "onyx.Grabber"},
 		]},
-		{kind: "WanService", method: "getstatus", name: "GetWanStatus", onComplete: "handleWanStatus"},
+		{kind: "WanService", method: "getstatus", name: "GetWanStatus", subscribe: true, onComplete: "handleWanStatus"},
 		{kind: "WanService", method: "set", name: "SetWanProperty" }
 	],
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
-		if(!window.PalmSystem) {
+
+		if (!window.PalmSystem) {
 			enyo.log("Non-palm platform, service requests disabled.");
 			return;
 		}
 
+		this.palm = true;
+
 		this.$.GetWanStatus.send({});
 	},
 	reflow: function (inSender) {
-        this.inherited(arguments);
-        if (enyo.Panels.isScreenNarrow()){
-        	this.$.div.setStyle("padding: 35px 5% 35px 5%;");
-            this.$.Grabber.applyStyle("visibility", "hidden");
-        }else{
-            this.$.Grabber.applyStyle("visibility", "visible");
-        }
-    },
-   
+		this.inherited(arguments);
+		if (enyo.Panels.isScreenNarrow()){
+			this.$.div.setStyle("padding: 35px 5% 35px 5%;");
+			this.$.Grabber.applyStyle("visibility", "hidden");
+		} else{
+			this.$.Grabber.applyStyle("visibility", "visible");
+		}
+	},
 	/* service response handlers */
-	handleWanStatus: function(inResponse) {
+	handleWanStatus: function(inSender, inResponse) {
 		var result = inResponse.data;
 
 		console.log("WAN status changed: " + JSON.stringify(result));
 
-		if (result.returnValue) {
-			var roamingAllowed = false;
-			var dataUsage = false;
+		var roamingAllowed = false;
+		var dataUsage = false;
 
-			dataUsage = (result.disablewan == "on");
-			roamingAllowed = (result.roamGuard == "enable");
+		dataUsage = (result.disablewan == "off");
+		roamingAllowed = (result.roamGuard == "enable");
 
-			this.$.RoamingAllowed.setValue(roamingAllowed)
-			this.$.DataUsage.setValue(dataUsage);
-		}
+		this.$.RoamingAllowed.setValue(roamingAllowed)
+		this.$.DataUsage.setValue(dataUsage);
 	},
 	/* component event handlers */
 	roamingAllowedChanged: function(inSender, inEvent) {
 		if (!this.palm)
 			return;
 
-		this.$.SetWanProperty.send({roamGuard: inSender.getValue()});
+		this.$.SetWanProperty.send({roamGuard: inSender.getValue() ? "enable" : "disable"});
 	},
 	dataUsageChanged: function(inSender, inEvent) {
 		if (!this.palm)
 			return;
 
-		this.$.SetWanProperty.send({disablewan: inSender.getValue()});
+		this.$.SetWanProperty.send({disablewan: inSender.getValue() ? "off" : "on"});
 	}
 });
