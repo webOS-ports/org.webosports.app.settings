@@ -2,6 +2,10 @@ enyo.kind({
 	name: "DateTime",
 	layoutKind: "FittableRowsLayout",
 	palm: false,
+	handlers: {
+		onClose: "closePopup",
+		onTapped: "timeZoneChanged"
+	},
 	components:[
 		{kind: "onyx.Toolbar",
 		style: "line-height: 36px;",
@@ -55,6 +59,9 @@ enyo.kind({
 		{kind: "onyx.Toolbar", components:[
 			{name: "Grabber", kind: "onyx.Grabber"},
 		]},
+		{name: "tomeZonePopup", kind: "onyx.Popup", classes: "popup", centered: true, floating: true,	components: [
+			{kind: "TimeZonePicker", style: "height: 365px;"},
+		]},		// time zone popup
 		{kind: "SystemService", method: "getPreferences", name: "GetSystemPreferences", onComplete: "handleGetPreferencesResponse"},
 		{kind: "SystemService", method: "setPreferences", name: "SetSystemPreferences" },
 		{kind: "enyo.PalmService", method: "setSystemTime", name: "SetSystemTime", service: "luna://com.palm.systemservice/time" },
@@ -112,6 +119,14 @@ enyo.kind({
 		}
 	},
 	//Action Handlers
+	timeZomePopup: function(inSender, inEvent){
+		this.log("sender:", inSender, ", event:", inEvent);	
+		this.$.tomeZonePopup.show();
+		this.$.tomeZonePopup.setShowing(true);
+	},
+	closePopup: function(inSender, inEvent){
+		this.$.tomeZonePopup.hide();
+	},
 	timeFormatChanged: function(inSender, inEvent) {
 		if(this.palm) {
 			this.$.SetSystemPreferences.send({timeFormat: inSender.selected.content == "12 Hour" ? "HH12" : "HH24"});
@@ -146,16 +161,20 @@ enyo.kind({
 		}
 	},
 	timeZoneChanged: function(inSender, inEvent) {
-		var newTimeZone = this.$.TimeZonePicker.selected.zoneId;
-
+		var newTimeZone = this.$.timeZonePicker.ZoneId;
+		
 		console.log("New time zone is " + newTimeZone);
 
 		if (!this.palm)
 			return;
 
 		this.$.SetSystemPreferences.send({timeZone: newTimeZone});
+		
+		this.$.TimeZoneItem.setContent(newTimeZone);
 	},
 	changeTimezone: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);	
+		this.timeZomePopup();
 	},
 	//Service Callbacks
 	handleGetPreferencesResponse: function(inSender, inResponse) {

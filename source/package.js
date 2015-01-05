@@ -20,5 +20,6 @@ enyo.depends(
 	"About.js",
 	"Licenses.js",
 	"Sound.js",
-	"pickRingTones.js"
+	"pickRingTones.js",
+	"TimeZonePicker.js"
 );
