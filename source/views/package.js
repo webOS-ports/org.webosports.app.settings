@@ -1,0 +1,16 @@
+enyo.depends(
+	"WiFi.js",
+	"Telephony.js",
+	"SystemUpdates.js",
+	"SystemUpdates.css",
+	"Sound.js",
+	"ScreenLock.js",
+	"pickRingTones.js",
+	"Licenses.js",
+	"LanguageInput.js",
+	"DevOptions.js",
+	"DevModeService.js",
+	"DateTime.js",
+	"About.js",
+	"Settings.js"
+);
