@@ -87,7 +87,11 @@ enyo.kind({
 				//Services
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Services"},
 				{kind: "ListItem", icon: "icon.png", title: "System Updates", ontap: "openPanel", targetPanel: "SystemUpdatesPanel"},
-				
+
+				// Personal
+				{kind: "onyx.Toolbar", classes: "list-header", content: "Personal"},
+				{kind: "ListItem", icon: "icon.png", title: "Certificates", ontap: "openPanel", targetPanel: "CertificatesPanel"},
+
 				//Core Settings
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Core"},
 				{kind: "ListItem", icon: "icon.png", title: "Screen & Lock", ontap: "openPanel", targetPanel: "ScreenLockPanel"},
@@ -108,6 +112,7 @@ enyo.kind({
 			{kind: "EmptyPanel"},
 			{name: "WiFiPanel", kind: "WiFi", onActiveChanged: "wifiActiveChanged"},
 			{name: "SystemUpdatesPanel", kind: "SystemUpdates"},
+			{name: "CertificatesPanel", kind: "Certificates"},
 			{name: "ScreenLockPanel", kind: "ScreenLock"},
 			{name: "DateTimePanel", kind: "DateTime"},
 			{name: "AudioPanel", kind: "Sound"},
@@ -161,7 +166,9 @@ enyo.kind({
 	handleBack: function(inSender, inEvent){
 		this.log("sender:", inSender, ", event:", inEvent);
 
-		if ((this.currentPanel !== "AboutPanel") && (this.currentPanel !== "WiFiPanel")) {
+		if ((this.currentPanel !== "AboutPanel") &&
+			(this.currentPanel !== "WiFiPanel") &&
+			(this.currentPanel !== "CertificatesPanel")) {
 			this.setIndex(0);
 		}
 		else {
@@ -169,6 +176,8 @@ enyo.kind({
 				this.$.AboutPanel.handleBackGesture();
 			else if (this.currentPanel === "WiFiPanel" )
 				this.$.WiFiPanel.handleBackGesture();
+			else if (this.currentPanel === "CertificatesPanel")
+				this.$.CertificatesPanel.handleBackGesture();
 		}
 	},
 	backButton: function(inSender, inEvent){
@@ -223,7 +232,7 @@ enyo.kind({
 			var targetPanelName = params.page + "Panel";
 			console.log("Switching to panel " + targetPanelName);
 			this.$.AppPanels.openPanel({ targetPanel: targetPanelName });
-		} else if (typeof(params.target) !== 'undefined' && 
+		} else if (typeof(params.target) !== 'undefined' &&
 			typeof(params.target.ssid) !== 'undefined' &&
 			typeof(params.target.securityType !== 'undefined')) {
 			this.$.AppPanels.openPanel({targetPanel:"WiFiPanel"});
