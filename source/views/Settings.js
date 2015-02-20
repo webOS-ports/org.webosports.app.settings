@@ -130,15 +130,14 @@ enyo.kind({
 		this.$.WiFiPanel.setToggleValue(inSender.value);
 		return true;
 	},
-	onDevModeGetStatusResponse: function(inSender, inEvent) {
-		var result = inEvent.data;
-		console.log(JSON.stringify(result));
-		if (result.status === "enabled") {
-			console.log("DevMode enabled, showing devmode list item");
+	onDevModeGetStatusResponse: function(inSender, inResponse) {
+		this.log(inResponse);
+		if (inResponse.status === "enabled") {
+			this.log("DevMode enabled, showing devmode list item");
 			this.$.DevModemListItem.show();
 		}
 		else {
-			console.log("DevMode disabled, hiding devmode list item");
+			this.log("DevMode disabled, hiding devmode list item");
 			this.$.DevModemListItem.hide();
 		}
 	},
@@ -202,13 +201,11 @@ enyo.kind({
 	reflow: function(inSender) {
 		this.inherited(arguments);
 		if(enyo.Panels.isScreenNarrow()) {
-			this.$.AppPanels.setArrangerKind("CoreNaviArranger");
 			this.$.AppPanels.setDraggable(false);
 			this.$.AppPanels.$.ContentPanels.applyStyle("box-shadow", "0");
 			this.$.AppPanels.$.WiFiToggle.setShowing(true);
 		}
 		else {
-			this.$.AppPanels.setArrangerKind("CollapsingArranger");
 			this.$.AppPanels.setDraggable(true);
 			this.$.AppPanels.$.ContentPanels.applyStyle("box-shadow", "-4px 0px 4px rgba(0,0,0,0.3)");
 			this.$.AppPanels.$.WiFiToggle.setShowing(false);
@@ -221,7 +218,7 @@ enyo.kind({
 
 		if (typeof(params.page) !== 'undefined') {
 			var targetPanelName = params.page + "Panel";
-			console.log("Switching to panel " + targetPanelName);
+			this.log("Switching to panel " + targetPanelName);
 			this.$.AppPanels.openPanel({ targetPanel: targetPanelName });
 		} else if (typeof(params.target) !== 'undefined' && 
 			typeof(params.target.ssid) !== 'undefined' &&

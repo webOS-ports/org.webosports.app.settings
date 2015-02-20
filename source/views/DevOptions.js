@@ -89,9 +89,9 @@ enyo.kind({
 		]},
 		{name: "GetDevModeStatus", kind: "DevModeService", method: "getStatus", onComplete: "onGetDevModeStatusResponse"},
 		{name: "SetDevModeStatus", kind: "DevModeService", method: "setStatus", onComplete: "onSetDevModeStatusResponse"},
-		{name: "ShowFps", kind: "enyo.PalmService", service: "luna://org.webosports.luna/", method: "showFps"},
-		{name: "ShowPerformanceUI", kind: "enyo.PalmService", service: "luna://org.webosports.luna/", method: "showPerformanceUI"},
-		{name: "GetGraphicsStatus", kind: "enyo.PalmService", service: "luna://org.webosports.luna/", subscribe: true, method: "getStatus", onComplete: "onGetGraphicsStatusResponse"},
+		{name: "ShowFps", kind: "enyo.LunaService", service: "luna://org.webosports.luna/", method: "showFps"},
+		{name: "ShowPerformanceUI", kind: "enyo.LunaService", service: "luna://org.webosports.luna/", method: "showPerformanceUI"},
+		{name: "GetGraphicsStatus", kind: "enyo.LunaService", service: "luna://org.webosports.luna/", subscribe: true, method: "getStatus", onComplete: "onGetGraphicsStatusResponse"},
 		{name: "GetDisplayProperty", kind: "DisplayService", method: "getProperty", onComplete: "handleGetPropertiesResponse"},
 		{name: "SetDisplayProperty", kind: "DisplayService", method: "setProperty" }
 	],
@@ -148,9 +148,8 @@ enyo.kind({
 	},
 	/* Service response handlers */
 	onGetDevModeStatusResponse: function (inSender, inResponse) {
-		var result = inResponse.data;
-		console.log(JSON.stringify(result));
-		if (result.status === "enabled") {
+		this.log(inResponse);
+		if (inResponse.status === "enabled") {
 			this.$.DevModeToggle.setValue(true);
 			this.$.DevModePanels.setIndex(1);
 		}
@@ -159,15 +158,14 @@ enyo.kind({
 			this.$.DevModePanels.setIndex(0);
 		}
 
-		this.$.UsbDebuggingToggle.setValue(result.usbDebugging === "enabled");
+		this.$.UsbDebuggingToggle.setValue(inResponse.usbDebugging === "enabled");
 	},
 	onSetDevModeStatusResponse: function(inSender, inEvent) {
 		this.$.GetDevModeStatus.send({});
 	},
 	onGetGraphicsStatusResponse: function(inSender, inResponse) {
-		var result = inResponse.data;
-		this.$.FpsCounterToggle.setValue(result.fps);
-		this.$.PerformanceUIToggle.setValue(result.performanceUI);
+		this.$.FpsCounterToggle.setValue(inResponse.fps);
+		this.$.PerformanceUIToggle.setValue(inResponse.performanceUI);
 	},
 	screenOffToggleChanged: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
@@ -184,12 +182,10 @@ enyo.kind({
 		}
 	},
 	handleGetPropertiesResponse: function(inSender, inResponse) {
-		enyo.log("Handling Get Properties Response");
-		var result = inResponse.data;
-		enyo.log(JSON.stringify(result));
+		this.log("Handling Get Properties Response", inResponse);
 
-		if(result.onWhenConnected !== undefined) {
-			this.$.ScreenOffToggle.setValue(result.onWhenConnected);
+		if(inResponse.onWhenConnected !== undefined) {
+			this.$.ScreenOffToggle.setValue(inResponse.onWhenConnected);
 		}
 	}
 });

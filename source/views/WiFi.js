@@ -574,10 +574,10 @@ enyo.kind({
         },
     ],
     //Handlers
-    create: function (inSender, inEvent) {
+    create: function () {
         this.inherited(arguments);
 
-        console.log("WiFi: created");
+        this.log("WiFi: created");
 
         if (!window.PalmSystem) {
             // WiFi is enabled by default
@@ -597,8 +597,9 @@ enyo.kind({
         navigator.WiFiManager.ondisabled = enyo.bind(this, "handleWiFiDisabled");
         navigator.WiFiManager.onnetworkschange = enyo.bind(this, "handleWiFiNetworksChanged");
 
-        if (navigator.WiFiManager.enabled)
-            handleWiFiEnabled();
+//        if (navigator.WiFiManager.enabled) {
+//            this.handleWiFiEnabled();
+//        }
 
         this.doActiveChanged({value: navigator.WiFiManager.enabled});
         this.updateSpinnerState("start");
@@ -643,11 +644,11 @@ enyo.kind({
         // When the network does not have any security configured it will always
         // have the "none" security type set
         if (!this.currentNetwork.security.contains("none")) {
-            console.log("Connecting to secured network");
+            this.log("Connecting to secured network");
             this.$.PopupSSID.setContent(this.currentNetwork.ssid);
             this.showNetworkConnect();
         } else {
-            console.log("Connect to open network");
+            this.log("Connect to open network");
             this.connectNetwork(this, {
                 path: this.currentNetwork.path,
                 password: ""
@@ -655,7 +656,7 @@ enyo.kind({
         }
     },
     triggerWifiConnect: function () {
-        var path = "";
+        var i, path = "";
         for (i = 0; i < this.foundNetworks.length; i++) {
             if (this.foundNetworks[i].name === this.wifiTarget.ssid) {
                 path = this.foundNetworks[i].path;
@@ -829,7 +830,7 @@ enyo.kind({
     handleNetworkConnectFailed: function() {
 	},
     connectNetwork: function (inSender, inEvent) {
-        console.log("connectNetwork " + JSON.stringify(inEvent));
+        this.log("connectNetwork", inEvent);
 
         if (!this.palm)
             return;
@@ -842,12 +843,12 @@ enyo.kind({
         };
 
         if (inEvent.password != "") {
-            enyo.log("Connecting to PSK network");
+            this.log("Connecting to PSK network");
             networkToConnect.security = "psk";
             networkToConnect.password = inEvent.password;
         }
         else {
-            enyo.log("Connecting to unsecured network");
+            this.log("Connecting to unsecured network");
         }
 
         navigator.WiFiManager.connectNetwork(networkToConnect,
@@ -863,11 +864,10 @@ enyo.kind({
 
         this.showNetworksList();
     },
-    updateSpinnerState: function(inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);
+    updateSpinnerState: function(action) {
+		this.log("action:", action);
 		
-		var text = inEvent;
-		if (inSender === "start" ){
+		if (action === "start" ){
 			this.$.networkSearch.show();
 		}else{
 			this.$.networkSearch.hide();
@@ -905,11 +905,12 @@ enyo.kind({
     startAutoscan: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
 		if (null === this.autoscan) {
-            console.log("Starting autoscan ...");
+            this.log("Starting autoscan ...");
             this.autoscan = window.setInterval(enyo.bind(this, "triggerAutoscan"), 15000);
-            if (!this.foundNetworks)
+            if (!this.foundNetworks) {
                 this.triggerAutoscan();
-                console.log("this.triggerAutoscan();");
+                this.log("this.triggerAutoscan();");
+            }
         }
     },
     triggerAutoscan: function() {
@@ -921,7 +922,7 @@ enyo.kind({
     },
     stopAutoscan: function() {
         if (null !== this.autoscan) {
-            console.log("Stopping autoscan ...");
+            this.log("Stopping autoscan ...");
             window.clearInterval(this.autoscan);
             this.autoscan = null;
         }
@@ -929,7 +930,7 @@ enyo.kind({
     },
     //Service Callbacks
     handleRetrieveNetworksResponse: function (networks) {
-        console.log(JSON.stringify(networks));
+        this.log(networks);
         this.clearFoundNetworks();
         if (networks) {
             this.foundNetworks = networks;
@@ -941,11 +942,6 @@ enyo.kind({
     },
     handleRetrieveNetworksFailed: function() {
         this.clearFoundNetworks();
-    },
-    handleConnectResponse: function (inSender, inResponse) {
-        var result = inResponse.data;
-   
-        this.showError("Connection could not be established");
     },
     handleWiFiEnabled: function() {
         this.$.WiFiToggle.setValue(true);
