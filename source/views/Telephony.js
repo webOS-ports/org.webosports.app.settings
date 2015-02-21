@@ -1,6 +1,6 @@
 enyo.kind({
 	name: "WanService",
-	kind: "enyo.PalmService",
+	kind: "enyo.LunaService",
 	service: "palm://com.palm.wan/"
 });
 
@@ -53,7 +53,7 @@ enyo.kind({
 		this.inherited(arguments);
 
 		if (!window.PalmSystem) {
-			enyo.log("Non-palm platform, service requests disabled.");
+			this.log("Non-palm platform, service requests disabled.");
 			return;
 		}
 
@@ -72,17 +72,15 @@ enyo.kind({
 	},
 	/* service response handlers */
 	handleWanStatus: function(inSender, inResponse) {
-		var result = inResponse.data;
-
-		console.log("WAN status changed: " + JSON.stringify(result));
+		this.log("WAN status changed: ", inResponse);
 
 		var roamingAllowed = false;
 		var dataUsage = false;
 
-		dataUsage = (result.disablewan == "off");
-		roamingAllowed = (result.roamGuard == "enable");
+		dataUsage = (inResponse.disablewan == "off");
+		roamingAllowed = (inResponse.roamGuard == "enable");
 
-		this.$.RoamingAllowed.setValue(roamingAllowed)
+		this.$.RoamingAllowed.setValue(roamingAllowed);
 		this.$.DataUsage.setValue(dataUsage);
 	},
 	/* component event handlers */

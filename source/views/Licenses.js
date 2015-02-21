@@ -178,7 +178,7 @@ enyo.kind({
         },
 		{
 			name: "listPackagesService",
-			kind: "enyo.PalmService",
+			kind: "enyo.LunaService",
 			service: "palm://org.webosports.service.licenses",
 			method: "listPackages",
 			subscribe: false,
@@ -186,7 +186,7 @@ enyo.kind({
 		},
 		{
 			name: "listLicenseService",
-			kind: "enyo.PalmService",
+			kind: "enyo.LunaService",
 			service: "palm://org.webosports.service.licenses",
 			method: "listLicensesForPackage",
 			subscribe: false,
@@ -194,7 +194,7 @@ enyo.kind({
 		},
 		{
 			name: "getLicenseService",
-			kind: "enyo.PalmService",
+			kind: "enyo.LunaService",
 			service: "palm://org.webosports.service.licenses",
 			method: "getLicenseTextForPackage",
 			subscribe: false,
@@ -230,7 +230,7 @@ enyo.kind({
     },
 
     gotPackageList: function (inSender, inEvent) {
-		var result = inEvent.data.packages;
+		var result = inEvent.packages;
 		if(result) {
 			this.packageList = result;
 			this.$.packageRepeater.setCount(this.packageList.length);
@@ -238,7 +238,7 @@ enyo.kind({
     },
 
     gotLicensesForPackage: function(inSender, inEvent){
-    	var result = inEvent.data.licenses;
+    	var result = inEvent.licenses;
     	if(result) {
 			this.licenseList = result;
 
@@ -252,7 +252,7 @@ enyo.kind({
     },
 
     gotLicenseText: function(inSender, inEvent) {
-		var result = inEvent.data.license;
+		var result = inEvent.license;
 		if(result) {
 
 			this.licenseTextList.push(this.decodeString(result));

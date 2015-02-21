@@ -1,11 +1,11 @@
 enyo.kind({
-	kind: "enyo.PalmService",
+	kind: "enyo.LunaService",
 	name: "DisplayService",
 	service: "luna://com.palm.display/control"
 });
 
 enyo.kind({
-	kind: "enyo.PalmService",
+	kind: "enyo.LunaService",
 	name: "SystemService",
 	service: "luna://com.palm.systemservice"
 });
@@ -115,15 +115,15 @@ enyo.kind({
 		{name: "SetDisplayProperty", kind: "DisplayService", method: "setProperty" },
 		{name: "GetSystemPreferences", kind: "SystemService", method: "getPreferences", onComplete: "handleGetPropertiesResponse"},
 		{name: "SetSystemPreferences", kind: "SystemService", method: "setPreferences"},
-		{name: "ImportWallpaper", kind: "enyo.PalmService", service: "luna://com.palm.systemservice/wallpaper", method: "importWallpaper", onComplete: "handleImportWallpaper"}
+		{name: "ImportWallpaper", kind: "enyo.LunaService", service: "luna://com.palm.systemservice/wallpaper", method: "importWallpaper", onComplete: "handleImportWallpaper"}
 	],
 	//Handlers
 	create: function(inSender, inEvent) {
 		this.inherited(arguments);
 
 		if(!window.PalmSystem) {
-			enyo.log("Non-palm platform, service requests disabled.");
-			return
+			this.log("Non-palm platform, service requests disabled.");
+			return;
 		}
 
 		this.$.GetDisplayProperty.send({properties: ["maximumBrightness", "timeout"]});
@@ -144,10 +144,10 @@ enyo.kind({
  	//Action Handlers
 	brightnessChanged: function(inSender, inEvent) {
 		if(this.palm) {
-			this.$.SetDisplayProperty.send({maximumBrightness: parseInt(this.$.BrightnessSlider.value)});
+			this.$.SetDisplayProperty.send({maximumBrightness: parseInt(this.$.BrightnessSlider.value, 10)});
 		}
 		else {
-			enyo.log(parseInt(this.$.BrightnessSlider.value));
+			this.log(parseInt(this.$.BrightnessSlider.value, 10));
 		}
 	},
 	timeoutChanged: function(inSender, inEvent) {
@@ -172,7 +172,7 @@ enyo.kind({
 			this.$.SetDisplayProperty.send({timeout:t});
 		}
 		else {
-			enyo.log(t);
+			this.log(t);
 		}
 	},
 	openWallpaperPicker: function() {
@@ -183,7 +183,7 @@ enyo.kind({
 			this.$.SetSystemPreferences.send({showAlertsWhenLocked: inSender.value});
 		}
 		else {
-			enyo.log(inSender.value);
+			this.log(inSender.value);
 		}
 	},
 	blinkNotificationsChanged: function(inSender, inEvent) {
@@ -191,11 +191,11 @@ enyo.kind({
 			this.$.SetSystemPreferences.send({BlinkNotifications: inSender.value});
 		}
 		else {
-			enyo.log(inSender.value);
+			this.log(inSender.value);
 		}
 	},
 	selectedImageFile: function(inSender, response) {
-		if(response && response.length == 0)
+		if(!response || response.length === 0)
 			return;
 		var params = {"target": encodeURIComponent(response[0].fullPath)};
 		
@@ -217,29 +217,26 @@ enyo.kind({
 
 	//Service Callbacks
 	handleGetPropertiesResponse: function(inSender, inResponse) {
-		enyo.log("Handling Get Properties Response");
-		var result = inResponse.data;
-		enyo.log(JSON.stringify(result));
-		if(result.maximumBrightness != undefined)
-			this.$.BrightnessSlider.setValue(result.maximumBrightness);
+		this.log("Handling Get Properties Response", inResponse);
+		if(inResponse.maximumBrightness != undefined)
+			this.$.BrightnessSlider.setValue(inResponse.maximumBrightness);
 			
-		if(result.timeout != undefined) {
-			if(result.timeout == 30)
+		if(inResponse.timeout != undefined) {
+			if(inResponse.timeout == 30)
 				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[0]);
-			if(result.timeout == 60)
+			if(inResponse.timeout == 60)
 				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[1]);
-			if(result.timeout == 120)
+			if(inResponse.timeout == 120)
 				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[2]);
-			if(result.timeout == 180)
+			if(inResponse.timeout == 180)
 				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[3]);
 		}
 	},
 	handleGetPreferencesResponse: function(inSender, inResponse) {
-		var result = inResponse.data;
-		if(result.showAlertsWhenLocked != undefined)
-			this.$.AlertsToggle.setValue(result.showAlertsWhenLocked);
-		if(result.BlinkNotifications != undefined)
-			this.$.BlinkToggle.setValue(result.BlinkNotifications);
+		if(inResponse.showAlertsWhenLocked != undefined)
+			this.$.AlertsToggle.setValue(inResponse.showAlertsWhenLocked);
+		if(inResponse.BlinkNotifications != undefined)
+			this.$.BlinkToggle.setValue(inResponse.BlinkNotifications);
 	},
 	pickWallpaper: function(inSender, inResponse) {
 		var wallpaperPath = "file:///usr/share/wallpapers/";
@@ -247,9 +244,8 @@ enyo.kind({
 
 	},
 	handleImportWallpaper: function(inSender, inResponse) {
-		var result = inResponse.data;
-		if(result.wallpaper) {
-			this.$.SetSystemPreferences.send({wallpaper: result.wallpaper});
+		if(inResponse.wallpaper) {
+			this.$.SetSystemPreferences.send({wallpaper: inResponse.wallpaper});
 		}
 	},
 

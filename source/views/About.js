@@ -52,9 +52,9 @@ enyo.kind({
         { kind: "onyx.Toolbar", components:[
 			{name: "Grabber", kind: "onyx.Grabber"},
 		]},
-        { kind: "enyo.PalmService", name: "RetrieveVersion", service: "palm://org.webosports.service.update",
+        { kind: "enyo.LunaService", name: "RetrieveVersion", service: "palm://org.webosports.service.update",
             method: "retrieveVersion", onComplete: "onVersionResponse" },
-        { kind: "enyo.PalmService", name: "GetAndroidProperty", service: "palm://com.android.properties",
+        { kind: "enyo.LunaService", name: "GetAndroidProperty", service: "palm://com.android.properties",
             method: "getProperty", onComplete: "onGetAndroidPropertyResponse"},
     ],
     // Handlers
@@ -90,34 +90,32 @@ enyo.kind({
         this.bubble("onSwitchPanel", {targetPanel: "Licenses"});
     },
     // Service Handlers
-    onVersionResponse: function(inSender, inEvent) {
-        var response = inEvent.data;
-        console.log("Got response from update service: " + response);
-        if (!response || !response.returnValue)
+    onVersionResponse: function(inSender, inResponse) {
+        console.log("Got response from update service: " + inResponse);
+        if (!inResponse || !inResponse.returnValue)
             return;
 
-        if (response.localVersion)
-            this.$.SoftwareVersion.setContent("" + response.localVersion);
-        if (response.codename)
-            this.$.Codename.setContent(response.codename);
-        if (response.buildTree)
-            this.$.BuildTree.setContent(response.buildTree);
-        if (response.buildNumber)
-            this.$.BuildNumber.setContent(response.buildNumber);
+        if (inResponse.localVersion)
+            this.$.SoftwareVersion.setContent("" + inResponse.localVersion);
+        if (inResponse.codename)
+            this.$.Codename.setContent(inResponse.codename);
+        if (inResponse.buildTree)
+            this.$.BuildTree.setContent(inResponse.buildTree);
+        if (inResponse.buildNumber)
+            this.$.BuildNumber.setContent(inResponse.buildNumber);
     },
-    onGetAndroidPropertyResponse: function(inSender, inEvent) {
-        var response = inEvent.data;
-        console.log("Got response from android property service: " + response);
-        if (!response || !response.returnValue)
+    onGetAndroidPropertyResponse: function(inSender, inResponse) {
+        console.log("Got response from android property service: " + inResponse);
+        if (!inResponse || !inResponse.returnValue)
             return;
-        if (!response.properties)
+        if (!inResponse.properties)
             return;
 
         var model = "";
         var manufacturer = "";
 
-        for (var n = 0; n < response.properties.length; n++) {
-            var property = response.properties[n];
+        for (var n = 0; n < inResponse.properties.length; n++) {
+            var property = inResponse.properties[n];
             if (property["ro.serialno"])
                 this.$.DeviceSerialNumber.setContent(property["ro.serialno"]);
             else if (property["ro.product.model"])

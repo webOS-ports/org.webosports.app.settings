@@ -79,7 +79,7 @@ enyo.kind({
 		//service caller:
 		{
 			name: "updateService",
-			kind: "enyo.PalmService",
+			kind: "enyo.LunaService",
 			service: "palm://org.webosports.service.update",
 			method: "checkUpdate",
 			subscribe: false,
@@ -87,7 +87,7 @@ enyo.kind({
 		},
 		{
 			name: "downloadService",
-			kind: "enyo.PalmService",
+			kind: "enyo.LunaService",
 			service: "palm://org.webosports.service.update",
 			method: "downloadUpdate",
 			subscribe: true,
@@ -96,7 +96,7 @@ enyo.kind({
 		},
 		{
 			name: "initiateService",
-			kind: "enyo.PalmService",
+			kind: "enyo.LunaService",
 			service: "palm://org.webosports.service.update",
 			method: "initiateUpdate",
 			subscribe: false,
@@ -153,50 +153,47 @@ enyo.kind({
 
 	updateStatus: function (msg) {
 		this.$.statusDisplay.setContent(msg);
-		this.resized();
+		this.resize();
 	},
 
 	//service callbacks:
 	updateChecked: function (inSender, inEvent) {
-		var result = inEvent.data;
 		this.stopActivity();
 		
-		this.setUpdateResults(result);
+		this.setUpdateResults(inEvent);
 	},
 
 	downloadComplete: function (inSender, inEvent) {
-		var result = inEvent.data, errorMsg;
+		var errorMsg;
 		
-		console.log("Got: " + JSON.stringify(result));
-		if (result.error) { //had error. Download aborted or something...
-			errorMsg = result.msg.replace(/\n/g, "<br>");
+		this.log("Got: ", inEvent);
+		if (inEvent.error) { //had error. Download aborted or something...
+			errorMsg = inEvent.msg.replace(/\n/g, "<br>");
 			this.updateStatus(errorMsg);
 
 			this.$.btnDownloadSkipFeeds.hide();
-			if (result.errorStage === "feedsUpdate") {
+			if (inEvent.errorStage === "feedsUpdate") {
 				console.log("Allow retry...");
 				this.$.btnDownload.setContent("Retry");
 				this.$.btnDownloadSkipFeeds.show();
 			}
 			this.stopActivity();
-		} else if (result.finished) { //finished downloading
+		} else if (inEvent.finished) { //finished downloading
 			this.updateStatus("Downloading finished");
 			this.$.btnInitiateUpdate.show();
 			this.$.btnDownload.hide();
 			this.$.btnDownloadSkipFeeds.hide();
 			this.stopActivity();
 		} else { //only some status from service:
-			this.updateStatus("Downloaded " + result.numDownloaded + " of " + result.toDownload + " packages.");
+			this.updateStatus("Downloaded " + inEvent.numDownloaded + " of " + inEvent.toDownload + " packages.");
 		}
 	},
 
-	initiateUpdateComplete: function (inSender, inEvent) {
-		var result = inEvent.data;
-		
-		if (result.success) { //had error. Download aborted or something...
+	initiateUpdateComplete: function (inSender, inEvent) {		
+		if (inEvent.success) { //had error. Download aborted or something...
 			this.updateStatus("Successfully initiated update. System will now reboot and update.");
 		} else { //only some status from service:
-			this.updateStatus("Error, could not initiate update: " + result.msg);
+			this.updateStatus("Error, could not initiate update: " + inEvent.msg);
 		}
 		this.stopActivity();
 	},

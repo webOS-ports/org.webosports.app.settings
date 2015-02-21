@@ -1,5 +1,5 @@
 enyo.kind({
 	name: "DevModeService",
-	kind: "enyo.PalmService",
+	kind: "enyo.LunaService",
 	service: "palm://org.webosports.service.devmode/"
 });

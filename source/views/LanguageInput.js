@@ -53,9 +53,9 @@ enyo.kind({
 		{kind: "onyx.Toolbar", components: [
 			{name: "Grabber", kind: "onyx.Grabber"},
 		]},
-		{ name: "SetPreferences", kind: "enyo.PalmService", service: "palm://com.palm.systemservice", method: "setPreferences", subscribe: false,
+		{ name: "SetPreferences", kind: "enyo.LunaService", service: "palm://com.palm.systemservice", method: "setPreferences", subscribe: false,
           onComplete: "onSetPreferencesCompleted" },
-        { name: "GetPreferences", kind: "enyo.PalmService", service: "palm://com.palm.systemservice", method: "getPreferences", subscribe: true,
+        { name: "GetPreferences", kind: "enyo.LunaService", service: "palm://com.palm.systemservice", method: "getPreferences", subscribe: true,
           onComplete: "onGetPreferencesCompleted" }
 	],
     // Handlers
@@ -100,30 +100,26 @@ enyo.kind({
     },
     // Service Handlers
     onGetPreferencesCompleted: function(inSender, inEvent) {
-        var response = inEvent.data;
+        this.log("Got response from system service: ", inEvent);
 
-        if (!response)
-            return;
-
-        console.log("Got response from system service: " + JSON.stringify(response));
-
-        if (response.keyboard && response.keyboard !== this.keyboardState) {
-            this.$.AutoCapitalization.value = response.keyboard.autoCapitalization;
+        if (inEvent.keyboard && inEvent.keyboard !== this.keyboardState) {
+            this.$.AutoCapitalization.value = inEvent.keyboard.autoCapitalization;
             this.$.AutoCapitalization.updateVisualState();
-            this.$.AutoCompletion.value = response.keyboard.autoCompletion;
+            this.$.AutoCompletion.value = inEvent.keyboard.autoCompletion;
             this.$.AutoCompletion.updateVisualState();
-            this.$.PredictiveText.value = response.keyboard.predictiveText;
+            this.$.PredictiveText.value = inEvent.keyboard.predictiveText;
             this.$.PredictiveText.updateVisualState();
-            this.$.SpellChecking.value = response.keyboard.spellChecking;
+            this.$.SpellChecking.value = inEvent.keyboard.spellChecking;
             this.$.SpellChecking.updateVisualState();
-            this.$.KeyPressFeedback.value = response.keyboard.keyPressFeedback;
+            this.$.KeyPressFeedback.value = inEvent.keyboard.keyPressFeedback;
             this.$.KeyPressFeedback.updateVisualState();
-            this.keyboardState = response.keyboard;
+            this.keyboardState = inEvent.keyboard;
         }
     },
     onSetPreferencesCompleted: function(inSender, inEvent) {
-        var response = inEvent.data;
-        if (!response.returnValue)
-            console.log("Failed to set keyboard preferences");
+        if (!inEvent.returnValue) {
+            this.log("Failed to set keyboard preferences");
+    		window.PalmSystem.addBannerMessage($L("Failed to set keyboard preferences"));
+        }
     },
 });

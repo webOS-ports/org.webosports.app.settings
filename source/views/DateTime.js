@@ -57,7 +57,7 @@ enyo.kind({
 		]},
 		{kind: "SystemService", method: "getPreferences", name: "GetSystemPreferences", onComplete: "handleGetPreferencesResponse"},
 		{kind: "SystemService", method: "setPreferences", name: "SetSystemPreferences" },
-		{kind: "enyo.PalmService", method: "setSystemTime", name: "SetSystemTime", service: "luna://com.palm.systemservice/time" },
+		{kind: "enyo.LunaService", method: "setSystemTime", name: "SetSystemTime", service: "luna://com.palm.systemservice/time" },
 		{kind: "SystemService", method: "getPreferenceValues", name: "GetSystemPreferenceValues", onComplete: "handleGetPreferenceValuesResponse" },
 	],
 	//Handlers
@@ -68,18 +68,18 @@ enyo.kind({
 
 			/* mock some data requests */
 
-			this.handleGetPreferencesResponse(null, { data: {
+			this.handleGetPreferencesResponse(null, {
 				timeFormat: "HH12",
 				timeZone: "Pacific\/Tahiti",
 				useNetworkTime: true,
-			}});
+			});
 
-			this.handleGetPreferenceValuesResponse(null, { data:
-				{ "timeZone": [
+			this.handleGetPreferenceValuesResponse(null, {
+				"timeZone": [
 					{ "Country": "Samoa", "CountryCode": "WS", "ZoneID": "Pacific\/Apia", "City": "Apia", "Description": "West Samoa Time", "offsetFromUTC": 780, "supportsDST": 1, "preferred": true }, 
 					{ "Country": "United States of America", "CountryCode": "US", "ZoneID": "America\/Adak", "City": "Adak", "Description": "Hawaii-Aleutian Time", "offsetFromUTC": -600, "supportsDST": 1, "preferred": true }, 
 					{ "Country": "French Polynesia", "CountryCode": "PF", "ZoneID": "Pacific\/Tahiti", "City": "Tahiti", "Description": "Tahiti Time", "offsetFromUTC": -600, "supportsDST": 0 }
-				]}});
+				]});
 
 			return;
 		}
@@ -117,7 +117,7 @@ enyo.kind({
 			this.$.SetSystemPreferences.send({timeFormat: inSender.selected.content == "12 Hour" ? "HH12" : "HH24"});
 		}
 		else {
-			enyo.log(inSender);
+			this.log(inSender.selected);
 		}
 
 		if (typeof(this.$.TimePicker) !== "undefined")
@@ -128,7 +128,7 @@ enyo.kind({
 			this.$.SetSystemPreferences.send({useNetworkTime: inSender.value, receiveNetworkTimeUpdates: inSender.value});
 		}
 		else {
-			enyo.log(inSender.value);
+			this.log(inSender.value);
 		}
 
 		this.updateTimeControlStates();
@@ -142,13 +142,13 @@ enyo.kind({
 			this.$.SetSystemPreferences.send({useNetworkTime: false, receiveNetworkTimeUpdates: false});
 		}
 		else {
-			enyo.log(timeObj);
+			this.log(timeObj);
 		}
 	},
 	timeZoneChanged: function(inSender, inEvent) {
 		var newTimeZone = this.$.TimeZonePicker.selected.zoneId;
 
-		console.log("New time zone is " + newTimeZone);
+		this.log("New time zone is " + newTimeZone);
 
 		if (!this.palm)
 			return;
@@ -159,27 +159,23 @@ enyo.kind({
 	},
 	//Service Callbacks
 	handleGetPreferencesResponse: function(inSender, inResponse) {
-		var result = inResponse.data;
-
-		if(result.timeFormat != undefined) {
-			this.$.TimeFormatPicker.setSelected(this.$.TimeFormatPicker.getClientControls()[result.timeFormat == "HH12" ? 0 : 1]);
+		if(inResponse.timeFormat != undefined) {
+			this.$.TimeFormatPicker.setSelected(this.$.TimeFormatPicker.getClientControls()[inResponse.timeFormat == "HH12" ? 0 : 1]);
 		}
 
-		if(result.useNetworkTime != undefined)
-			this.$.NetworkTimeToggle.setValue(result.useNetworkTime);
+		if(inResponse.useNetworkTime != undefined)
+			this.$.NetworkTimeToggle.setValue(inResponse.useNetworkTime);
 
-		if(result.timeZone != undefined) {
-			this.currentTimezone = result.timeZone;
+		if(inResponse.timeZone != undefined) {
+			this.currentTimezone = inResponse.timeZone;
 			this.$.TimeZoneItem.setContent(this.currentTimezone.ZoneID);
 		}
 
 		this.updateTimeControlStates();
 	},
 	handleGetPreferenceValuesResponse: function(inSender, inResponse) {
-		var result = inResponse.data;
-
-		if (result["timeZone"] !== undefined) {
-			var timeZones = result["timeZone"];
+		if (inResponse["timeZone"] !== undefined) {
+			var timeZones = inResponse["timeZone"];
 			/* FIXME */
 		}
 	}
