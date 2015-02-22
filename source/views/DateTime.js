@@ -47,8 +47,8 @@ enyo.kind({
 					]}
 				]},
 				{kind: "onyx.Groupbox", components: [
-					{kind: "onyx.GroupboxHeader", content: "Timezone"},
-					{classes: "group-item", name: "TimeZoneItem", kind: "onyx.Item", style: "padding-top: 10px;", tapHighlight: true, content: "unknown", ontap: "changeTimezone"},
+					{kind: "onyx.GroupboxHeader", content: "Time Zone"},
+					{classes: "group-item", name: "TimeZoneItem", kind: "onyx.Item", style: "padding-top: 10px;", tapHighlight: true, content: "unknown", ontap: "changeTimeZone"},
 				]},
 			]},
 		]},
@@ -71,7 +71,7 @@ enyo.kind({
 			this.handleGetPreferencesResponse(null, {
 				timeFormat: "HH12",
 				timeZone: "Pacific\/Tahiti",
-				useNetworkTime: true,
+				useNetworkTime: true
 			});
 
 			this.handleGetPreferenceValuesResponse(null, {
@@ -155,7 +155,7 @@ enyo.kind({
 
 		this.$.SetSystemPreferences.send({timeZone: newTimeZone});
 	},
-	changeTimezone: function(inSender, inEvent) {
+	changeTimeZone: function(inSender, inEvent) {
 	},
 	//Service Callbacks
 	handleGetPreferencesResponse: function(inSender, inResponse) {
@@ -167,8 +167,8 @@ enyo.kind({
 			this.$.NetworkTimeToggle.setValue(inResponse.useNetworkTime);
 
 		if(inResponse.timeZone != undefined) {
-			this.currentTimezone = inResponse.timeZone;
-			this.$.TimeZoneItem.setContent(this.currentTimezone.ZoneID);
+			this.currentTimeZone = inResponse.timeZone;
+			this.$.TimeZoneItem.setContent(this.currentTimeZone.ZoneID);
 		}
 
 		this.updateTimeControlStates();
