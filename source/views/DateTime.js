@@ -8,11 +8,6 @@ enyo.kind({
 		components:[
 			{content: "Date & Time"},
 		]},
-		{kind: "Scroller",
-		touch: true,
-		horizontal: "hidden",
-		fit: true,
-		components:[
 			{name: "div", tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
 				{kind: "onyx.Groupbox", components: [
 					{kind: "onyx.GroupboxHeader", content: "Time and Date Settings"},
@@ -51,7 +46,6 @@ enyo.kind({
 					{classes: "group-item", name: "TimeZoneItem", kind: "onyx.Item", style: "padding-top: 10px;", tapHighlight: true, content: "unknown", ontap: "changeTimeZone"},
 				]},
 			]},
-		]},
 		{kind: "onyx.Toolbar", components:[
 			{name: "Grabber", kind: "onyx.Grabber"},
 		]},
