@@ -4,17 +4,22 @@ enyo.kind({
 	palm: false,
 	components:[
 		{kind: "onyx.Toolbar",
-		style: "line-height: 36px;",
+		style: "line-height: 28px;",
 		components:[
 			{content: "Date & Time"},
 		]},
-			{name: "div", tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
-				{kind: "onyx.Groupbox", components: [
+		{ name: "DateTimePanels", kind: "Panels",
+		  arrangerKind: "HFlipArranger",
+		  fit: true, draggable: false, components: [
+			/* Main Date Time panel */
+			{ name: "MainDateTimeSettings",
+			  kind: "enyo.FittableRows",
+			  components: [
+				{kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout", style: "padding: 35px 10% 35px 10%;", components: [
 					{kind: "onyx.GroupboxHeader", content: "Time and Date Settings"},
-				
-					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
-						{content: "Time Format", fit: true,  style: "padding-top: 10px; min-width: 95px;"},
-						{kind: "onyx.PickerDecorator", style: "float: right; padding-top: 10px;", components: [
+					{ kind: "enyo.FittableColumns", classes: "group-item", components: [
+						{content: "Time Format", fit: true },
+						{kind: "onyx.PickerDecorator", components: [
 							{},
 							{name: "TimeFormatPicker", kind: "onyx.Picker", onChange: "timeFormatChanged", components: [
 								{content: "12 Hour", active: true},
@@ -22,30 +27,31 @@ enyo.kind({
 							]},
 							{kind: "onyx.Tooltip", content: "12/24hr Setting"}
 						]}
-				
 					]},
-				
 					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
-						{content: "Network Time", fit: true, style: "padding-top: 10px;" },
-						{kind: "onyx.PickerDecorator", style: "float: right; padding-top: 10px;", components: [
-							{name: "NetworkTimeToggle", kind: "onyx.ToggleButton", value: true, style: "float: right;", onChange: "networkTimeChanged"},
+						{content: "Network Time", fit: true },
+						{kind: "onyx.PickerDecorator", components: [
+							{name: "NetworkTimeToggle", kind: "onyx.ToggleButton", value: true, onChange: "networkTimeChanged"},
 							{kind: "onyx.Tooltip", content: "Network Time"}
 						]}
 					]},
 					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
-						{content: "Time", fit: true, style: " padding-top: 10px;"},
-						{name: "TimePicker", kind: "onyx.TimePicker", disabled: true, style: "float: right;  padding-top: 6px;", onSelect: "dateTimeChanged"},
+						{content: "Time", fit: true},
+						{name: "TimePicker", kind: "onyx.TimePicker", disabled: true, onSelect: "dateTimeChanged"},
 					]},
 					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
-						{content: "Date", fit: true, style: "padding-top: 10px;"},
-						{name: "DatePicker", kind: "onyx.DatePicker", disabled: true, style: "float: right; padding-top: 6px;", onSelect: "dateTimeChanged"},
+						{content: "Date", fit: true},
+						{name: "DatePicker", kind: "onyx.DatePicker", disabled: true, onSelect: "dateTimeChanged"},
 					]}
 				]},
-				{kind: "onyx.Groupbox", components: [
+				{kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout", style: "padding: 35px 10% 35px 10%;", components: [
 					{kind: "onyx.GroupboxHeader", content: "Time Zone"},
-					{classes: "group-item", name: "TimeZoneItem", kind: "onyx.Item", style: "padding-top: 10px;", tapHighlight: true, content: "unknown", ontap: "changeTimeZone"},
-				]},
+					{classes: "group-item", name: "TimeZoneItem", kind: "onyx.Item", tapHighlight: true, content: "unknown", ontap: "changeTimeZone"}
+				]}
 			]},
+			  /* Time Zone panel */
+			  { }
+		  ]},
 		{kind: "onyx.Toolbar", components:[
 			{name: "Grabber", kind: "onyx.Grabber"},
 		]},
@@ -89,7 +95,7 @@ enyo.kind({
 		this.inherited(arguments);
 		if(enyo.Panels.isScreenNarrow()) {
 			this.$.Grabber.applyStyle("visibility", "hidden");
-			this.$.div.setStyle("padding: 35px 5% 35px 5%;");
+//			this.$.div.setStyle("padding: 35px 5% 35px 5%;");
 		}
 		else {
 			this.$.Grabber.applyStyle("visibility", "visible");
