@@ -1,6 +1,52 @@
 enyo.kind({
+	name: "TimeZoneListItem",
+	classes: "group-item-wrapper",
+	components: [{
+		classes: "group-item",
+		layoutKind: "enyo.FittableRowsLayout",
+		components: [
+			{
+				kind: "enyo.FittableColumns",
+				fit: true,
+				components: [
+					{
+						name: "Country",
+						content: "Country"
+					},
+					{
+						style: "float: right;",
+						name: "Description",
+						content: "Description"
+					}
+				]
+			},
+			{
+				name: "City",
+				content: "City"
+			}]}
+	],
+//	reflow: function(inSender, inEvent) {
+//		this.log("sender:", inSender, ", event:", inEvent);
+//		this.inherited(arguments);
+//		this.render();
+//	},
+	handlers: {
+		onmousedown: "pressed",
+		ondragstart: "released",
+		onmouseup: "released"
+	},
+	pressed: function() {
+		this.addClass("onyx-selected");
+	},
+	released: function() {
+		this.removeClass("onyx-selected");
+	}
+});
+
+enyo.kind({
 	name: "DateTime",
 	layoutKind: "FittableRowsLayout",
+	timeZones: null,
 	palm: false,
 	components:[
 		{kind: "onyx.Toolbar",
@@ -46,11 +92,45 @@ enyo.kind({
 				]},
 				{kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout", style: "padding: 35px 10% 35px 10%;", components: [
 					{kind: "onyx.GroupboxHeader", content: "Time Zone"},
-					{classes: "group-item", name: "TimeZoneItem", kind: "onyx.Item", tapHighlight: true, content: "unknown", ontap: "changeTimeZone"}
+					{classes: "group-item", name: "TimeZoneItem", kind: "onyx.Item", content: "unknown",
+					 tapHighlight: true, ontap: "showTimeZonePicker"}
 				]}
 			]},
 			  /* Time Zone panel */
-			  { }
+			{
+			  kind: "enyo.FittableRows", components: [
+				  {
+					  name: "TimeZonePicker",
+					  kind: "onyx.Groupbox",
+					  layoutKind: "FittableRowsLayout",
+					  style: "padding: 35px 10% 35px 10%;",
+					  fit: true,
+					  components: [
+						  {
+							  kind: "onyx.GroupboxHeader",
+							  content: "Choose a Time Zone",
+							  ontap: "showMainDateTimePanel" //@@
+						  },
+						  {
+							  classes: "timezones-scroll",
+							  kind: "Scroller",
+							  touch: true,
+							  horizontal: "hidden",
+							  fit: true,
+							  components: [{
+								  name: "SearchRepeater",
+								  kind: "Repeater",
+								  count: 0,
+								  onSetupItem: "setupTimeZoneRow",
+								  components: [{
+									  kind: "TimeZoneListItem",
+									  ontap: "listItemTapped"
+								  }]
+							  }]
+						  }
+					  ]
+				  }]
+			}
 		  ]},
 		{kind: "onyx.Toolbar", components:[
 			{name: "Grabber", kind: "onyx.Grabber"},
@@ -66,7 +146,7 @@ enyo.kind({
 		if(!window.PalmSystem) {
 			enyo.log("Non-palm platform, service requests disabled.");
 
-			/* mock some data requests */
+			/* Mock some data requests */
 
 			this.handleGetPreferencesResponse(null, {
 				timeFormat: "HH12",
@@ -155,7 +235,19 @@ enyo.kind({
 
 		this.$.SetSystemPreferences.send({timeZone: newTimeZone});
 	},
-	changeTimeZone: function(inSender, inEvent) {
+	setupTimeZoneRow: function (inSender, inEvent) {
+		inEvent.item.$.timeZoneListItem.$.Country.setContent(
+			this.timeZones[inEvent.index].Country);
+		inEvent.item.$.timeZoneListItem.$.City.setContent(
+			this.timeZones[inEvent.index].City);
+		inEvent.item.$.timeZoneListItem.$.Description.setContent(
+			this.timeZones[inEvent.index].Description);
+	},
+	showTimeZonePicker: function(inSender, inEvent) {
+		this.$.DateTimePanels.setIndex(1);
+	},
+	showMainDateTimePanel: function(inSender, inEvent) {
+		this.$.DateTimePanels.setIndex(0);
 	},
 	//Service Callbacks
 	handleGetPreferencesResponse: function(inSender, inResponse) {
@@ -175,8 +267,8 @@ enyo.kind({
 	},
 	handleGetPreferenceValuesResponse: function(inSender, inResponse) {
 		if (inResponse["timeZone"] !== undefined) {
-			var timeZones = inResponse["timeZone"];
-			/* FIXME */
+			this.timeZones = inResponse["timeZone"];
+			this.$.SearchRepeater.setCount(this.timeZones.length);
 		}
 	}
 });

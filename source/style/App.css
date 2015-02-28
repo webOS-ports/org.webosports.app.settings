@@ -115,6 +115,14 @@
     border-top: 0;
     border-color: #AAAAAA;
 }
+.timezones-scroll .group-item-wrapper:last-child .group-item {
+    border-bottom: 0px;
+}
+.timezones-scroll {
+    border: 1px solid;
+    border-top: 0;
+    border-color: #AAAAAA;
+}
 .group-item-wrapper {
     padding: 0 8px;
 }
