@@ -47,6 +47,7 @@ enyo.kind({
 	name: "DateTime",
 	layoutKind: "FittableRowsLayout",
 	timeZones: null,
+	currentTimeZone: null,
 	palm: false,
 	components:[
 		{kind: "onyx.Toolbar",
@@ -59,9 +60,13 @@ enyo.kind({
 		  fit: true, draggable: false, components: [
 			/* Main Date Time panel */
 			{ name: "MainDateTimeSettings",
+			  kind: "Scroller",
+			  touch: true, horizontal: "hidden",
+			  components: [{
 			  kind: "enyo.FittableRows",
 			  components: [
-				{kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout", style: "padding: 35px 10% 35px 10%;", components: [
+				{kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout",
+				 name: "mdts1", style: "padding: 35px 10% 0 10%;", components: [
 					{kind: "onyx.GroupboxHeader", content: "Time and Date Settings"},
 					{ kind: "enyo.FittableColumns", classes: "group-item", components: [
 						{content: "Time Format", fit: true },
@@ -90,11 +95,13 @@ enyo.kind({
 						{name: "DatePicker", kind: "onyx.DatePicker", disabled: true, onSelect: "dateTimeChanged"},
 					]}
 				]},
-				{kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout", style: "padding: 35px 10% 35px 10%;", components: [
+				{kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout",
+				 name: "mdts2", style: "padding: 10px 10% 10px 10%;", components: [
 					{kind: "onyx.GroupboxHeader", content: "Time Zone"},
 					{classes: "group-item", name: "TimeZoneItem", kind: "onyx.Item", content: "unknown",
 					 tapHighlight: true, ontap: "showTimeZonePicker"}
 				]}
+			]}
 			]},
 			  /* Time Zone panel */
 			{
@@ -103,7 +110,7 @@ enyo.kind({
 					  name: "TimeZonePicker",
 					  kind: "onyx.Groupbox",
 					  layoutKind: "FittableRowsLayout",
-					  style: "padding: 35px 10% 35px 10%;",
+					  style: "padding: 35px 10% 10px 10%;",
 					  fit: true,
 					  components: [
 						  {
@@ -148,18 +155,18 @@ enyo.kind({
 
 			/* Mock some data requests */
 
-			this.handleGetPreferencesResponse(null, {
-				timeFormat: "HH12",
-				timeZone: "Pacific\/Tahiti",
-				useNetworkTime: true
-			});
-
 			this.handleGetPreferenceValuesResponse(null, {
 				"timeZone": [
 					{ "Country": "Samoa", "CountryCode": "WS", "ZoneID": "Pacific\/Apia", "City": "Apia", "Description": "West Samoa Time", "offsetFromUTC": 780, "supportsDST": 1, "preferred": true }, 
 					{ "Country": "United States of America", "CountryCode": "US", "ZoneID": "America\/Adak", "City": "Adak", "Description": "Hawaii-Aleutian Time", "offsetFromUTC": -600, "supportsDST": 1, "preferred": true }, 
 					{ "Country": "French Polynesia", "CountryCode": "PF", "ZoneID": "Pacific\/Tahiti", "City": "Tahiti", "Description": "Tahiti Time", "offsetFromUTC": -600, "supportsDST": 0 }
 				]});
+
+			this.handleGetPreferencesResponse(null, {
+				timeFormat: "HH12",
+				timeZone: { "Country": "French Polynesia", "CountryCode": "PF", "ZoneID": "Pacific\/Tahiti", "City": "Tahiti", "Description": "Tahiti Time", "offsetFromUTC": -600, "supportsDST": 0 },
+				useNetworkTime: true
+			});
 
 			return;
 		}
@@ -175,7 +182,9 @@ enyo.kind({
 		this.inherited(arguments);
 		if(enyo.Panels.isScreenNarrow()) {
 			this.$.Grabber.applyStyle("visibility", "hidden");
-//			this.$.div.setStyle("padding: 35px 5% 35px 5%;");
+			this.$.mdts1.setStyle("padding: 35px 5% 0 5%;");
+			this.$.mdts2.setStyle("padding: 10px 5% 10px 5%;");
+			this.$.mdts1.setStyle("padding: 35px 5% 10px 5%;");
 		}
 		else {
 			this.$.Grabber.applyStyle("visibility", "visible");
@@ -194,14 +203,14 @@ enyo.kind({
 	//Action Handlers
 	timeFormatChanged: function(inSender, inEvent) {
 		if(this.palm) {
-			this.$.SetSystemPreferences.send({timeFormat: inSender.selected.content == "12 Hour" ? "HH12" : "HH24"});
+			this.$.SetSystemPreferences.send({timeFormat: inSender.selected.content === "12 Hour" ? "HH12" : "HH24"});
 		}
 		else {
 			this.log(inSender.selected);
 		}
 
 		if (typeof(this.$.TimePicker) !== "undefined")
-			this.$.TimePicker.setIs24HrMode(inSender.selected.content != "12 Hour");
+			this.$.TimePicker.setIs24HrMode(inSender.selected.content !== "12 Hour");
 	},
 	networkTimeChanged: function(inSender, inEvent) {
 		if(this.palm) {
@@ -242,6 +251,10 @@ enyo.kind({
 			this.timeZones[inEvent.index].City);
 		inEvent.item.$.timeZoneListItem.$.Description.setContent(
 			this.timeZones[inEvent.index].Description);
+		if (this.currentTimeZone &&
+		    this.timeZones[inEvent.index].ZoneID === this.currentTimeZone.ZoneID) {
+			inEvent.item.$.timeZoneListItem.setStyle("font-weight: bold;");
+		}
 	},
 	showTimeZonePicker: function(inSender, inEvent) {
 		this.$.DateTimePanels.setIndex(1);
@@ -251,16 +264,18 @@ enyo.kind({
 	},
 	//Service Callbacks
 	handleGetPreferencesResponse: function(inSender, inResponse) {
-		if(inResponse.timeFormat != undefined) {
-			this.$.TimeFormatPicker.setSelected(this.$.TimeFormatPicker.getClientControls()[inResponse.timeFormat == "HH12" ? 0 : 1]);
+		if(inResponse.timeFormat !== undefined) {
+			this.$.TimeFormatPicker.setSelected(this.$.TimeFormatPicker.getClientControls()[inResponse.timeFormat === "HH12" ? 0 : 1]);
 		}
 
-		if(inResponse.useNetworkTime != undefined)
+		if(inResponse.useNetworkTime !== undefined)
 			this.$.NetworkTimeToggle.setValue(inResponse.useNetworkTime);
 
-		if(inResponse.timeZone != undefined) {
+		if(inResponse.timeZone !== undefined) {
 			this.currentTimeZone = inResponse.timeZone;
 			this.$.TimeZoneItem.setContent(this.currentTimeZone.ZoneID);
+			// To highlight the [new] current zone
+			this.$.SearchRepeater.setCount(this.timeZones.length);
 		}
 
 		this.updateTimeControlStates();
