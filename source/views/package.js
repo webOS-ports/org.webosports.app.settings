@@ -12,5 +12,6 @@ enyo.depends(
 	"DevModeService.js",
 	"DateTime.js",
 	"About.js",
+	"Certificates.js",
 	"Settings.js"
 );
