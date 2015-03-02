@@ -242,7 +242,6 @@ enyo.kind({
 		this.log("New time zone is " + newTimeZone.ZoneID);
 		this.$.TimeZoneItem.setContent(this.currentTimeZone.ZoneID);
 		this.showMainDateTimePanel();
-		this.$.SearchRepeater.setCount(this.timeZones.length);
 	},
 	setupTimeZoneRow: function (inSender, inEvent) {
 		inEvent.item.$.timeZoneListItem.$.Country.setContent(
@@ -255,8 +254,10 @@ enyo.kind({
 		    this.timeZones[inEvent.index].ZoneID === this.currentTimeZone.ZoneID) {
 			inEvent.item.$.timeZoneListItem.setStyle("font-weight: bold;");
 		}
+		return true;
 	},
 	showTimeZonePicker: function(inSender, inEvent) {
+		this.$.SearchRepeater.build();
 		this.$.DateTimePanels.setIndex(1);
 	},
 	showMainDateTimePanel: function(inSender, inEvent) {
@@ -275,7 +276,7 @@ enyo.kind({
 			this.currentTimeZone = inResponse.timeZone;
 			this.$.TimeZoneItem.setContent(this.currentTimeZone.ZoneID);
 			// To highlight the [new] current zone
-			this.$.SearchRepeater.setCount(this.timeZones.length);
+			this.$.SearchRepeater.build();
 		}
 
 		this.updateTimeControlStates();
