@@ -115,8 +115,7 @@ enyo.kind({
 					  components: [
 						  {
 							  kind: "onyx.GroupboxHeader",
-							  content: "Choose a Time Zone",
-							  ontap: "showMainDateTimePanel" //@@
+							  content: "Choose a Time Zone"
 						  },
 						  {
 							  classes: "timezones-scroll",
@@ -234,15 +233,16 @@ enyo.kind({
 			this.log(timeObj);
 		}
 	},
-	timeZoneChanged: function(inSender, inEvent) {
-		var newTimeZone = this.$.TimeZonePicker.selected.zoneId;
-
-		this.log("New time zone is " + newTimeZone);
-
-		if (!this.palm)
-			return;
-
-		this.$.SetSystemPreferences.send({timeZone: newTimeZone});
+	listItemTapped: function(inSender, inEvent) {
+		var newTimeZone = this.timeZones[inEvent.index];
+		if (this.palm) {
+			this.$.SetSystemPreferences.send({timeZone: newTimeZone});
+		}
+		this.currentTimeZone = newTimeZone;
+		this.log("New time zone is " + newTimeZone.ZoneID);
+		this.$.TimeZoneItem.setContent(this.currentTimeZone.ZoneID);
+		this.showMainDateTimePanel();
+		this.$.SearchRepeater.setCount(this.timeZones.length);
 	},
 	setupTimeZoneRow: function (inSender, inEvent) {
 		inEvent.item.$.timeZoneListItem.$.Country.setContent(
