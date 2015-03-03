@@ -119,19 +119,16 @@ enyo.kind({
 						  },
 						  {
 							  classes: "timezones-scroll",
-							  kind: "Scroller",
 							  touch: true,
-							  horizontal: "hidden",
 							  fit: true,
+							  name: "TimeZonesList",
+							  kind: "List",
+							  count: 0,
+							  onSetupItem: "setupTimeZoneRow",
 							  components: [{
-								  name: "SearchRepeater",
-								  kind: "Repeater",
-								  count: 0,
-								  onSetupItem: "setupTimeZoneRow",
-								  components: [{
-									  kind: "TimeZoneListItem",
-									  ontap: "listItemTapped"
-								  }]
+								  name: "timeZoneListItem",
+								  kind: "TimeZoneListItem",
+								  ontap: "listItemTapped"
 							  }]
 						  }
 					  ]
@@ -244,20 +241,20 @@ enyo.kind({
 		this.showMainDateTimePanel();
 	},
 	setupTimeZoneRow: function (inSender, inEvent) {
-		inEvent.item.$.timeZoneListItem.$.Country.setContent(
+		this.$.timeZoneListItem.$.Country.setContent(
 			this.timeZones[inEvent.index].Country);
-		inEvent.item.$.timeZoneListItem.$.City.setContent(
+		this.$.timeZoneListItem.$.City.setContent(
 			this.timeZones[inEvent.index].City);
-		inEvent.item.$.timeZoneListItem.$.Description.setContent(
+		this.$.timeZoneListItem.$.Description.setContent(
 			this.timeZones[inEvent.index].Description);
 		if (this.currentTimeZone &&
 		    this.timeZones[inEvent.index].ZoneID === this.currentTimeZone.ZoneID) {
-			inEvent.item.$.timeZoneListItem.setStyle("font-weight: bold;");
+//			this.$.timeZoneListItem.setStyle("font-weight: bold;");
 		}
 		return true;
 	},
 	showTimeZonePicker: function(inSender, inEvent) {
-		this.$.SearchRepeater.build();
+//		this.$.SearchRepeater.build();
 		this.$.DateTimePanels.setIndex(1);
 	},
 	showMainDateTimePanel: function(inSender, inEvent) {
@@ -276,7 +273,7 @@ enyo.kind({
 			this.currentTimeZone = inResponse.timeZone;
 			this.$.TimeZoneItem.setContent(this.currentTimeZone.ZoneID);
 			// To highlight the [new] current zone
-			this.$.SearchRepeater.build();
+//			this.$.SearchRepeater.build();
 		}
 
 		this.updateTimeControlStates();
@@ -284,7 +281,7 @@ enyo.kind({
 	handleGetPreferenceValuesResponse: function(inSender, inResponse) {
 		if (inResponse["timeZone"] !== undefined) {
 			this.timeZones = inResponse["timeZone"];
-			this.$.SearchRepeater.setCount(this.timeZones.length);
+			this.$.TimeZonesList.setCount(this.timeZones.length);
 		}
 	}
 });
