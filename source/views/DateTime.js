@@ -1,49 +1,4 @@
 enyo.kind({
-	name: "TimeZoneListItem",
-	classes: "group-item-wrapper",
-	components: [{
-		classes: "group-item",
-		layoutKind: "enyo.FittableRowsLayout",
-		components: [
-			{
-				kind: "enyo.FittableColumns",
-				fit: true,
-				components: [
-					{
-						name: "Country",
-						content: "Country"
-					},
-					{
-						style: "float: right;",
-						name: "Description",
-						content: "Description"
-					}
-				]
-			},
-			{
-				name: "City",
-				content: "City"
-			}]}
-	],
-//	reflow: function(inSender, inEvent) {
-//		this.log("sender:", inSender, ", event:", inEvent);
-//		this.inherited(arguments);
-//		this.render();
-//	},
-	handlers: {
-		onmousedown: "pressed",
-		ondragstart: "released",
-		onmouseup: "released"
-	},
-	pressed: function() {
-		this.addClass("onyx-selected");
-	},
-	released: function() {
-		this.removeClass("onyx-selected");
-	}
-});
-
-enyo.kind({
 	name: "DateTime",
 	layoutKind: "FittableRowsLayout",
 	timeZones: null,
@@ -126,8 +81,13 @@ enyo.kind({
 							  onSetupItem: "setupTimeZoneRow",
 							  components: [{
 								  name: "timeZoneListItem",
-								  kind: "TimeZoneListItem",
-								  ontap: "listItemTapped"
+								  classes: "group-item",
+								  ontap: "listItemTapped", components: [
+									  {name: "TZCountry", content: "Country"},
+									  {style: "float: right;",
+									   name: "TZDescription", content: "Description"},
+									  {name: "TZCity", content: "City"},
+								  ]
 							  }]
 						  }
 					  ]
@@ -240,12 +200,50 @@ enyo.kind({
 		this.showMainDateTimePanel();
 	},
 	setupTimeZoneRow: function (inSender, inEvent) {
-		this.$.timeZoneListItem.$.Country.setContent(
-			this.timeZones[inEvent.index].Country);
-		this.$.timeZoneListItem.$.City.setContent(
-			this.timeZones[inEvent.index].City);
-		this.$.timeZoneListItem.$.Description.setContent(
-			this.timeZones[inEvent.index].Description);
+		var cntry = this.timeZones[inEvent.index].Country;
+		var cty = this.timeZones[inEvent.index].City;
+		var dscrptn = this.timeZones[inEvent.index].Description;
+		// Manage troublesome cases
+		if (!cty || cty.length === 0) {
+			cty = cntry; // Just for something to display
+		}
+		// Strip off redundant country leader (if present)
+		var tmpstr = cntry + "\/";
+		if (cty.indexOf(tmpstr) === 0) {
+			cty = cty.slice(tmpstr.length);
+		}
+		if (enyo.Panels.isScreenNarrow()) {
+			// Verbose state names (No!)
+			var ndstr = "North Dakota\/";
+			var kystr = "Kentucky\/";
+			var instr = "Indiana\/";
+			if (cty.indexOf(ndstr) === 0) {
+				cty = "ND\/" + cty.slice(ndstr.length);
+			} else if (cty.indexOf(kystr) === 0) {
+				cty = "KY\/" + cty.slice(kystr.length);
+			} else if (cty.indexOf(instr) === 0) {
+				cty = "IN\/" + cty.slice(instr.length);
+			}
+			// Ref. http://www.timeanddate.com/time/zones/
+			if (dscrptn === "Pacific Standard Time (North America)") {
+				dscrptn = "NAPST";
+			} else if (dscrptn === "Eastern Standard Time (Australia)") {
+				dscrptn = "AEST";
+			} else if (dscrptn === "Fernando de Noronha Time") {
+				dscrptn = "FNT";
+			} else if (dscrptn === "Saint Pierre and Miquelon Standard Time") {
+				dscrptn = "PMST";
+			}
+			if (cntry.length >= 40) {
+				cntry = cntry.slice(0,38) + "..";
+			}
+			if (cty.length >= 18) {
+				cty = cty.slice(0,16) + "..";
+			}
+		}
+		this.$.TZCountry.setContent(cntry);
+		this.$.TZCity.setContent(cty);
+		this.$.TZDescription.setContent(dscrptn);
 		return true;
 	},
 	showTimeZonePicker: function(inSender, inEvent) {
