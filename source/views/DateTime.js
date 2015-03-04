@@ -118,7 +118,6 @@ enyo.kind({
 							  content: "Choose a Time Zone"
 						  },
 						  {
-							  classes: "timezones-scroll",
 							  touch: true,
 							  fit: true,
 							  name: "TimeZonesList",
@@ -180,7 +179,7 @@ enyo.kind({
 			this.$.Grabber.applyStyle("visibility", "hidden");
 			this.$.mdts1.setStyle("padding: 35px 5% 0 5%;");
 			this.$.mdts2.setStyle("padding: 10px 5% 10px 5%;");
-			this.$.mdts1.setStyle("padding: 35px 5% 10px 5%;");
+			this.$.TimeZonePicker.setStyle("padding: 35px 5% 10px 5%;");
 		}
 		else {
 			this.$.Grabber.applyStyle("visibility", "visible");
@@ -247,14 +246,9 @@ enyo.kind({
 			this.timeZones[inEvent.index].City);
 		this.$.timeZoneListItem.$.Description.setContent(
 			this.timeZones[inEvent.index].Description);
-		if (this.currentTimeZone &&
-		    this.timeZones[inEvent.index].ZoneID === this.currentTimeZone.ZoneID) {
-//			this.$.timeZoneListItem.setStyle("font-weight: bold;");
-		}
 		return true;
 	},
 	showTimeZonePicker: function(inSender, inEvent) {
-//		this.$.SearchRepeater.build();
 		this.$.DateTimePanels.setIndex(1);
 	},
 	showMainDateTimePanel: function(inSender, inEvent) {
@@ -272,8 +266,6 @@ enyo.kind({
 		if(inResponse.timeZone !== undefined) {
 			this.currentTimeZone = inResponse.timeZone;
 			this.$.TimeZoneItem.setContent(this.currentTimeZone.ZoneID);
-			// To highlight the [new] current zone
-//			this.$.SearchRepeater.build();
 		}
 
 		this.updateTimeControlStates();
