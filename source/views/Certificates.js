@@ -1,6 +1,6 @@
 enyo.kind({
   name: "CertMgrService",
-  kind: "enyo.PalmService",
+  kind: "enyo.LunaService",
   service: "palm://org.webosports.certmgr"
 });
 
@@ -196,8 +196,8 @@ enyo.kind({
       this.doBackbutton();
   },
   // Service handlers
-  onInstallFinished: function(inSender, inEvent) {
-    var result = inEvent.data;
+  onInstallFinished: function(inSender, inResponse) {
+    var result = inResponse;
 
     if (!result.returnValue) {
       this.displaySimpleMessage("Failed to install certificate");
@@ -206,8 +206,8 @@ enyo.kind({
 
     this.displaySimpleMessage("Certificate installed!");
   },
-  onListCertificatesFinished: function(inSender, inEvent) {
-    var result = inEvent.data;
+  onListCertificatesFinished: function(inSender, inResponse) {
+    var result = inResponse;
 
     if (!result.returnValue) {
       this.displaySimpleMessage("Failed to list certificates");
