@@ -41,11 +41,11 @@ enyo.kind({
 							{kind: "onyx.Tooltip", content: "Network Time"}
 						]}
 					]},
-					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
+					{ name: "TimePickerRow", kind: "enyo.FittableColumns", classes: "group-item", components:[
 						{content: "Time", fit: true},
 						{name: "TimePicker", kind: "onyx.TimePicker", disabled: true, onSelect: "dateTimeChanged"},
 					]},
-					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
+					{ name: "DatePickerRow", kind: "enyo.FittableColumns", classes: "group-item", components:[
 						{content: "Date", fit: true},
 						{name: "DatePicker", kind: "onyx.DatePicker", disabled: true, onSelect: "dateTimeChanged"},
 					]}
@@ -147,12 +147,12 @@ enyo.kind({
 	},
 	updateTimeControlStates: function() {
 		if (this.$.NetworkTimeToggle.value) {
-			this.$.TimePicker.setDisabled(true);
-			this.$.DatePicker.setDisabled(true);
+			this.$.TimePickerRow.setShowing(false);
+			this.$.DatePickerRow.setShowing(false);
 		}
 		else {
-			this.$.TimePicker.setDisabled(false);
-			this.$.DatePicker.setDisabled(false);
+			this.$.TimePickerRow.setShowing(true);
+			this.$.DatePickerRow.setShowing(true);
 		}
 	},
 	//Action Handlers
