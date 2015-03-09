@@ -89,7 +89,8 @@ enyo.kind({
 									   name: "TZOffset", content: "GMT+10:00"}]},
 									  {tag: "br"},
 									  {tag: "div", components: [
-									  {name: "TZCity", style: "float: left;", allowHtml: true, content: "City"},
+									  {name: "TZCity", style: "float: left; font-weight: bold;",
+									   allowHtml: true, content: "City"},
 									  {style: "float: right;",
 									   name: "TZDescription", content: "Description"}]},
 									  {tag: "br"}
@@ -215,8 +216,12 @@ enyo.kind({
 		var hrs = offset / 60;
 		var ihrs = parseInt(hrs, 10);
 		var mnts = Math.abs(offset) - Math.abs(ihrs) * 60;
-		offset = "GMT" + (ihrs >= 0 ? "+" : "") +
-			ihrs + ":" + (mnts < 10 ? "0" : "") + mnts;
+		if (hrs !== 0) {
+			offset = "GMT" + (ihrs >= 0 ? "+" : "") +
+				ihrs + ":" + (mnts < 10 ? "0" : "") + mnts;
+		} else {
+			offset = "GMT";
+		}
 		// Manage troublesome cases
 		if (!cty || cty.length === 0) {
 			cty = cntry; // Just for something to display
