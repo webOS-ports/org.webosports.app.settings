@@ -205,6 +205,10 @@ enyo.kind({
     }
 
     this.displaySimpleMessage("Certificate installed!");
+
+    // retrieve all certificates again to have them in our list
+    // (there is no subscription support yet)
+    this.$.listCertificates.send({});
   },
   onListCertificatesFinished: function(inSender, inResponse) {
     var result = inResponse;
