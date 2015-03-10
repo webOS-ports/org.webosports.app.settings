@@ -91,7 +91,8 @@ enyo.kind({
 									  {tag: "div", components: [
 									  {name: "TZCity", style: "float: left; font-weight: bold;",
 									   allowHtml: true, content: "City"},
-									  {style: "float: right;",
+									  {style: "float: right; font-size: smaller; padding-top: 2px;",
+									   allowHtml: true,
 									   name: "TZDescription", content: "Description"}]},
 									  {tag: "br"}
 								  ]
@@ -244,18 +245,14 @@ enyo.kind({
 				cty = "IN\/" + cty.slice(instr.length);
 			}
 			// Ref. http://www.timeanddate.com/time/zones/
-			if (dscrptn === "Pacific Standard Time (North America)") {
-				dscrptn = "NAPST";
-			} else if (dscrptn === "Eastern Standard Time (Australia)") {
-				dscrptn = "AEST";
-			} else if (dscrptn === "Fernando de Noronha Time") {
+			if (dscrptn === "Fernando de Noronha Time") {
 				dscrptn = "FNT";
 			} else if (dscrptn === "Saint Pierre and Miquelon Standard Time") {
-				dscrptn = "PMST";
+				dscrptn = "Pierre &amp; Miquelon Standard Time";
 			}
 			// Arbitrary hack. Looks OK on a Nexus 4.
-			if (cntry.length >= 32) {
-				cntry = cntry.slice(0,29) + "&hellip;";
+			if (cntry.length >= 31) {
+				cntry = cntry.slice(0,28) + "&hellip;";
 			}
 		}
 		this.$.TZCountry.setContent(cntry);
