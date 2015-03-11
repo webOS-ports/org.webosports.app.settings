@@ -1,6 +1,9 @@
 enyo.kind({
 	name: "DateTime",
 	layoutKind: "FittableRowsLayout",
+	events: {
+		onBackbutton: ""
+	},
 	timeZones: null,
 	currentTimeZone: null,
 	palm: false,
@@ -266,6 +269,14 @@ enyo.kind({
 	},
 	showMainDateTimePanel: function(inSender, inEvent) {
 		this.$.DateTimePanels.setIndex(0);
+	},
+	handleBackGesture: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
+		if (this.$.DateTimePanels.getIndex() > 0) {
+			this.$.DateTimePanels.setIndex(0);
+		} else {
+			this.doBackbutton();
+		}
 	},
 	//Service Callbacks
 	handleGetPreferencesResponse: function(inSender, inResponse) {

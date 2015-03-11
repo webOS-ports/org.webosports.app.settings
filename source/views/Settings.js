@@ -164,20 +164,16 @@ enyo.kind({
 
 	handleBack: function(inSender, inEvent){
 		this.log("sender:", inSender, ", event:", inEvent);
-
-		if ((this.currentPanel !== "AboutPanel") &&
-			(this.currentPanel !== "WiFiPanel") &&
-			(this.currentPanel !== "CertificatesPanel")) {
+		if (this.currentPanel === "AboutPanel")
+			this.$.AboutPanel.handleBackGesture();
+		else if (this.currentPanel === "WiFiPanel" )
+			this.$.WiFiPanel.handleBackGesture();
+		else if (this.currentPanel === "CertificatesPanel")
+			this.$.CertificatesPanel.handleBackGesture();
+		else if (this.currentPanel === "DateTimePanel")
+			this.$.DateTimePanel.handleBackGesture();
+		else
 			this.setIndex(0);
-		}
-		else {
-			if (this.currentPanel === "AboutPanel")
-				this.$.AboutPanel.handleBackGesture();
-			else if (this.currentPanel === "WiFiPanel" )
-				this.$.WiFiPanel.handleBackGesture();
-			else if (this.currentPanel === "CertificatesPanel")
-				this.$.CertificatesPanel.handleBackGesture();
-		}
 	},
 	backButton: function(inSender, inEvent){
 		this.log("sender:", inSender, ", event:", inEvent);
