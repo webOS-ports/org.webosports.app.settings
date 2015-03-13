@@ -87,12 +87,13 @@ enyo.kind({
 								  classes: "tz-group-item",
 								  ontap: "listItemTapped", components: [
 									  {tag: "div", components: [
-									  {name: "TZCountry", style: "float: left;", allowHtml: true, content: "Country"},
+									  {name: "TZCountry", style: "float: left; font-weight: bold;",
+									   allowHtml: true, content: "Country"},
 									  {style: "float: right;",
 									   name: "TZOffset", content: "GMT+10:00"}]},
 									  {tag: "br"},
-									  {tag: "div", components: [
-									  {name: "TZCity", style: "float: left; font-weight: bold;",
+									  {tag: "div", style: "padding-top: 1px;", components: [
+									  {name: "TZCity", style: "float: left;",
 									   allowHtml: true, content: "City"},
 									  {style: "float: right; font-size: smaller; padding-top: 2px;",
 									   allowHtml: true,
@@ -216,15 +217,14 @@ enyo.kind({
 		var cty = this.timeZones[inEvent.index].City;
 		var dscrptn = this.timeZones[inEvent.index].Description;
 		// Want offset in hours and minutes
-		// FirstUse also says GMT rather than UTC
 		var hrs = offset / 60;
 		var ihrs = parseInt(hrs, 10);
 		var mnts = Math.abs(offset) - Math.abs(ihrs) * 60;
 		if (hrs !== 0) {
-			offset = "GMT" + (ihrs >= 0 ? "+" : "") +
+			offset = "UTC" + (ihrs >= 0 ? "+" : "") +
 				ihrs + ":" + (mnts < 10 ? "0" : "") + mnts;
 		} else {
-			offset = "GMT";
+			offset = "UTC";
 		}
 		// Manage troublesome cases
 		if (!cty || cty.length === 0) {
