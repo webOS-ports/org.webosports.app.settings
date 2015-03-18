@@ -4,7 +4,8 @@ enyo.kind({
 	events: {
 		onBackbutton: ""
 	},
-	timeZones: null,
+	timeZones: null, // Possibly filtered by city name search term
+	referenceTimeZones: null, // As returned from the Service
 	currentTimeZone: null,
 	palm: false,
 	components:[
@@ -30,12 +31,10 @@ enyo.kind({
 				   kind: "onyx.Input",
 				   placeholder: $L("Search for a city"),
 				   selectOnFocus: false, //False initially to prevent focus-stealing
-				   oninput: "inputChanged",
-				   onblur: "closeSearch"},
+				   oninput: "citySearchTermChanged"},
 				  {kind: "Image",
 				   src: "$lib/webos-lib/assets/search-input-search.png",
-				   style: "width: 24px; height: 24px;",
-				   onmousedown: "openSearch"}
+				   style: "width: 24px; height: 24px;"}
 			  ]}
 		 ]},
 		{ name: "DateTimePanels", kind: "Panels",
@@ -229,6 +228,21 @@ enyo.kind({
 			this.log(timeObj);
 		}
 	},
+	citySearchTermChanged: function(inSender, inEvent) {
+		var searchTerm = this.$.SearchInput.getValue();
+		if (searchTerm === '') {
+			this.timeZones = this.referenceTimeZones;
+		} else {
+			this.timeZones = [];
+			for (var i = 0; i < this.referenceTimeZones.length; i += 1) {
+				if (this.referenceTimeZones[i].City.indexOf(searchTerm) === 0) {
+					this.timeZones.push(this.referenceTimeZones[i]);
+				}
+			}
+		}
+		this.$.TimeZonesList.setCount(this.timeZones.length);
+		this.$.TimeZonesList.render();
+	},
 	listItemTapped: function(inSender, inEvent) {
 		var newTimeZone = this.timeZones[inEvent.index];
 		if (this.palm) {
@@ -328,7 +342,8 @@ enyo.kind({
 	},
 	handleGetPreferenceValuesResponse: function(inSender, inResponse) {
 		if (inResponse["timeZone"] !== undefined) {
-			this.timeZones = inResponse["timeZone"];
+			// Safe to assume there is no search term at this stage (probably)
+			this.timeZones = this.referenceTimeZones = inResponse["timeZone"];
 			this.$.TimeZonesList.setCount(this.timeZones.length);
 		}
 	}
