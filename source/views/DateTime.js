@@ -23,7 +23,7 @@ enyo.kind({
 			 // Inspired by the webos-lib PortsSearch kind
 			 {name: "SearchDecorator",
 			  kind: "onyx.InputDecorator",
-			  style: "position: absolute; top: 0px; right: 8px; padding: 2px 4px 3px 3px;",
+			  style: "position: absolute; top: 10px; right: 8px; padding: 2px 4px 3px 3px;",
 			  showing: false,
 			  components:[
 				  {name: "SearchInput",
@@ -172,7 +172,7 @@ enyo.kind({
 	reflow: function(inSender) {
 		this.inherited(arguments);
 		// Magic numbers based on webos-lib PortsSearch kind
-		this.$.SearchInput.applyStyle("width", this.hasNode().offsetWidth - 152 + "px");
+		this.$.SearchInput.applyStyle("width", this.hasNode().offsetWidth - 182 + "px");
 		this.$.SearchDecorator.applyStyle("width", this.$.SearchInput.hasNode().offsetWidth + 32 + "px");
 		if(enyo.Panels.isScreenNarrow()) {
 			this.$.Grabber.applyStyle("visibility", "hidden");
@@ -229,13 +229,13 @@ enyo.kind({
 		}
 	},
 	citySearchTermChanged: function(inSender, inEvent) {
-		var searchTerm = this.$.SearchInput.getValue();
+		var searchTerm = this.$.SearchInput.getValue().toLowerCase();
 		if (searchTerm === '') {
 			this.timeZones = this.referenceTimeZones;
 		} else {
 			this.timeZones = [];
 			for (var i = 0; i < this.referenceTimeZones.length; i += 1) {
-				if (this.referenceTimeZones[i].City.indexOf(searchTerm) === 0) {
+				if (this.referenceTimeZones[i].City.toLowerCase().indexOf(searchTerm) >= 0) {
 					this.timeZones.push(this.referenceTimeZones[i]);
 				}
 			}
