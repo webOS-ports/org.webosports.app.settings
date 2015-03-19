@@ -1,6 +1,9 @@
 enyo.kind({
 	name: "DateTime",
 	layoutKind: "FittableRowsLayout",
+	events: {
+		onBackbutton: ""
+	},
 	timeZones: null,
 	currentTimeZone: null,
 	palm: false,
@@ -51,7 +54,7 @@ enyo.kind({
 					]}
 				]},
 				{kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout",
-				 name: "mdts2", style: "padding: 10px 10% 10px 10%;", components: [
+				 name: "mdts2", style: "padding: 10px 10% 8px 10%;", components: [
 					{kind: "onyx.GroupboxHeader", content: "Time Zone"},
 					{classes: "group-item", name: "TimeZoneItem", kind: "onyx.Item", content: "unknown",
 					 tapHighlight: true, ontap: "showTimeZonePicker"}
@@ -65,7 +68,7 @@ enyo.kind({
 					  name: "TimeZonePicker",
 					  kind: "onyx.Groupbox",
 					  layoutKind: "FittableRowsLayout",
-					  style: "padding: 35px 10% 10px 10%;",
+					  style: "padding: 35px 10% 8px 10%;",
 					  fit: true,
 					  components: [
 						  {
@@ -81,12 +84,21 @@ enyo.kind({
 							  onSetupItem: "setupTimeZoneRow",
 							  components: [{
 								  name: "timeZoneListItem",
-								  classes: "group-item",
+								  classes: "tz-group-item",
 								  ontap: "listItemTapped", components: [
-									  {name: "TZCountry", content: "Country"},
+									  {tag: "div", components: [
+									  {name: "TZCountry", style: "float: left; font-weight: bold;",
+									   allowHtml: true, content: "Country"},
 									  {style: "float: right;",
-									   name: "TZDescription", content: "Description"},
-									  {name: "TZCity", content: "City"},
+									   name: "TZOffset", content: "GMT+10:00"}]},
+									  {tag: "br"},
+									  {tag: "div", style: "padding-top: 1px;", components: [
+									  {name: "TZCity", style: "float: left;",
+									   allowHtml: true, content: "City"},
+									  {style: "float: right; font-size: smaller; padding-top: 2px;",
+									   allowHtml: true,
+									   name: "TZDescription", content: "Description"}]},
+									  {tag: "br"}
 								  ]
 							  }]
 						  }
@@ -138,8 +150,8 @@ enyo.kind({
 		if(enyo.Panels.isScreenNarrow()) {
 			this.$.Grabber.applyStyle("visibility", "hidden");
 			this.$.mdts1.setStyle("padding: 35px 5% 0 5%;");
-			this.$.mdts2.setStyle("padding: 10px 5% 10px 5%;");
-			this.$.TimeZonePicker.setStyle("padding: 35px 5% 10px 5%;");
+			this.$.mdts2.setStyle("padding: 10px 5% 8px 5%;");
+			this.$.TimeZonePicker.setStyle("padding: 35px 5% 8px 5%;");
 		}
 		else {
 			this.$.Grabber.applyStyle("visibility", "visible");
@@ -201,8 +213,19 @@ enyo.kind({
 	},
 	setupTimeZoneRow: function (inSender, inEvent) {
 		var cntry = this.timeZones[inEvent.index].Country;
+		var offset = this.timeZones[inEvent.index].offsetFromUTC;
 		var cty = this.timeZones[inEvent.index].City;
 		var dscrptn = this.timeZones[inEvent.index].Description;
+		// Want offset in hours and minutes
+		var hrs = offset / 60;
+		var ihrs = parseInt(hrs, 10);
+		var mnts = Math.abs(offset) - Math.abs(ihrs) * 60;
+		if (hrs !== 0) {
+			offset = "UTC" + (ihrs >= 0 ? "+" : "") +
+				ihrs + ":" + (mnts < 10 ? "0" : "") + mnts;
+		} else {
+			offset = "UTC";
+		}
 		// Manage troublesome cases
 		if (!cty || cty.length === 0) {
 			cty = cntry; // Just for something to display
@@ -225,23 +248,18 @@ enyo.kind({
 				cty = "IN\/" + cty.slice(instr.length);
 			}
 			// Ref. http://www.timeanddate.com/time/zones/
-			if (dscrptn === "Pacific Standard Time (North America)") {
-				dscrptn = "NAPST";
-			} else if (dscrptn === "Eastern Standard Time (Australia)") {
-				dscrptn = "AEST";
-			} else if (dscrptn === "Fernando de Noronha Time") {
+			if (dscrptn === "Fernando de Noronha Time") {
 				dscrptn = "FNT";
 			} else if (dscrptn === "Saint Pierre and Miquelon Standard Time") {
-				dscrptn = "PMST";
+				dscrptn = "Pierre &amp; Miquelon Standard Time";
 			}
-			if (cntry.length >= 40) {
-				cntry = cntry.slice(0,38) + "..";
-			}
-			if (cty.length >= 18) {
-				cty = cty.slice(0,16) + "..";
+			// Arbitrary hack. Looks OK on a Nexus 4.
+			if (cntry.length >= 31) {
+				cntry = cntry.slice(0,28) + "&hellip;";
 			}
 		}
 		this.$.TZCountry.setContent(cntry);
+		this.$.TZOffset.setContent(offset);
 		this.$.TZCity.setContent(cty);
 		this.$.TZDescription.setContent(dscrptn);
 		return true;
@@ -251,6 +269,14 @@ enyo.kind({
 	},
 	showMainDateTimePanel: function(inSender, inEvent) {
 		this.$.DateTimePanels.setIndex(0);
+	},
+	handleBackGesture: function(inSender, inEvent) {
+		this.log("sender:", inSender, ", event:", inEvent);
+		if (this.$.DateTimePanels.getIndex() > 0) {
+			this.$.DateTimePanels.setIndex(0);
+		} else {
+			this.doBackbutton();
+		}
 	},
 	//Service Callbacks
 	handleGetPreferencesResponse: function(inSender, inResponse) {
