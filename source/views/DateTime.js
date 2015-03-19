@@ -263,7 +263,7 @@ enyo.kind({
 		var ihrs = parseInt(hrs, 10);
 		var mnts = Math.abs(offset) - Math.abs(ihrs) * 60;
 		if (hrs !== 0) {
-			offset = "UTC" + (ihrs >= 0 ? "+" : "") +
+			offset = "UTC " + (ihrs >= 0 ? "+" : "") +
 				ihrs + ":" + (mnts < 10 ? "0" : "") + mnts;
 		} else {
 			offset = "UTC";
