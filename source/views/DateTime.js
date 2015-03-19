@@ -4,15 +4,39 @@ enyo.kind({
 	events: {
 		onBackbutton: ""
 	},
-	timeZones: null,
+	timeZones: null, // Possibly filtered by city name search term
+	referenceTimeZones: null, // As returned from the Service
 	currentTimeZone: null,
 	palm: false,
 	components:[
 		{kind: "onyx.Toolbar",
-		style: "line-height: 28px;",
-		components:[
-			{content: "Date & Time"},
-		]},
+		 style: "line-height: 28px;",
+		 onSearch: "searchFieldChanged",
+		 components:[
+			 {name: "TextDiv",
+			  tag: "div",
+			  style: "height: 100%; margin: 0;",
+			  components: [
+				  {name: "Title",
+				   content: "Date & Time"}
+			  ]},
+			 // Inspired by the webos-lib PortsSearch kind
+			 {name: "SearchDecorator",
+			  kind: "onyx.InputDecorator",
+			  style: "position: absolute; top: 10px; right: 8px; padding: 2px 4px 3px 3px;",
+			  showing: false,
+			  components:[
+				  {name: "SearchInput",
+				   id: "searchBox",
+				   kind: "onyx.Input",
+				   placeholder: $L("Search for a city"),
+				   selectOnFocus: false, //False initially to prevent focus-stealing
+				   oninput: "citySearchTermChanged"},
+				  {kind: "Image",
+				   src: "$lib/webos-lib/assets/search-input-search.png",
+				   style: "width: 24px; height: 24px;"}
+			  ]}
+		 ]},
 		{ name: "DateTimePanels", kind: "Panels",
 		  arrangerKind: "HFlipArranger",
 		  fit: true, draggable: false, components: [
@@ -147,6 +171,9 @@ enyo.kind({
 	},
 	reflow: function(inSender) {
 		this.inherited(arguments);
+		// Magic numbers based on webos-lib PortsSearch kind
+		this.$.SearchInput.applyStyle("width", this.hasNode().offsetWidth - 182 + "px");
+		this.$.SearchDecorator.applyStyle("width", this.$.SearchInput.hasNode().offsetWidth + 32 + "px");
 		if(enyo.Panels.isScreenNarrow()) {
 			this.$.Grabber.applyStyle("visibility", "hidden");
 			this.$.mdts1.setStyle("padding: 35px 5% 0 5%;");
@@ -200,6 +227,21 @@ enyo.kind({
 		else {
 			this.log(timeObj);
 		}
+	},
+	citySearchTermChanged: function(inSender, inEvent) {
+		var searchTerm = this.$.SearchInput.getValue().toLowerCase();
+		if (searchTerm === '') {
+			this.timeZones = this.referenceTimeZones;
+		} else {
+			this.timeZones = [];
+			for (var i = 0; i < this.referenceTimeZones.length; i += 1) {
+				if (this.referenceTimeZones[i].City.toLowerCase().indexOf(searchTerm) >= 0) {
+					this.timeZones.push(this.referenceTimeZones[i]);
+				}
+			}
+		}
+		this.$.TimeZonesList.setCount(this.timeZones.length);
+		this.$.TimeZonesList.render();
 	},
 	listItemTapped: function(inSender, inEvent) {
 		var newTimeZone = this.timeZones[inEvent.index];
@@ -265,14 +307,18 @@ enyo.kind({
 		return true;
 	},
 	showTimeZonePicker: function(inSender, inEvent) {
+		this.$.SearchDecorator.setShowing(true);
 		this.$.DateTimePanels.setIndex(1);
+		this.render(); // Otherwise the search layout is bad
 	},
 	showMainDateTimePanel: function(inSender, inEvent) {
+		this.$.SearchDecorator.setShowing(false);
 		this.$.DateTimePanels.setIndex(0);
 	},
 	handleBackGesture: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
 		if (this.$.DateTimePanels.getIndex() > 0) {
+			this.$.SearchDecorator.setShowing(false);
 			this.$.DateTimePanels.setIndex(0);
 		} else {
 			this.doBackbutton();
@@ -296,7 +342,8 @@ enyo.kind({
 	},
 	handleGetPreferenceValuesResponse: function(inSender, inResponse) {
 		if (inResponse["timeZone"] !== undefined) {
-			this.timeZones = inResponse["timeZone"];
+			// Safe to assume there is no search term at this stage (probably)
+			this.timeZones = this.referenceTimeZones = inResponse["timeZone"];
 			this.$.TimeZonesList.setCount(this.timeZones.length);
 		}
 	}
