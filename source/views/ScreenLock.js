@@ -36,8 +36,8 @@ enyo.kind({
 						]},
 					]},
 					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
-						{content: "Turn off after",	style: "padding-top: 10px;"},
-						{kind: "onyx.PickerDecorator", fit: true, style: " padding-top: 12px; float: right; min-width: 125px;", components: [
+						{content: "Turn off after"},
+						{kind: "onyx.PickerDecorator", fit: true, style: "float: right; min-width: 125px;", components: [
 							{},
 							{name: "TimeoutPicker", kind: "onyx.Picker", onChange: "timeoutChanged", components: [
 								{content: "30 Seconds", active: true},
@@ -74,18 +74,39 @@ enyo.kind({
 					]},
 				]},
 				*/
+				{kind: "onyx.Groupbox", name: "lockModeGroup", components: [
+					{kind: "onyx.GroupboxHeader", content: "Secure Unlock"},
+					{kind: "enyo.FittableColumns", classes: "group-item",
+					 components:[
+						{kind: "onyx.PickerDecorator", fit: true,
+						 components: [
+							 {},
+							 {name: "LockModePicker", kind: "onyx.Picker",
+							  onChange: "lockModePicked", components: [
+								  {content: "Off", active: true},
+								  {content: "Simple PIN"},
+								  {content: "Password"}
+							  ]}
+						 ]},
+						{name: "padlock",
+						 kind: "Image",
+						 src: "assets/secure-icon.png",
+						 style: "height: 33px; opacity: 0;"
+						}
+					]}
+				]},
 				{kind: "onyx.Groupbox", components: [
 					{kind: "onyx.GroupboxHeader", content: "Notifications"},
 					{kind: "enyo.FittableColumns", classes: "group-item", components:[
-						{kind: "Control",  fit: true, content: "Show When Locked", style: "padding-top: 10px;"},
-						{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
+						{kind: "Control", fit: true, content: "Show When Locked"},
+						{kind: "onyx.TooltipDecorator", fit: true, components: [
 							{name: "AlertsToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "lockAlertsChanged"},
 							{kind: "onyx.Tooltip", content: "Blinks the LED when new notifications arrive."}
 						]},
 					]},
 					{kind: "enyo.FittableColumns", classes: "group-item",components:[
-						{kind: "Control", fit: true, content: "Blink Notifications", style:  "padding-top: 10px;" },
-						{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
+						{kind: "Control", fit: true, content: "Blink Notifications"},
+						{kind: "onyx.TooltipDecorator", fit: true, components: [
 							{name: "BlinkToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "blinkNotificationsChanged"},
 							{kind: "onyx.Tooltip", content: "Blinks the LED when new notifications arrive."}
 						]},
@@ -177,6 +198,30 @@ enyo.kind({
 	},
 	openWallpaperPicker: function() {
 		this.$.ImagePicker.pickFile();
+	},
+	lockModePicked: function(inSender, inEvent) {
+		switch(inEvent.selected.content) {
+		case "Off":
+			if (this.$.padlock) {
+				this.$.padlock.setStyle("height: 33px; opacity: 0;");
+			}
+			break;
+		case "Simple PIN":
+			if (this.$.padlock) {
+				this.$.padlock.setStyle("height: 33px; opacity: 1;");
+			}
+			break;
+		case "Password":
+			if (this.$.padlock) {
+				this.$.padlock.setStyle("height: 33px; opacity: 1;");
+			}
+			break;
+		}
+		
+		if(this.palm) {
+		}
+		else {
+		}
 	},
 	lockAlertsChanged: function(inSender, inEvent) {
 		if(this.palm) {

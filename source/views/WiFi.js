@@ -40,7 +40,7 @@ enyo.kind({
 					{
 						name: "Padlock",
 						kind: "Image",
-						src: "assets/wifi/secure-icon.png",
+						src: "assets/secure-icon.png",
 						showing: false,
 						classes: "wifi-list-icon"
 					},
