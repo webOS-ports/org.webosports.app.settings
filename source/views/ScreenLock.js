@@ -40,13 +40,12 @@ enyo.kind({
 						{kind: "onyx.PickerDecorator", fit: true, style: "float: right; min-width: 125px;", components: [
 							{},
 							{name: "TimeoutPicker", kind: "onyx.Picker", onChange: "timeoutChanged", components: [
-								{content: "30 Seconds", active: true},
-								{content: "1 Minute"},
-								{content: "2 Minutes"},
-								{content: "3 Minutes"}
+								{content: "30 seconds", active: true},
+								{content: "1 minute"},
+								{content: "2 minutes"},
+								{content: "3 minutes"}
 							]}
 						]}
-					
 					]},
 				]},
 				{kind: "onyx.Groupbox", components: [
@@ -76,23 +75,43 @@ enyo.kind({
 				*/
 				{kind: "onyx.Groupbox", name: "lockModeGroup", components: [
 					{kind: "onyx.GroupboxHeader", content: "Secure Unlock"},
-					{kind: "enyo.FittableColumns", classes: "group-item",
-					 components:[
-						{kind: "onyx.PickerDecorator", fit: true,
-						 components: [
-							 {},
-							 {name: "LockModePicker", kind: "onyx.Picker",
-							  onChange: "lockModePicked", components: [
-								  {content: "Off", active: true},
-								  {content: "Simple PIN"},
-								  {content: "Password"}
-							  ]}
+					{kind: "enyo.FittableRows", components:[
+						{kind: "enyo.FittableColumns", classes: "group-item",
+						 components:[
+							 {kind: "onyx.PickerDecorator", fit: true,
+							  components: [
+								  {},
+								  {name: "LockModePicker", kind: "onyx.Picker",
+								   onChange: "lockModePicked", components: [
+									   {content: "Off", active: true},
+									   {content: "Simple PIN"},
+									   {content: "Password"}
+								   ]}
+							  ]},
+							 {name: "padlock", kind: "Image",
+							  src: "assets/secure-icon.png",
+							  style: "height: 33px; opacity: 0;"
+							 }
 						 ]},
-						{name: "padlock",
-						 kind: "Image",
-						 src: "assets/secure-icon.png",
-						 style: "height: 33px; opacity: 0;"
-						}
+						{name: "LockCodeUpdateControl", content: "", classes: "group-item",
+						 ontap: "updateLockCode", showing: false},
+						{name: "LockAfterPickerRow", kind: "enyo.FittableColumns", classes: "group-item",
+						 showing: false, components: [
+							{content: "Lock after"},
+							{kind: "onyx.PickerDecorator", fit: true, style: "float: right; min-width: 125px;", components: [
+								{},
+								{name: "LockAfterPicker", kind: "onyx.Picker", onChange: "timeoutChanged", components: [
+									{content: "Screen turns off", active: true},
+									{content: "30 seconds"},
+									{content: "1 minute"},
+									{content: "2 minutes"},
+									{content: "3 minutes"},
+									{content: "5 minutes"},
+									{content: "10 minutes"},
+									{content: "30 minutes"}
+								]}
+							]}
+						]}
 					]}
 				]},
 				{kind: "onyx.Groupbox", components: [
@@ -175,16 +194,16 @@ enyo.kind({
 		var t;
 		
 		switch(inEvent.selected.content) {
-			case "30 Seconds":
+			case "30 seconds":
 				t = 30;
 				break;
-			case "1 Minute":
+			case "1 minute":
 				t = 60;
 				break;
-			case "2 Minutes":
+			case "2 minutes":
 				t = 120;
 				break;
-			case "3 Minutes":
+			case "3 minutes":
 				t = 180;
 				break;
 		}
@@ -204,16 +223,24 @@ enyo.kind({
 		case "Off":
 			if (this.$.padlock) {
 				this.$.padlock.setStyle("height: 33px; opacity: 0;");
+				this.$.LockCodeUpdateControl.setShowing(false);
+				this.$.LockAfterPickerRow.setShowing(false);
 			}
 			break;
 		case "Simple PIN":
 			if (this.$.padlock) {
 				this.$.padlock.setStyle("height: 33px; opacity: 1;");
+				this.$.LockCodeUpdateControl.setContent("Change PIN");
+				this.$.LockCodeUpdateControl.setShowing(true);
+				this.$.LockAfterPickerRow.setShowing(true);
 			}
 			break;
 		case "Password":
 			if (this.$.padlock) {
 				this.$.padlock.setStyle("height: 33px; opacity: 1;");
+				this.$.LockCodeUpdateControl.setContent("Change Password");
+				this.$.LockCodeUpdateControl.setShowing(true);
+				this.$.LockAfterPickerRow.setShowing(true);
 			}
 			break;
 		}
@@ -222,6 +249,9 @@ enyo.kind({
 		}
 		else {
 		}
+	},
+	updateLockCode: function(inSender, inEvent) {
+		// Update PIN or password as appropriate
 	},
 	lockAlertsChanged: function(inSender, inEvent) {
 		if(this.palm) {
