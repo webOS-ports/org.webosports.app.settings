@@ -21,6 +21,19 @@ enyo.kind({
 				{content: "Screen & Lock"},
 		]},
 		{name: "ImagePicker", kind: "FilePicker", fileType:["image"], onPickFile: "selectedImageFile", autoDismiss: true},
+		{name: "LockPasswordSetter", kind: "enyo.ModalDialog",
+		 components: [
+			 {content: "Set Password"},
+			 {kind: "onyx.Input", type: "password",
+			  placeholder: $L("Enter password")},
+			 {tag: "br"},
+			 {kind: "onyx.Input", type: "password",
+			  placeholder: $L("Confirm password")},
+			 {tag: "br"},
+			 {kind: "onyx.Button", content: "Done"},
+			 {tag: "br"},
+			 {kind: "onyx.Button", content: "Cancel"}
+		 ]},
 		{kind: "Scroller",
 		touch: true,
 		horizontal: "hidden",
@@ -252,6 +265,7 @@ enyo.kind({
 	},
 	updateLockCode: function(inSender, inEvent) {
 		// Update PIN or password as appropriate
+		this.$.LockPasswordSetter.openAtCenter();
 	},
 	lockAlertsChanged: function(inSender, inEvent) {
 		if(this.palm) {
