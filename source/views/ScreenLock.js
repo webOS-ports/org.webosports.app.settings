@@ -24,6 +24,7 @@ enyo.kind({
 		{name: "LockPasswordSetter", kind: "enyo.ModalDialog",
 		 components: [
 			 {content: "Set Password"},
+			 {name: "errorMessage", content: ""},
 			 {kind: "onyx.Input", type: "password",
 			  placeholder: $L("Enter password")},
 			 {tag: "br"},
@@ -33,6 +34,26 @@ enyo.kind({
 			 {kind: "onyx.Button", content: "Done"},
 			 {tag: "br"},
 			 {kind: "onyx.Button", content: "Cancel"}
+		 ]},
+		{name: "LockPasswordUnlocker", kind: "enyo.ModalDialog",
+		 components: [
+			 {content: "Enter Password"},
+			 {name: "errorMessage", content: ""},
+			 {kind: "onyx.Input", type: "password",
+			  placeholder: $L("Enter password")},
+			 {tag: "br"},
+			 {kind: "onyx.Button", content: "Done"},
+			 {tag: "br"},
+			 {kind: "onyx.Button", content: "Cancel"}
+		 ]},
+		{name: "PINPad", kind: "enyo.ModalDialog",
+		 components: [
+			 {name: "instruction", content: "Enter PIN"},
+			 {name: "errorMessage", content: ""},
+			 {name: "digits", content: ""},
+			 {kind: "PINNumberPad"},
+			 {kind: "onyx.Button", content: "Cancel"},
+			 {kind: "onyx.Button", content: "Done"}
 		 ]},
 		{kind: "Scroller",
 		touch: true,
@@ -265,7 +286,8 @@ enyo.kind({
 	},
 	updateLockCode: function(inSender, inEvent) {
 		// Update PIN or password as appropriate
-		this.$.LockPasswordSetter.openAtCenter();
+//		this.$.LockPasswordSetter.openAtCenter();
+		this.$.PINPad.openAtCenter();
 	},
 	lockAlertsChanged: function(inSender, inEvent) {
 		if(this.palm) {
