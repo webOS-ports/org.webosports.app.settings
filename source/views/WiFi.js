@@ -686,7 +686,7 @@ enyo.kind({
     setupSearchRow: function (inSender, inEvent) {
     	var ssid = "";
     	if(enyo.Panels.isScreenNarrow()){
-    		if(this.foundNetworks[inEvent.index].name.length >= 18){					// if the SSID is longer shortten it for the narrow page only
+    		if(this.foundNetworks[inEvent.index].name.length >= 18){					// if the SSID is longer shorten it for the narrow page only
     			ssid = this.foundNetworks[inEvent.index].name.slice(0,18) + "..";
     		}else{
     			ssid = this.foundNetworks[inEvent.index].name;
