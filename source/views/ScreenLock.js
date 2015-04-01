@@ -24,7 +24,7 @@ enyo.kind({
 		{name: "LockPasswordSetter", kind: "enyo.ModalDialog",
 		 components: [
 			 {content: "Set Password"},
-			 {name: "errorMessage", content: ""},
+			 {name: "setPwdErrMsg", content: ""},
 			 {kind: "onyx.Input", type: "password",
 			  placeholder: $L("Enter password")},
 			 {tag: "br"},
@@ -38,7 +38,7 @@ enyo.kind({
 		{name: "LockPasswordUnlocker", kind: "enyo.ModalDialog",
 		 components: [
 			 {content: "Enter Password"},
-			 {name: "errorMessage", content: ""},
+			 {name: "enterPwdErrMsg", content: ""},
 			 {kind: "onyx.Input", type: "password",
 			  placeholder: $L("Enter password")},
 			 {tag: "br"},
@@ -49,7 +49,7 @@ enyo.kind({
 		{name: "PINPad", kind: "enyo.ModalDialog",
 		 components: [
 			 {name: "instruction", content: "Enter PIN"},
-			 {name: "errorMessage", content: ""},
+			 {name: "pinPadErrMsg", content: ""},
 			 {name: "digits", content: ""},
 			 {kind: "PINNumberPad"},
 			 {kind: "onyx.Button", content: "Cancel"},
@@ -134,7 +134,7 @@ enyo.kind({
 							{content: "Lock after"},
 							{kind: "onyx.PickerDecorator", fit: true, style: "float: right; min-width: 125px;", components: [
 								{},
-								{name: "LockAfterPicker", kind: "onyx.Picker", onChange: "timeoutChanged", components: [
+								{name: "LockAfterPicker", kind: "onyx.Picker", onChange: "lockTimeoutChanged", components: [
 									{content: "Screen turns off", active: true},
 									{content: "30 seconds"},
 									{content: "1 minute"},
@@ -187,9 +187,11 @@ enyo.kind({
 		]},
 		{name: "GetDisplayProperty", kind: "DisplayService", method: "getProperty", onComplete: "handleGetPropertiesResponse"},
 		{name: "SetDisplayProperty", kind: "DisplayService", method: "setProperty" },
-		{name: "GetSystemPreferences", kind: "SystemService", method: "getPreferences", onComplete: "handleGetPropertiesResponse"},
+		{name: "GetSystemPreferences", kind: "SystemService", method: "getPreferences", onComplete: "handleGetPreferencesResponse"},
 		{name: "SetSystemPreferences", kind: "SystemService", method: "setPreferences"},
-		{name: "ImportWallpaper", kind: "enyo.LunaService", service: "luna://com.palm.systemservice/wallpaper", method: "importWallpaper", onComplete: "handleImportWallpaper"}
+		{name: "ImportWallpaper", kind: "enyo.LunaService", service: "luna://com.palm.systemservice/wallpaper", method: "importWallpaper", onComplete: "handleImportWallpaper"},
+		{name: "GetDeviceLockMode", kind: "enyo.LunaService", service: "luna://com.palm.systemmanager",
+		 method: "getDeviceLockMode", onComplete: "handleGetDeviceLockModeResponse"}
 	],
 	//Handlers
 	create: function(inSender, inEvent) {
@@ -201,7 +203,9 @@ enyo.kind({
 		}
 
 		this.$.GetDisplayProperty.send({properties: ["maximumBrightness", "timeout"]});
-		this.$.GetSystemPreferences.send({keys: ["showAlertsWhenLocked", "BlinkNotifications"]});
+		this.$.GetSystemPreferences.send({keys: ["showAlertsWhenLocked", "BlinkNotifications",
+		                                         "lockTimeout"]});
+		this.$.GetDeviceLockMode.send({});
 
 		this.palm = true;
 	},
@@ -284,6 +288,42 @@ enyo.kind({
 		else {
 		}
 	},
+	lockTimeoutChanged: function(inSender, inEvent) {
+		var t;
+		
+		switch(inEvent.selected.content) {
+			case "Screen turns off":
+				t = 0;
+				break;
+			case "30 seconds":
+				t = 30;
+				break;
+			case "1 minute":
+				t = 60;
+				break;
+			case "2 minutes":
+				t = 120;
+				break;
+			case "3 minutes":
+				t = 180;
+				break;
+			case "5 minutes":
+				t = 300;
+				break;
+			case "10 minutes":
+				t = 600;
+				break;
+			case "30 minutes":
+				t = 1800;
+				break;
+		}
+		
+		if(this.palm) {
+			this.$.SetSystemPreferences.send({lockTimeout:t});
+		} else {
+			this.log(t);
+		}
+	},
 	updateLockCode: function(inSender, inEvent) {
 		// Update PIN or password as appropriate
 //		this.$.LockPasswordSetter.openAtCenter();
@@ -348,16 +388,79 @@ enyo.kind({
 			this.$.AlertsToggle.setValue(inResponse.showAlertsWhenLocked);
 		if(inResponse.BlinkNotifications != undefined)
 			this.$.BlinkToggle.setValue(inResponse.BlinkNotifications);
+		if(inResponse.lockTimeout != undefined) {
+			switch(inResponse.lockTimeout) {
+			case 0:
+				this.$.LockAfterPicker.setSelected(
+					this.$.LockAfterPicker.getClientControls()[0]);
+				break;
+			case 30:
+				this.$.LockAfterPicker.setSelected(
+					this.$.LockAfterPicker.getClientControls()[1]);
+				break;
+			case 60:
+				this.$.LockAfterPicker.setSelected(
+					this.$.LockAfterPicker.getClientControls()[2]);
+				break;
+			case 120:
+				this.$.LockAfterPicker.setSelected(
+					this.$.LockAfterPicker.getClientControls()[3]);
+				break;
+			case 180:
+				this.$.LockAfterPicker.setSelected(
+					this.$.LockAfterPicker.getClientControls()[4]);
+				break;
+			case 300:
+				this.$.LockAfterPicker.setSelected(
+					this.$.LockAfterPicker.getClientControls()[5]);
+				break;
+			case 600:
+				this.$.LockAfterPicker.setSelected(
+					this.$.LockAfterPicker.getClientControls()[6]);
+				break;
+			case 1800:
+				this.$.LockAfterPicker.setSelected(
+					this.$.LockAfterPicker.getClientControls()[7]);
+				break;
+			default:
+				this.log("Unknown lock timeout: " + inResponse.lockTimeout + "s");
+				break;
+			}
+		} else {
+			this.log("Lock timeout is undefined");
+		}
+	},
+	handleGetDeviceLockModeResponse: function(inSender, inResponse) {
+		if (!inResponse.returnValue) {
+			this.log("Failed to get the device lock mode");
+		} else {
+			// Set the controls for the current lock mode
+			switch(inResponse.lockMode) {
+			case "none":
+				this.$.LockModePicker.setSelected(
+					this.$.LockModePicker.getClientControls()[0]);
+				break;
+			case "pin":
+				this.$.LockModePicker.setSelected(
+					this.$.LockModePicker.getClientControls()[1]);
+				break;
+			case "password":
+				this.$.LockModePicker.setSelected(
+					this.$.LockModePicker.getClientControls()[2]);
+				break;
+			default:
+				this.log("Unknown lockMode: " + inResponse.lockMode);
+				break;
+			}
+		}
 	},
 	pickWallpaper: function(inSender, inResponse) {
 		var wallpaperPath = "file:///usr/share/wallpapers/";
 		this.$.ImportWallpaper.send({"target": wallpaperPath + inSender.filename});
-
 	},
 	handleImportWallpaper: function(inSender, inResponse) {
 		if(inResponse.wallpaper) {
 			this.$.SetSystemPreferences.send({wallpaper: inResponse.wallpaper});
 		}
-	},
-
+	}
 });
