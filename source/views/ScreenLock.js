@@ -14,6 +14,12 @@ enyo.kind({
 	name: "ScreenLock",
 	layoutKind: "FittableRowsLayout",
 	palm: false,
+	// Suppress service calls when setting control states
+	// to match service call responses.
+	suppressSetDisplayTimeout: false,
+	// onyx.Picker onChange always gets called twice
+	// but we only want to act once.
+	actOnChange_displayTimeoutPicker: false,
 	components:[
 		{kind: "onyx.Toolbar",
 		style: "line-height: 36px;",
@@ -73,7 +79,7 @@ enyo.kind({
 						{content: "Turn off after"},
 						{kind: "onyx.PickerDecorator", fit: true, style: "float: right; min-width: 125px;", components: [
 							{},
-							{name: "TimeoutPicker", kind: "onyx.Picker", onChange: "timeoutChanged", components: [
+							{name: "TimeoutPicker", kind: "onyx.Picker", onChange: "displayTimeoutChanged", components: [
 								{content: "30 seconds", active: true},
 								{content: "1 minute"},
 								{content: "2 minutes"},
@@ -214,24 +220,27 @@ enyo.kind({
 		if(enyo.Panels.isScreenNarrow()) {
 			this.$.Grabber.applyStyle("visibility", "hidden");
 			this.$.div.setStyle("padding: 35px 5% 35px 5%;");
-		}
-		else {
+		} else {
 			this.$.Grabber.applyStyle("visibility", "visible");
 		}
 	},
  	//Action Handlers
 	brightnessChanged: function(inSender, inEvent) {
+		var v = parseInt(this.$.BrightnessSlider.value, 10);
 		if(this.palm) {
-			this.$.SetDisplayProperty.send({maximumBrightness: parseInt(this.$.BrightnessSlider.value, 10)});
-		}
-		else {
-			this.log(parseInt(this.$.BrightnessSlider.value, 10));
+			this.$.SetDisplayProperty.send({maximumBrightness: v});
+		} else {
+			this.log(v);
 		}
 	},
-	timeoutChanged: function(inSender, inEvent) {
-		var t;
-		
-		switch(inEvent.selected.content) {
+	displayTimeoutChanged: function(inSender, inEvent) {
+		// <bad_smell>
+		// This is always called twice.
+		// Only act on the second call.
+		// </bad_smell>
+		if (this.actOnChange_displayTimeoutPicker) {
+			var t;
+			switch(inEvent.selected.content) {
 			case "30 seconds":
 				t = 30;
 				break;
@@ -244,53 +253,52 @@ enyo.kind({
 			case "3 minutes":
 				t = 180;
 				break;
-		}
+			}
 		
-		if(this.palm) {
-			this.$.SetDisplayProperty.send({timeout:t});
+			if(this.palm && !this.suppressSetDisplayTimeout) {
+				this.$.SetDisplayProperty.send({timeout:t});
+				this.log("Set " + t + "s sent");
+			} else {
+				this.log("Set " + t + "s suppressed");
+			}
+			this.suppressSetDisplayTimeout = false;
 		}
-		else {
-			this.log(t);
-		}
+		this.actOnChange_displayTimeoutPicker = !this.actOnChange_displayTimeoutPicker;
 	},
 	openWallpaperPicker: function() {
 		this.$.ImagePicker.pickFile();
 	},
 	lockModePicked: function(inSender, inEvent) {
-		switch(inEvent.selected.content) {
-		case "Off":
-			if (this.$.padlock) {
+		// Needed because this gets called (once?)
+		// before the padlock is defined
+		if (this.$.padlock) {
+			switch(inEvent.selected.content) {
+			case "Off":
 				this.$.padlock.setStyle("height: 33px; opacity: 0;");
 				this.$.LockCodeUpdateControl.setShowing(false);
 				this.$.LockAfterPickerRow.setShowing(false);
-			}
-			break;
-		case "Simple PIN":
-			if (this.$.padlock) {
+				break;
+			case "Simple PIN":
 				this.$.padlock.setStyle("height: 33px; opacity: 1;");
 				this.$.LockCodeUpdateControl.setContent("Change PIN");
 				this.$.LockCodeUpdateControl.setShowing(true);
 				this.$.LockAfterPickerRow.setShowing(true);
-			}
-			break;
-		case "Password":
-			if (this.$.padlock) {
+				break;
+			case "Password":
 				this.$.padlock.setStyle("height: 33px; opacity: 1;");
 				this.$.LockCodeUpdateControl.setContent("Change Password");
 				this.$.LockCodeUpdateControl.setShowing(true);
 				this.$.LockAfterPickerRow.setShowing(true);
+				break;
 			}
-			break;
-		}
 		
-		if(this.palm) {
-		}
-		else {
+			if(this.palm) {
+			} else {
+			}
 		}
 	},
 	lockTimeoutChanged: function(inSender, inEvent) {
 		var t;
-		
 		switch(inEvent.selected.content) {
 			case "Screen turns off":
 				t = 0;
@@ -345,12 +353,12 @@ enyo.kind({
 			this.log(inSender.value);
 		}
 	},
-	selectedImageFile: function(inSender, response) {
-		if(!response || response.length === 0)
+	selectedImageFile: function(inSender, inEvent) {
+		if(!inEvent || inEvent.length === 0)
 			return;
-		var params = {"target": encodeURIComponent(response[0].fullPath)};
+		var params = {"target": encodeURIComponent(inEvent[0].fullPath)};
 		
-		/*var cropInfoWindow = response[0].cropInfo;
+		/*var cropInfoWindow = inEvent[0].cropInfo;
 		
 		if(cropInfoWindow) {
 			if(cropInfoWindow.scale)
@@ -368,26 +376,44 @@ enyo.kind({
 
 	//Service Callbacks
 	handleGetPropertiesResponse: function(inSender, inResponse) {
-		this.log("Handling Get Properties Response", inResponse);
-		if(inResponse.maximumBrightness != undefined)
+		// Set our controls to match the values in the response.
+		// Set suppression flags to stop the onChange methods
+		// from setting the values again. "I know that already!"
+
+		if(inResponse.maximumBrightness != undefined) {
 			this.$.BrightnessSlider.setValue(inResponse.maximumBrightness);
+		}
 			
 		if(inResponse.timeout != undefined) {
-			if(inResponse.timeout == 30)
-				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[0]);
-			if(inResponse.timeout == 60)
-				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[1]);
-			if(inResponse.timeout == 120)
-				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[2]);
-			if(inResponse.timeout == 180)
-				this.$.TimeoutPicker.setSelected(this.$.TimeoutPicker.getClientControls()[3]);
+			// Only set the suppression flag
+			// if onChange will be triggered.
+			var oldSel = this.$.TimeoutPicker.getSelected();
+			var newIx;
+			if(inResponse.timeout == 30) {
+				newIx = 0;
+			} else if(inResponse.timeout == 60) {
+				newIx = 1;
+			} else if(inResponse.timeout == 120) {
+				newIx = 2;
+			} else if(inResponse.timeout == 180) {
+				newIx = 3;
+			}
+			if (typeof newIx !== "undefined") {
+				var newSel = this.$.TimeoutPicker.getClientControls()[newIx];
+				if (newSel !== oldSel) {
+					this.suppressSetDisplayTimeout = true;
+					this.$.TimeoutPicker.setSelected(newSel);
+				}
+			}
 		}
 	},
 	handleGetPreferencesResponse: function(inSender, inResponse) {
-		if(inResponse.showAlertsWhenLocked != undefined)
+		if(inResponse.showAlertsWhenLocked != undefined) {
 			this.$.AlertsToggle.setValue(inResponse.showAlertsWhenLocked);
-		if(inResponse.BlinkNotifications != undefined)
+		}
+		if(inResponse.BlinkNotifications != undefined) {
 			this.$.BlinkToggle.setValue(inResponse.BlinkNotifications);
+		}
 		if(inResponse.lockTimeout != undefined) {
 			switch(inResponse.lockTimeout) {
 			case 0:
@@ -434,7 +460,6 @@ enyo.kind({
 		if (!inResponse.returnValue) {
 			this.log("Failed to get the device lock mode");
 		} else {
-			// Set the controls for the current lock mode
 			switch(inResponse.lockMode) {
 			case "none":
 				this.$.LockModePicker.setSelected(
@@ -453,10 +478,6 @@ enyo.kind({
 				break;
 			}
 		}
-	},
-	pickWallpaper: function(inSender, inResponse) {
-		var wallpaperPath = "file:///usr/share/wallpapers/";
-		this.$.ImportWallpaper.send({"target": wallpaperPath + inSender.filename});
 	},
 	handleImportWallpaper: function(inSender, inResponse) {
 		if(inResponse.wallpaper) {
