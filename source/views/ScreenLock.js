@@ -17,9 +17,16 @@ enyo.kind({
 	// Suppress service calls when setting control states
 	// to match service call responses.
 	suppressSetDisplayTimeout: false,
+	suppressSetBrightness: false,
+	suppressSetShowAlertsWhenLocked: false,
+	suppressSetBlinkNotifications: false,
+	suppressSetLockTimeout: false,
+	suppressSetLockMode: false,
 	// onyx.Picker onChange always gets called twice
 	// but we only want to act once.
 	actOnChange_displayTimeoutPicker: false,
+	actOnChange_lockTimeoutPicker: false,
+	actOnChange_lockModePicker: false,
 	components:[
 		{kind: "onyx.Toolbar",
 		style: "line-height: 36px;",
@@ -227,19 +234,21 @@ enyo.kind({
  	//Action Handlers
 	brightnessChanged: function(inSender, inEvent) {
 		var v = parseInt(this.$.BrightnessSlider.value, 10);
-		if(this.palm) {
+		if(this.palm && !this.suppressSetBrightness) {
 			this.$.SetDisplayProperty.send({maximumBrightness: v});
+			this.log("Set brightness " + v + " sent");
 		} else {
-			this.log(v);
+			this.log("Set brightness " + v + " suppressed");
 		}
+		this.suppressSetBrightness = false;
 	},
 	displayTimeoutChanged: function(inSender, inEvent) {
 		// <bad_smell>
 		// This is always called twice.
 		// Only act on the second call.
 		// </bad_smell>
+		var t;
 		if (this.actOnChange_displayTimeoutPicker) {
-			var t;
 			switch(inEvent.selected.content) {
 			case "30 seconds":
 				t = 30;
@@ -272,34 +281,47 @@ enyo.kind({
 		// Needed because this gets called (once?)
 		// before the padlock is defined
 		if (this.$.padlock) {
-			switch(inEvent.selected.content) {
-			case "Off":
-				this.$.padlock.setStyle("height: 33px; opacity: 0;");
-				this.$.LockCodeUpdateControl.setShowing(false);
-				this.$.LockAfterPickerRow.setShowing(false);
-				break;
-			case "Simple PIN":
-				this.$.padlock.setStyle("height: 33px; opacity: 1;");
-				this.$.LockCodeUpdateControl.setContent("Change PIN");
-				this.$.LockCodeUpdateControl.setShowing(true);
-				this.$.LockAfterPickerRow.setShowing(true);
-				break;
-			case "Password":
-				this.$.padlock.setStyle("height: 33px; opacity: 1;");
-				this.$.LockCodeUpdateControl.setContent("Change Password");
-				this.$.LockCodeUpdateControl.setShowing(true);
-				this.$.LockAfterPickerRow.setShowing(true);
-				break;
+			// <bad_smell>
+			// This is always called twice.
+			// Only act on the second call.
+			// </bad_smell>
+			if (this.actOnChange_lockModePicker) {
+				switch(inEvent.selected.content) {
+				case "Off":
+					this.$.padlock.setStyle("height: 33px; opacity: 0;");
+					this.$.LockCodeUpdateControl.setShowing(false);
+					this.$.LockAfterPickerRow.setShowing(false);
+					break;
+				case "Simple PIN":
+					this.$.padlock.setStyle("height: 33px; opacity: 1;");
+					this.$.LockCodeUpdateControl.setContent("Change PIN");
+					this.$.LockCodeUpdateControl.setShowing(true);
+					this.$.LockAfterPickerRow.setShowing(true);
+					break;
+				case "Password":
+					this.$.padlock.setStyle("height: 33px; opacity: 1;");
+					this.$.LockCodeUpdateControl.setContent("Change Password");
+					this.$.LockCodeUpdateControl.setShowing(true);
+					this.$.LockAfterPickerRow.setShowing(true);
+					break;
+				}
+				
+				if(this.palm && !this.suppressSetLockMode) {
+				} else {
+				}
+				this.suppressSetLockMode = false;
 			}
-		
-			if(this.palm) {
-			} else {
-			}
+			this.actOnChange_lockModePicker = !this.actOnChange_lockModePicker;
 		}
 	},
 	lockTimeoutChanged: function(inSender, inEvent) {
+		// <bad_smell>
+		// This is always called twice.
+		// Only act on the second call.
+		// </bad_smell>
 		var t;
-		switch(inEvent.selected.content) {
+		if (this.actOnChange_lockTimeoutPicker) {
+			switch(inEvent.selected.content) {
 			case "Screen turns off":
 				t = 0;
 				break;
@@ -324,13 +346,16 @@ enyo.kind({
 			case "30 minutes":
 				t = 1800;
 				break;
+			}
+			if(this.palm && !this.suppressSetLockTimeout) {
+				this.$.SetSystemPreferences.send({lockTimeout:t});
+				this.log("Set " + t + "s sent");
+			} else {
+				this.log("Set " + t + "s suppressed");
+			}
+			this.suppressSetLockTimeout = false;
 		}
-		
-		if(this.palm) {
-			this.$.SetSystemPreferences.send({lockTimeout:t});
-		} else {
-			this.log(t);
-		}
+		this.actOnChange_lockTimeoutPicker = !this.actOnChange_lockTimeoutPicker;
 	},
 	updateLockCode: function(inSender, inEvent) {
 		// Update PIN or password as appropriate
@@ -338,20 +363,22 @@ enyo.kind({
 		this.$.PINPad.openAtCenter();
 	},
 	lockAlertsChanged: function(inSender, inEvent) {
-		if(this.palm) {
+		if(this.palm && !this.suppressSetShowAlertsWhenLocked) {
 			this.$.SetSystemPreferences.send({showAlertsWhenLocked: inSender.value});
+			this.log("Set showAlertsWhenLocked " + inSender.value + " sent");
+		} else {
+			this.log("Set showAlertsWhenLocked " + inSender.value + " suppressed");
 		}
-		else {
-			this.log(inSender.value);
-		}
+		this.suppressSetShowAlertsWhenLocked = false;
 	},
 	blinkNotificationsChanged: function(inSender, inEvent) {
-		if(this.palm) {
+		if(this.palm && !this.suppressSetBlinkNotifications) {
 			this.$.SetSystemPreferences.send({BlinkNotifications: inSender.value});
+			this.log("Set BlinkNotifications " + inSender.value + " sent");
+		} else {
+			this.log("Set BlinkNotifications " + inSender.value + " suppressed");
 		}
-		else {
-			this.log(inSender.value);
-		}
+		this.suppressSetBlinkNotifications = false;
 	},
 	selectedImageFile: function(inSender, inEvent) {
 		if(!inEvent || inEvent.length === 0)
@@ -380,15 +407,23 @@ enyo.kind({
 		// Set suppression flags to stop the onChange methods
 		// from setting the values again. "I know that already!"
 
+		var oldBrightness;
+		var oldSel;
+		var newIx;
+		var newSel;
+
 		if(inResponse.maximumBrightness != undefined) {
-			this.$.BrightnessSlider.setValue(inResponse.maximumBrightness);
+			oldBrightness = this.$.BrightnessSlider.getValue();
+			if (inResponse.maximumBrightness !== oldBrightness) {
+				this.suppressSetBrightness = true;
+				this.$.BrightnessSlider.setValue(inResponse.maximumBrightness);
+			}
 		}
 			
 		if(inResponse.timeout != undefined) {
 			// Only set the suppression flag
 			// if onChange will be triggered.
-			var oldSel = this.$.TimeoutPicker.getSelected();
-			var newIx;
+			oldSel = this.$.TimeoutPicker.getSelected();
 			if(inResponse.timeout == 30) {
 				newIx = 0;
 			} else if(inResponse.timeout == 60) {
@@ -399,7 +434,7 @@ enyo.kind({
 				newIx = 3;
 			}
 			if (typeof newIx !== "undefined") {
-				var newSel = this.$.TimeoutPicker.getClientControls()[newIx];
+				newSel = this.$.TimeoutPicker.getClientControls()[newIx];
 				if (newSel !== oldSel) {
 					this.suppressSetDisplayTimeout = true;
 					this.$.TimeoutPicker.setSelected(newSel);
@@ -408,74 +443,107 @@ enyo.kind({
 		}
 	},
 	handleGetPreferencesResponse: function(inSender, inResponse) {
+		// Set our controls to match the values in the response.
+		// Set suppression flags to stop the onChange methods
+		// from setting the values again. "I know that already!"
+
+		var oldValue;
+		var oldSel;
+		var newIx;
+		var newSel;
 		if(inResponse.showAlertsWhenLocked != undefined) {
-			this.$.AlertsToggle.setValue(inResponse.showAlertsWhenLocked);
+			oldValue = this.$.AlertsToggle.getValue();
+			if (inResponse.showAlertsWhenLocked !== oldValue) {
+				this.suppressSetShowAlertsWhenLocked = true;
+				this.$.AlertsToggle.setValue(inResponse.showAlertsWhenLocked);
+			}
 		}
 		if(inResponse.BlinkNotifications != undefined) {
-			this.$.BlinkToggle.setValue(inResponse.BlinkNotifications);
+			oldValue = this.$.BlinkToggle.getValue();
+			if (inResponse.BlinkNotifications !== oldValue) {
+				this.suppressSetBlinkNotifications = true;
+				this.$.BlinkToggle.setValue(inResponse.BlinkNotifications);
+			}
 		}
 		if(inResponse.lockTimeout != undefined) {
+			// Only set the suppression flag
+			// if onChange will be triggered.
+			oldSel = this.$.TimeoutPicker.getSelected();
 			switch(inResponse.lockTimeout) {
 			case 0:
-				this.$.LockAfterPicker.setSelected(
-					this.$.LockAfterPicker.getClientControls()[0]);
+				newIx = 0;
 				break;
 			case 30:
-				this.$.LockAfterPicker.setSelected(
-					this.$.LockAfterPicker.getClientControls()[1]);
+				newIx = 1;
 				break;
 			case 60:
-				this.$.LockAfterPicker.setSelected(
-					this.$.LockAfterPicker.getClientControls()[2]);
+				newIx = 2;
 				break;
 			case 120:
-				this.$.LockAfterPicker.setSelected(
-					this.$.LockAfterPicker.getClientControls()[3]);
+				newIx = 3;
 				break;
 			case 180:
-				this.$.LockAfterPicker.setSelected(
-					this.$.LockAfterPicker.getClientControls()[4]);
+				newIx = 4;
 				break;
 			case 300:
-				this.$.LockAfterPicker.setSelected(
-					this.$.LockAfterPicker.getClientControls()[5]);
+				newIx = 5;
 				break;
 			case 600:
-				this.$.LockAfterPicker.setSelected(
-					this.$.LockAfterPicker.getClientControls()[6]);
+				newIx = 6;
 				break;
 			case 1800:
-				this.$.LockAfterPicker.setSelected(
-					this.$.LockAfterPicker.getClientControls()[7]);
+				newIx = 7;
 				break;
 			default:
 				this.log("Unknown lock timeout: " + inResponse.lockTimeout + "s");
 				break;
+			}
+			if (typeof newIx !== "undefined") {
+				newSel = this.$.LockAfterPicker.getClientControls()[newIx];
+				if (newSel !== oldSel) {
+					this.suppressSetLockTimeout = true;
+					this.$.LockAfterPicker.setSelected(newSel);
+				}
 			}
 		} else {
 			this.log("Lock timeout is undefined");
 		}
 	},
 	handleGetDeviceLockModeResponse: function(inSender, inResponse) {
+		// Set our controls to match the values in the response.
+		// Set suppression flags to stop the onChange methods
+		// from setting the values again. "I know that already!"
+
+		var oldSel;
+		var newIx;
+		var newSel;
+
 		if (!inResponse.returnValue) {
 			this.log("Failed to get the device lock mode");
 		} else {
+			// Only set the suppression flag
+			// if onChange will be triggered.
+			oldSel = this.$.LockModePicker.getSelected();
 			switch(inResponse.lockMode) {
 			case "none":
-				this.$.LockModePicker.setSelected(
-					this.$.LockModePicker.getClientControls()[0]);
+				newIx = 0;
 				break;
 			case "pin":
-				this.$.LockModePicker.setSelected(
-					this.$.LockModePicker.getClientControls()[1]);
+				newIx = 1;
 				break;
 			case "password":
-				this.$.LockModePicker.setSelected(
-					this.$.LockModePicker.getClientControls()[2]);
+				newIx = 2;
 				break;
 			default:
 				this.log("Unknown lockMode: " + inResponse.lockMode);
 				break;
+			}
+			if (typeof newIx !== "undefined") {
+				newSel = this.$.LockModePicker.getClientControls()[newIx];
+				if (newSel !== oldSel) {
+					this.suppressSetLockMode = true;
+					this.$.LockModePicker.setSelected(newSel);
+				}
 			}
 		}
 	},
