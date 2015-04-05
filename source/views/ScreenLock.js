@@ -14,14 +14,6 @@ enyo.kind({
 	name: "ScreenLock",
 	layoutKind: "FittableRowsLayout",
 	palm: false,
-	// Suppress service calls when setting control states
-	// to match service call responses.
-	suppressSetDisplayTimeout: false,
-	suppressSetBrightness: false,
-	suppressSetShowAlertsWhenLocked: false,
-	suppressSetBlinkNotifications: false,
-	suppressSetLockTimeout: false,
-	suppressSetLockMode: false,
 	// onyx.Picker onChange always gets called twice
 	// but we only want to act once.
 	actOnChange_displayTimeoutPicker: false,
@@ -234,13 +226,12 @@ enyo.kind({
  	//Action Handlers
 	brightnessChanged: function(inSender, inEvent) {
 		var v = parseInt(this.$.BrightnessSlider.value, 10);
-		if(this.palm && !this.suppressSetBrightness) {
+		if(this.palm) {
 			this.$.SetDisplayProperty.send({maximumBrightness: v});
 			this.log("Set brightness " + v + " sent");
 		} else {
 			this.log("Set brightness " + v + " suppressed");
 		}
-		this.suppressSetBrightness = false;
 	},
 	displayTimeoutChanged: function(inSender, inEvent) {
 		// <bad_smell>
@@ -264,13 +255,12 @@ enyo.kind({
 				break;
 			}
 		
-			if(this.palm && !this.suppressSetDisplayTimeout) {
+			if(this.palm) {
 				this.$.SetDisplayProperty.send({timeout:t});
 				this.log("Set " + t + "s sent");
 			} else {
 				this.log("Set " + t + "s suppressed");
 			}
-			this.suppressSetDisplayTimeout = false;
 		}
 		this.actOnChange_displayTimeoutPicker = !this.actOnChange_displayTimeoutPicker;
 	},
@@ -278,7 +268,7 @@ enyo.kind({
 		this.$.ImagePicker.pickFile();
 	},
 	lockModePicked: function(inSender, inEvent) {
-		// Needed because this gets called (once?)
+		// Needed because this gets called (because we send() in create())
 		// before the padlock is defined
 		if (this.$.padlock) {
 			// <bad_smell>
@@ -306,10 +296,9 @@ enyo.kind({
 					break;
 				}
 				
-				if(this.palm && !this.suppressSetLockMode) {
+				if(this.palm) {
 				} else {
 				}
-				this.suppressSetLockMode = false;
 			}
 			this.actOnChange_lockModePicker = !this.actOnChange_lockModePicker;
 		}
@@ -347,13 +336,12 @@ enyo.kind({
 				t = 1800;
 				break;
 			}
-			if(this.palm && !this.suppressSetLockTimeout) {
+			if(this.palm) {
 				this.$.SetSystemPreferences.send({lockTimeout:t});
 				this.log("Set " + t + "s sent");
 			} else {
 				this.log("Set " + t + "s suppressed");
 			}
-			this.suppressSetLockTimeout = false;
 		}
 		this.actOnChange_lockTimeoutPicker = !this.actOnChange_lockTimeoutPicker;
 	},
@@ -363,22 +351,20 @@ enyo.kind({
 		this.$.PINPad.openAtCenter();
 	},
 	lockAlertsChanged: function(inSender, inEvent) {
-		if(this.palm && !this.suppressSetShowAlertsWhenLocked) {
+		if(this.palm) {
 			this.$.SetSystemPreferences.send({showAlertsWhenLocked: inSender.value});
 			this.log("Set showAlertsWhenLocked " + inSender.value + " sent");
 		} else {
 			this.log("Set showAlertsWhenLocked " + inSender.value + " suppressed");
 		}
-		this.suppressSetShowAlertsWhenLocked = false;
 	},
 	blinkNotificationsChanged: function(inSender, inEvent) {
-		if(this.palm && !this.suppressSetBlinkNotifications) {
+		if(this.palm) {
 			this.$.SetSystemPreferences.send({BlinkNotifications: inSender.value});
 			this.log("Set BlinkNotifications " + inSender.value + " sent");
 		} else {
 			this.log("Set BlinkNotifications " + inSender.value + " suppressed");
 		}
-		this.suppressSetBlinkNotifications = false;
 	},
 	selectedImageFile: function(inSender, inEvent) {
 		if(!inEvent || inEvent.length === 0)
@@ -404,26 +390,17 @@ enyo.kind({
 	//Service Callbacks
 	handleGetPropertiesResponse: function(inSender, inResponse) {
 		// Set our controls to match the values in the response.
-		// Set suppression flags to stop the onChange methods
-		// from setting the values again. "I know that already!"
 
-		var oldBrightness;
-		var oldSel;
 		var newIx;
 		var newSel;
 
 		if(inResponse.maximumBrightness != undefined) {
-			oldBrightness = this.$.BrightnessSlider.getValue();
-			if (inResponse.maximumBrightness !== oldBrightness) {
-				this.suppressSetBrightness = true;
-				this.$.BrightnessSlider.setValue(inResponse.maximumBrightness);
-			}
+			this.$.BrightnessSlider.silence();
+			this.$.BrightnessSlider.setValue(inResponse.maximumBrightness);
+			this.$.BrightnessSlider.unsilence();
 		}
 			
 		if(inResponse.timeout != undefined) {
-			// Only set the suppression flag
-			// if onChange will be triggered.
-			oldSel = this.$.TimeoutPicker.getSelected();
 			if(inResponse.timeout == 30) {
 				newIx = 0;
 			} else if(inResponse.timeout == 60) {
@@ -435,40 +412,28 @@ enyo.kind({
 			}
 			if (typeof newIx !== "undefined") {
 				newSel = this.$.TimeoutPicker.getClientControls()[newIx];
-				if (newSel !== oldSel) {
-					this.suppressSetDisplayTimeout = true;
-					this.$.TimeoutPicker.setSelected(newSel);
-				}
+				this.$.TimeoutPicker.silence();
+				this.$.TimeoutPicker.setSelected(newSel);
+				this.$.TimeoutPicker.unsilence();
 			}
 		}
 	},
 	handleGetPreferencesResponse: function(inSender, inResponse) {
 		// Set our controls to match the values in the response.
-		// Set suppression flags to stop the onChange methods
-		// from setting the values again. "I know that already!"
 
-		var oldValue;
-		var oldSel;
 		var newIx;
 		var newSel;
 		if(inResponse.showAlertsWhenLocked != undefined) {
-			oldValue = this.$.AlertsToggle.getValue();
-			if (inResponse.showAlertsWhenLocked !== oldValue) {
-				this.suppressSetShowAlertsWhenLocked = true;
-				this.$.AlertsToggle.setValue(inResponse.showAlertsWhenLocked);
-			}
+			this.$.AlertsToggle.silence();
+			this.$.AlertsToggle.setValue(inResponse.showAlertsWhenLocked);
+			this.$.AlertsToggle.unsilence();
 		}
 		if(inResponse.BlinkNotifications != undefined) {
-			oldValue = this.$.BlinkToggle.getValue();
-			if (inResponse.BlinkNotifications !== oldValue) {
-				this.suppressSetBlinkNotifications = true;
-				this.$.BlinkToggle.setValue(inResponse.BlinkNotifications);
-			}
+			this.$.BlinkToggle.silence();
+			this.$.BlinkToggle.setValue(inResponse.BlinkNotifications);
+			this.$.BlinkToggle.unsilence();
 		}
 		if(inResponse.lockTimeout != undefined) {
-			// Only set the suppression flag
-			// if onChange will be triggered.
-			oldSel = this.$.TimeoutPicker.getSelected();
 			switch(inResponse.lockTimeout) {
 			case 0:
 				newIx = 0;
@@ -500,10 +465,9 @@ enyo.kind({
 			}
 			if (typeof newIx !== "undefined") {
 				newSel = this.$.LockAfterPicker.getClientControls()[newIx];
-				if (newSel !== oldSel) {
-					this.suppressSetLockTimeout = true;
-					this.$.LockAfterPicker.setSelected(newSel);
-				}
+				this.$.LockAfterPicker.silence();
+				this.$.LockAfterPicker.setSelected(newSel);
+				this.$.LockAfterPicker.unsilence();
 			}
 		} else {
 			this.log("Lock timeout is undefined");
@@ -511,19 +475,13 @@ enyo.kind({
 	},
 	handleGetDeviceLockModeResponse: function(inSender, inResponse) {
 		// Set our controls to match the values in the response.
-		// Set suppression flags to stop the onChange methods
-		// from setting the values again. "I know that already!"
 
-		var oldSel;
 		var newIx;
 		var newSel;
 
 		if (!inResponse.returnValue) {
 			this.log("Failed to get the device lock mode");
 		} else {
-			// Only set the suppression flag
-			// if onChange will be triggered.
-			oldSel = this.$.LockModePicker.getSelected();
 			switch(inResponse.lockMode) {
 			case "none":
 				newIx = 0;
@@ -540,10 +498,9 @@ enyo.kind({
 			}
 			if (typeof newIx !== "undefined") {
 				newSel = this.$.LockModePicker.getClientControls()[newIx];
-				if (newSel !== oldSel) {
-					this.suppressSetLockMode = true;
-					this.$.LockModePicker.setSelected(newSel);
-				}
+				this.$.LockModePicker.silence();
+				this.$.LockModePicker.setSelected(newSel);
+				this.$.LockModePicker.unsilence();
 			}
 		}
 	},
