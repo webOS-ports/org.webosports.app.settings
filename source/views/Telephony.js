@@ -8,11 +8,6 @@ enyo.kind({
 	name: "Telephony",
 	layoutKind: "FittableRowsLayout",
 	palm: false,
-	// Suppress service calls when setting control states
-	// to match service call responses.
-	// Suppress when positive.
-	suppressSetRoamGuard: 0,
-	suppressSetDisableWan: 0,
 	components:[
 		{
 			kind: "onyx.Toolbar",
@@ -77,56 +72,43 @@ enyo.kind({
 	},
 	/* service response handlers */
 	handleWanStatus: function(inSender, inResponse) {
-		var roamingAllowed = false;
-		var dataUsage = false;
-
 		this.log("roamGuard: " + inResponse.roamGuard);
 		if (inResponse.roamGuard != undefined) {
 			roamingAllowed = (inResponse.roamGuard === "enable");
-			// The control's onChange is only triggered if it changes!
-			if (this.$.RoamingAllowed.getValue() !== roamingAllowed) {
-				this.log("Setting RoamingAllowed " + roamingAllowed);
-				this.suppressSetRoamGuard = this.suppressSetRoamGuard + 1;
-				this.$.RoamingAllowed.setValue(roamingAllowed);
-			}
+			this.log("Setting RoamingAllowed " + roamingAllowed);
+			this.$.RoamingAllowed.silence();
+			this.$.RoamingAllowed.setValue(roamingAllowed);
+			this.$.RoamingAllowed.unsilence();
 		}
 
 		this.log("disablewan: " + inResponse.disablewan);
 		if (inResponse.disablewan != undefined) {
 			dataUsage = (inResponse.disablewan === "off");
-			// The control's onChange is only triggered if it changes!
-			if (this.$.DataUsage.getValue() !== dataUsage) {
-				this.log("Setting DataUsage " + dataUsage);
-				this.suppressSetDisableWan = this.suppressSetDisableWan + 1;
-				this.$.DataUsage.setValue(dataUsage);
-			}
+			this.log("Setting DataUsage " + dataUsage);
+			this.$.DataUsage.silence();
+			this.$.DataUsage.setValue(dataUsage);
+			this.$.DataUsage.unsilence();
 		}
 	},
 	/* component event handlers */
 	roamingAllowedChanged: function(inSender, inEvent) {
-		this.log(inSender.value + " /w set suppression flag: " + this.suppressSetRoamGuard);
+		this.log(inSender.value);
 		var newSetting = inSender.value ? "enable" : "disable";
-		if (this.palm && this.suppressSetRoamGuard === 0) {
+		if (this.palm) {
 			this.$.SetWanProperty.send({"roamGuard": newSetting});
 			this.log("Set roamGuard " + newSetting + " sent");
 		} else {
 			this.log("Set roamGuard " + newSetting + " suppressed");
 		}
-		if (this.suppressSetRoamGuard > 0) {
-			this.suppressSetRoamGuard = this.suppressSetRoamGuard - 1;
-		}
 	},
 	dataUsageChanged: function(inSender, inEvent) {
-		this.log(inSender.value + " /w set suppression flag: " + this.suppressSetDisableWan);
+		this.log(inSender.value);
 		var newSetting = inSender.value ? "off" : "on";
-		if (this.palm && this.suppressSetDisableWan === 0) {
+		if (this.palm) {
 			this.$.SetWanProperty.send({"disablewan": newSetting});
 			this.log("Set disablewan " + newSetting + " sent");
 		} else {
 			this.log("Set disablewan " + newSetting + " suppressed");
-		}
-		if (this.suppressSetDisableWan > 0) {
-			this.suppressSetDisableWan = this.suppressSetDisableWan - 1;
 		}
 	}
 });
