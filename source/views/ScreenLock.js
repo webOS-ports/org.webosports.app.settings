@@ -77,7 +77,7 @@ enyo.kind({
 					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
 						{content: "Turn off after"},
 						{kind: "onyx.PickerDecorator", fit: true, style: "float: right; min-width: 125px;", components: [
-							{},
+							{name: "TimeoutButton"},
 							{name: "TimeoutPicker", kind: "onyx.Picker", onChange: "displayTimeoutChanged", components: [
 								{content: "30 seconds", active: true},
 								{content: "1 minute"},
@@ -119,7 +119,7 @@ enyo.kind({
 						 components:[
 							 {kind: "onyx.PickerDecorator", fit: true,
 							  components: [
-								  {},
+								  {name: "LockModeButton"},
 								  {name: "LockModePicker", kind: "onyx.Picker",
 								   onChange: "lockModePicked", components: [
 									   {content: "Off", active: true},
@@ -138,7 +138,7 @@ enyo.kind({
 						 showing: false, components: [
 							{content: "Lock after"},
 							{kind: "onyx.PickerDecorator", fit: true, style: "float: right; min-width: 125px;", components: [
-								{},
+								{name: "LockAfterButton"},
 								{name: "LockAfterPicker", kind: "onyx.Picker", onChange: "lockTimeoutChanged", components: [
 									{content: "Screen turns off", active: true},
 									{content: "30 seconds"},
@@ -276,25 +276,7 @@ enyo.kind({
 			// Only act on the second call.
 			// </bad_smell>
 			if (this.actOnChange_lockModePicker) {
-				switch(inEvent.selected.content) {
-				case "Off":
-					this.$.padlock.setStyle("height: 33px; opacity: 0;");
-					this.$.LockCodeUpdateControl.setShowing(false);
-					this.$.LockAfterPickerRow.setShowing(false);
-					break;
-				case "Simple PIN":
-					this.$.padlock.setStyle("height: 33px; opacity: 1;");
-					this.$.LockCodeUpdateControl.setContent("Change PIN");
-					this.$.LockCodeUpdateControl.setShowing(true);
-					this.$.LockAfterPickerRow.setShowing(true);
-					break;
-				case "Password":
-					this.$.padlock.setStyle("height: 33px; opacity: 1;");
-					this.$.LockCodeUpdateControl.setContent("Change Password");
-					this.$.LockCodeUpdateControl.setShowing(true);
-					this.$.LockAfterPickerRow.setShowing(true);
-					break;
-				}
+				this.updateLockModeControls(inEvent.selected.content);
 				
 				if(this.palm) {
 				} else {
@@ -386,7 +368,6 @@ enyo.kind({
 
 		this.$.ImportWallpaper.send(params);
 	},
-
 	//Service Callbacks
 	handleGetPropertiesResponse: function(inSender, inResponse) {
 		// Set our controls to match the values in the response.
@@ -415,6 +396,7 @@ enyo.kind({
 				this.$.TimeoutPicker.silence();
 				this.$.TimeoutPicker.setSelected(newSel);
 				this.$.TimeoutPicker.unsilence();
+				this.$.TimeoutButton.setContent(newSel.content);
 			}
 		}
 	},
@@ -468,6 +450,7 @@ enyo.kind({
 				this.$.LockAfterPicker.silence();
 				this.$.LockAfterPicker.setSelected(newSel);
 				this.$.LockAfterPicker.unsilence();
+				this.$.LockAfterButton.setContent(newSel.content);
 			}
 		} else {
 			this.log("Lock timeout is undefined");
@@ -501,12 +484,37 @@ enyo.kind({
 				this.$.LockModePicker.silence();
 				this.$.LockModePicker.setSelected(newSel);
 				this.$.LockModePicker.unsilence();
+				this.$.LockModeButton.setContent(newSel.content);
+				this.updateLockModeControls(newSel.content);
 			}
 		}
 	},
 	handleImportWallpaper: function(inSender, inResponse) {
 		if(inResponse.wallpaper) {
 			this.$.SetSystemPreferences.send({wallpaper: inResponse.wallpaper});
+		}
+	},
+	// Other functions
+	updateLockModeControls: function(mode) {
+		// mode is content from the lock mode picker
+		switch(mode) {
+		case "Off":
+			this.$.padlock.setStyle("height: 33px; opacity: 0;");
+			this.$.LockCodeUpdateControl.setShowing(false);
+			this.$.LockAfterPickerRow.setShowing(false);
+			break;
+		case "Simple PIN":
+			this.$.padlock.setStyle("height: 33px; opacity: 1;");
+			this.$.LockCodeUpdateControl.setContent("Change PIN");
+			this.$.LockCodeUpdateControl.setShowing(true);
+			this.$.LockAfterPickerRow.setShowing(true);
+			break;
+		case "Password":
+			this.$.padlock.setStyle("height: 33px; opacity: 1;");
+			this.$.LockCodeUpdateControl.setContent("Change Password");
+			this.$.LockCodeUpdateControl.setShowing(true);
+			this.$.LockAfterPickerRow.setShowing(true);
+			break;
 		}
 	}
 });
