@@ -27,18 +27,21 @@ enyo.kind({
 		]},
 		{name: "ImagePicker", kind: "FilePicker", fileType:["image"], onPickFile: "selectedImageFile", autoDismiss: true},
 		{name: "LockPasswordSetter", kind: "enyo.ModalDialog",
+		 scrim: true,
 		 components: [
 			 {content: "Set Password"},
 			 {name: "setPwdErrMsg", content: ""},
-			 {kind: "onyx.Input", type: "password",
+			 {name: "setPwd1", kind: "onyx.Input", type: "password",
 			  placeholder: $L("Enter password")},
 			 {tag: "br"},
-			 {kind: "onyx.Input", type: "password",
+			 {name: "setPwd2", kind: "onyx.Input", type: "password",
 			  placeholder: $L("Confirm password")},
 			 {tag: "br"},
-			 {kind: "onyx.Button", content: "Done"},
+			 {kind: "onyx.Button", content: "Done", classes: "onyx-affirmative",
+			  ontap: "pwdSetterDoneTapped"},
 			 {tag: "br"},
-			 {kind: "onyx.Button", content: "Cancel"}
+			 {kind: "onyx.Button", content: "Cancel",
+			  ontap: "pwdSetterCancelTapped"}
 		 ]},
 		{name: "LockPasswordUnlocker", kind: "enyo.ModalDialog",
 		 components: [
@@ -196,7 +199,9 @@ enyo.kind({
 		{name: "SetSystemPreferences", kind: "SystemService", method: "setPreferences"},
 		{name: "ImportWallpaper", kind: "enyo.LunaService", service: "luna://com.palm.systemservice/wallpaper", method: "importWallpaper", onComplete: "handleImportWallpaper"},
 		{name: "GetDeviceLockMode", kind: "enyo.LunaService", service: "luna://com.palm.systemmanager",
-		 method: "getDeviceLockMode", onComplete: "handleGetDeviceLockModeResponse"}
+		 method: "getDeviceLockMode", onComplete: "handleGetDeviceLockModeResponse"},
+		{name: "SetDevicePasscode", kind: "enyo.LunaService", service: "luna://com.palm.systemmanager",
+		 method: "setDevicePasscode"}
 	],
 	//Handlers
 	create: function(inSender, inEvent) {
@@ -277,7 +282,9 @@ enyo.kind({
 			// </bad_smell>
 			if (this.actOnChange_lockModePicker) {
 				this.updateLockModeControls(inEvent.selected.content);
-				
+
+				this.$.LockPasswordSetter.openAtCenter();
+
 				if(this.palm) {
 				} else {
 				}
@@ -331,6 +338,28 @@ enyo.kind({
 		// Update PIN or password as appropriate
 //		this.$.LockPasswordSetter.openAtCenter();
 		this.$.PINPad.openAtCenter();
+	},
+	pwdSetterDoneTapped: function(inSender, inEvent) {
+		this.$.LockPasswordSetter.hide();
+		this.$.setPwdErrMsg.setContent("");
+		if (this.$.setPwd1.value === this.$.setPwd2.value) {
+			if (this.palm) {
+				this.$.SetDevicePasscode.send({lockMode:"password",passCode:this.$.setPwd1.value});
+				this.log("Set lock password sent");
+			} else {
+				this.log("Set lock password suppressed");
+			}
+			this.$.setPwd1.setValue("");
+			this.$.setPwd2.setValue("");
+		} else {
+			this.$.setPwdErrMsg.setContent("Passwords don't match");
+			this.$.LockPasswordSetter.openAtCenter();
+		}
+	},
+	pwdSetterCancelTapped: function(inSender, inEvent) {
+		this.$.LockPasswordSetter.hide();
+		this.$.setPwd1.setValue("");
+		this.$.setPwd2.setValue("");
 	},
 	lockAlertsChanged: function(inSender, inEvent) {
 		if(this.palm) {
