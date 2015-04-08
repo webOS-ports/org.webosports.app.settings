@@ -14,6 +14,9 @@ enyo.kind({
 	name: "ScreenLock",
 	layoutKind: "FittableRowsLayout",
 	palm: false,
+	// As recognised by the systemmanager
+	currentLockMode: "none",
+	targetLockMode: "none",
 	// onyx.Picker onChange always gets called twice
 	// but we only want to act once.
 	actOnChange_displayTimeoutPicker: false,
@@ -43,16 +46,18 @@ enyo.kind({
 			 {kind: "onyx.Button", content: "Cancel",
 			  ontap: "pwdSetterCancelTapped"}
 		 ]},
-		{name: "LockPasswordUnlocker", kind: "enyo.ModalDialog",
+		{name: "LockPasswordChecker", kind: "enyo.ModalDialog",
 		 components: [
 			 {content: "Enter Password"},
-			 {name: "enterPwdErrMsg", content: ""},
-			 {kind: "onyx.Input", type: "password",
+			 {name: "checkPwdErrMsg", content: ""},
+			 {name: "checkPwd", kind: "onyx.Input", type: "password",
 			  placeholder: $L("Enter password")},
 			 {tag: "br"},
-			 {kind: "onyx.Button", content: "Done"},
+			 {kind: "onyx.Button", content: "Done", classes: "onyx-affirmative",
+			  ontap: "pwdCheckerDoneTapped"},
 			 {tag: "br"},
-			 {kind: "onyx.Button", content: "Cancel"}
+			 {kind: "onyx.Button", content: "Cancel",
+			  ontap: "pwdCheckerCancelTapped"}
 		 ]},
 		{name: "PINPad", kind: "enyo.ModalDialog",
 		 components: [
@@ -61,7 +66,7 @@ enyo.kind({
 			 {name: "digits", content: ""},
 			 {kind: "PINNumberPad"},
 			 {kind: "onyx.Button", content: "Cancel"},
-			 {kind: "onyx.Button", content: "Done"}
+			 {kind: "onyx.Button", content: "Done", classes: "onyx-affirmative"}
 		 ]},
 		{kind: "Scroller",
 		touch: true,
@@ -201,7 +206,9 @@ enyo.kind({
 		{name: "GetDeviceLockMode", kind: "enyo.LunaService", service: "luna://com.palm.systemmanager",
 		 method: "getDeviceLockMode", onComplete: "handleGetDeviceLockModeResponse"},
 		{name: "SetDevicePasscode", kind: "enyo.LunaService", service: "luna://com.palm.systemmanager",
-		 method: "setDevicePasscode"}
+		 method: "setDevicePasscode"},
+		{name: "MatchDevicePasscode", kind: "enyo.LunaService", service: "luna://com.palm.systemmanager",
+		 method: "matchDevicePasscode", onComplete: "handleMatchDevicePasscodeResponse"}
 	],
 	//Handlers
 	create: function(inSender, inEvent) {
@@ -281,12 +288,37 @@ enyo.kind({
 			// Only act on the second call.
 			// </bad_smell>
 			if (this.actOnChange_lockModePicker) {
-				this.updateLockModeControls(inEvent.selected.content);
-
-				this.$.LockPasswordSetter.openAtCenter();
-
-				if(this.palm) {
-				} else {
+				switch (inEvent.selected.content) {
+				case "Off":
+					this.targetLockMode = "none";
+					break;
+				case "Simple PIN":
+					this.targetLockMode = "pin";
+					break;
+				case "Password":
+					this.targetLockMode = "password";
+					break;
+				}
+				// If there is a lock in place
+				// you need to know what it is
+				// before you can change it
+				switch (this.currentLockMode) {
+				case "pin":
+					this.$.PINPad.openAtCenter();
+					break;
+				case "password":
+					this.$.LockPasswordChecker.openAtCenter();
+					break;
+				case "none":
+					this.updateLockModeControls(inEvent.selected.content); //@@
+					switch (this.targetLockMode) {
+					case "pin":
+						break;
+					case "password":
+						this.$.LockPasswordSetter.openAtCenter();
+						break;
+					}
+					break;
 				}
 			}
 			this.actOnChange_lockModePicker = !this.actOnChange_lockModePicker;
@@ -346,6 +378,8 @@ enyo.kind({
 			if (this.palm) {
 				this.$.SetDevicePasscode.send({lockMode:"password",passCode:this.$.setPwd1.value});
 				this.log("Set lock password sent");
+				this.$.GetDeviceLockmode.send({});
+				this.log("Get lockmode sent");
 			} else {
 				this.log("Set lock password suppressed");
 			}
@@ -360,6 +394,21 @@ enyo.kind({
 		this.$.LockPasswordSetter.hide();
 		this.$.setPwd1.setValue("");
 		this.$.setPwd2.setValue("");
+	},
+	pwdCheckerDoneTapped: function(inSender, inEvent) {
+		this.$.LockPasswordChecker.hide();
+		this.$.checkPwdErrMsg.setContent("");
+		if (this.palm) {
+			this.$.MatchDevicePasscode.send({passCode:this.$.checkPwd.value});
+			this.log("Match passcode sent");
+		} else {
+			this.log("Match passcode suppressed");
+		}
+		this.$.checkPwd.setValue("");
+	},
+	pwdCheckerCancelTapped: function(inSender, inEvent) {
+		this.$.LockPasswordChecker.hide();
+		this.$.checkPwd.setValue("");
 	},
 	lockAlertsChanged: function(inSender, inEvent) {
 		if(this.palm) {
@@ -509,6 +558,7 @@ enyo.kind({
 				break;
 			}
 			if (typeof newIx !== "undefined") {
+				this.currentLockMode = inResponse.lockMode;
 				newSel = this.$.LockModePicker.getClientControls()[newIx];
 				this.$.LockModePicker.silence();
 				this.$.LockModePicker.setSelected(newSel);
@@ -516,6 +566,25 @@ enyo.kind({
 				this.$.LockModeButton.setContent(newSel.content);
 				this.updateLockModeControls(newSel.content);
 			}
+		}
+	},
+	handleMatchDevicePasscodeResponse: function(inSender, inResponse) {
+		if (inResponse.returnValue) {
+			this.log("The given passcode was correct");
+			switch (this.targetLockMode) {
+			case "none":
+				this.$.SetDevicePasscode.send({lockMode:"none",passCode:""});
+				this.log("Set no lock password sent");
+				this.$.GetDeviceLockmode.send({});
+				this.log("Get lockmode sent");
+				break;
+			case "pin":
+				break;
+			case "password":
+				break;
+			}
+		} else {
+			this.log("The given passcode was incorrect");
 		}
 	},
 	handleImportWallpaper: function(inSender, inResponse) {
@@ -531,18 +600,21 @@ enyo.kind({
 			this.$.padlock.setStyle("height: 33px; opacity: 0;");
 			this.$.LockCodeUpdateControl.setShowing(false);
 			this.$.LockAfterPickerRow.setShowing(false);
+			this.currentLockMode = "none";
 			break;
 		case "Simple PIN":
 			this.$.padlock.setStyle("height: 33px; opacity: 1;");
 			this.$.LockCodeUpdateControl.setContent("Change PIN");
 			this.$.LockCodeUpdateControl.setShowing(true);
 			this.$.LockAfterPickerRow.setShowing(true);
+			this.currentLockMode = "pin";
 			break;
 		case "Password":
 			this.$.padlock.setStyle("height: 33px; opacity: 1;");
 			this.$.LockCodeUpdateControl.setContent("Change Password");
 			this.$.LockCodeUpdateControl.setShowing(true);
 			this.$.LockAfterPickerRow.setShowing(true);
+			this.currentLockMode = "password";
 			break;
 		}
 	}
