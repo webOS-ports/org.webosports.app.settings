@@ -17,6 +17,8 @@ enyo.kind({
 	// As recognised by the systemmanager
 	currentLockMode: "none",
 	targetLockMode: "none",
+	currentLockKnown: false,
+	pin1: "",
 	// onyx.Picker onChange always gets called twice
 	// but we only want to act once.
 	actOnChange_displayTimeoutPicker: false,
@@ -32,7 +34,7 @@ enyo.kind({
 		{name: "LockPasswordSetter", kind: "enyo.ModalDialog",
 		 scrim: true,
 		 components: [
-			 {content: "Set Password"},
+			 {content: $L("Set Password")},
 			 {name: "setPwdErrMsg", content: ""},
 			 {name: "setPwd1", kind: "onyx.Input", type: "password",
 			  placeholder: $L("Enter password")},
@@ -40,33 +42,38 @@ enyo.kind({
 			 {name: "setPwd2", kind: "onyx.Input", type: "password",
 			  placeholder: $L("Confirm password")},
 			 {tag: "br"},
-			 {kind: "onyx.Button", content: "Done", classes: "onyx-affirmative",
+			 {kind: "onyx.Button", content: $L("Done"), classes: "onyx-affirmative",
 			  ontap: "pwdSetterDoneTapped"},
 			 {tag: "br"},
-			 {kind: "onyx.Button", content: "Cancel",
+			 {kind: "onyx.Button", content: $L("Cancel"),
 			  ontap: "pwdSetterCancelTapped"}
 		 ]},
 		{name: "LockPasswordChecker", kind: "enyo.ModalDialog",
 		 components: [
-			 {content: "Enter Password"},
+			 {content: $L("Enter Password")},
 			 {name: "checkPwdErrMsg", content: ""},
 			 {name: "checkPwd", kind: "onyx.Input", type: "password",
 			  placeholder: $L("Enter password")},
 			 {tag: "br"},
-			 {kind: "onyx.Button", content: "Done", classes: "onyx-affirmative",
+			 {kind: "onyx.Button", content: $L("Done"), classes: "onyx-affirmative",
 			  ontap: "pwdCheckerDoneTapped"},
 			 {tag: "br"},
-			 {kind: "onyx.Button", content: "Cancel",
+			 {kind: "onyx.Button", content: $L("Cancel"),
 			  ontap: "pwdCheckerCancelTapped"}
 		 ]},
 		{name: "PINPad", kind: "enyo.ModalDialog",
 		 components: [
-			 {name: "instruction", content: "Enter PIN"},
+			 {name: "pinInstruction", content: ""},
+			 {tag: "br"},
 			 {name: "pinPadErrMsg", content: ""},
+			 {tag: "br"},
 			 {name: "digits", content: ""},
-			 {kind: "PINNumberPad"},
-			 {kind: "onyx.Button", content: "Cancel"},
-			 {kind: "onyx.Button", content: "Done", classes: "onyx-affirmative"}
+			 {tag: "br"},
+			 {kind: "PINNumberPad", onKeyTapped: "pinKeyTapped"},
+			 {kind: "onyx.Button", content: $L("Cancel"),
+			  ontap: "pinPadCancelTapped"},
+			 {kind: "onyx.Button", content: $L("Done"), classes: "onyx-affirmative",
+			  ontap: "pinPadDoneTapped"}
 		 ]},
 		{kind: "Scroller",
 		touch: true,
@@ -288,6 +295,7 @@ enyo.kind({
 			// Only act on the second call.
 			// </bad_smell>
 			if (this.actOnChange_lockModePicker) {
+				// Make a note so we know what we are trying to achieve
 				switch (inEvent.selected.content) {
 				case "Off":
 					this.targetLockMode = "none";
@@ -301,18 +309,22 @@ enyo.kind({
 				}
 				// If there is a lock in place
 				// you need to know what it is
-				// before you can change it
+				// before you may change it
 				switch (this.currentLockMode) {
 				case "pin":
+					this.$.pinInstruction.setContent($L("Enter current PIN"));
 					this.$.PINPad.openAtCenter();
 					break;
 				case "password":
 					this.$.LockPasswordChecker.openAtCenter();
 					break;
 				case "none":
+					this.currentLockKnown = true; // Effectively true
 					this.updateLockModeControls(inEvent.selected.content); //@@
 					switch (this.targetLockMode) {
 					case "pin":
+						this.$.pinInstruction.setContent($L("Enter PIN"));
+						this.$.PINPad.openAtCenter();
 						break;
 					case "password":
 						this.$.LockPasswordSetter.openAtCenter();
@@ -378,7 +390,7 @@ enyo.kind({
 			if (this.palm) {
 				this.$.SetDevicePasscode.send({lockMode:"password",passCode:this.$.setPwd1.value});
 				this.log("Set lock password sent");
-				this.$.GetDeviceLockmode.send({});
+				this.$.GetDeviceLockMode.send({});
 				this.log("Get lockmode sent");
 			} else {
 				this.log("Set lock password suppressed");
@@ -409,6 +421,48 @@ enyo.kind({
 	pwdCheckerCancelTapped: function(inSender, inEvent) {
 		this.$.LockPasswordChecker.hide();
 		this.$.checkPwd.setValue("");
+	},
+	pinPadDoneTapped: function(inSender, inEvent) {
+		this.$.PINPad.hide();
+		this.$.pinPadErrMsg.setContent("");
+		if (!this.currentLockKnown) {
+			if (this.palm) {
+				this.$.MatchDevicePasscode.send({passCode:this.$.digits.content});
+				this.log("Match passcode sent");
+			} else {
+				this.log("Match passcode suppressed");
+			}
+		} else if (this.pin1 === "") {
+			this.pin1 = this.$.digits.content;
+			this.$.pinPadErrMsg.setContent("");
+			this.$.digits.setContent("");
+			this.$.pinInstruction.setContent($L("Confirm PIN"));
+			this.$.PINPad.openAtCenter();
+		} else if (this.$.digits.content === this.pin1) {
+			if (this.palm) {
+				this.$.SetDevicePasscode.send({lockMode:"pin",passCode:this.pin1});
+				this.log("Set lock PIN sent");
+				this.$.GetDeviceLockMode.send({});
+				this.log("Get lockmode sent");
+			} else {
+				this.log("Set lock PIN suppressed");
+			}
+			this.$.pinPadErrMsg.setContent("");
+			this.$.digits.setContent("");
+			this.pin = "";
+		} else {
+			this.$.pinPadErrMsg.setContent("PINs don't match");
+			this.$.PINPad.openAtCenter();
+		}
+	},
+	pinPadCancelTapped: function(inSender, inEvent) {
+		this.$.PINPad.hide();
+		this.$.pinPadErrMsg.setContent("");
+		this.$.digits.setContent("");
+		this.pin1 = "";
+	},
+	pinKeyTapped: function(inSender, inEvent) {
+		this.$.digits.setContent(this.$.digits.content + "1");
 	},
 	lockAlertsChanged: function(inSender, inEvent) {
 		if(this.palm) {
@@ -575,8 +629,6 @@ enyo.kind({
 			case "none":
 				this.$.SetDevicePasscode.send({lockMode:"none",passCode:""});
 				this.log("Set no lock password sent");
-				this.$.GetDeviceLockmode.send({});
-				this.log("Get lockmode sent");
 				break;
 			case "pin":
 				break;
@@ -586,6 +638,8 @@ enyo.kind({
 		} else {
 			this.log("The given passcode was incorrect");
 		}
+		this.$.GetDeviceLockMode.send({});
+		this.log("Get lockmode sent");
 	},
 	handleImportWallpaper: function(inSender, inResponse) {
 		if(inResponse.wallpaper) {
