@@ -462,7 +462,16 @@ enyo.kind({
 		this.pin1 = "";
 	},
 	pinKeyTapped: function(inSender, inEvent) {
-		this.$.digits.setContent(this.$.digits.content + "1");
+		switch (inEvent.value) {
+		case "0": case "1": case "2": case "3": case "4":
+		case "5": case "6": case "7": case "8": case "9":
+			this.$.digits.setContent(this.$.digits.content + inEvent.value);
+			break;
+		default:
+			// Must be backspace then
+			this.$.digits.setContent(this.$.digits.content.slice(0, -1));
+			break;
+		}
 	},
 	lockAlertsChanged: function(inSender, inEvent) {
 		if(this.palm) {
