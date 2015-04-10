@@ -13,11 +13,14 @@ enyo.kind({
 enyo.kind({
 	name: "ScreenLock",
 	layoutKind: "FittableRowsLayout",
+	events: {
+		onBackbutton: ""
+	},
 	palm: false,
 	// As recognised by the systemmanager
 	currentLockMode: "none",
 	targetLockMode: "none",
-	currentLockKnown: false,
+	currentPINKnown: false,
 	pin1: "",
 	// onyx.Picker onChange always gets called twice
 	// but we only want to act once.
@@ -312,6 +315,7 @@ enyo.kind({
 				// before you may change it
 				switch (this.currentLockMode) {
 				case "pin":
+					this.currentPINKnown = false;
 					this.$.pinInstruction.setContent($L("Enter current PIN"));
 					this.$.PINPad.openAtCenter();
 					break;
@@ -319,10 +323,9 @@ enyo.kind({
 					this.$.LockPasswordChecker.openAtCenter();
 					break;
 				case "none":
-					this.currentLockKnown = true; // Effectively true
-					this.updateLockModeControls(inEvent.selected.content); //@@
 					switch (this.targetLockMode) {
 					case "pin":
+						this.currentPINKnown = true; // Nothing to check!
 						this.$.pinInstruction.setContent($L("Enter PIN"));
 						this.$.PINPad.openAtCenter();
 						break;
@@ -379,9 +382,18 @@ enyo.kind({
 		this.actOnChange_lockTimeoutPicker = !this.actOnChange_lockTimeoutPicker;
 	},
 	updateLockCode: function(inSender, inEvent) {
-		// Update PIN or password as appropriate
-//		this.$.LockPasswordSetter.openAtCenter();
-		this.$.PINPad.openAtCenter();
+		// Have to check you know the current code first
+		this.targetLockMode = this.currentLockMode;
+		switch (this.currentLockMode) {
+		case "password":
+			this.$.LockPasswordChecker.openAtCenter();
+			break;
+		case "pin":
+			this.currentPINKnown = false;
+			this.$.pinInstruction.setContent($L("Enter current PIN"));
+			this.$.PINPad.openAtCenter();
+			break;
+		}
 	},
 	pwdSetterDoneTapped: function(inSender, inEvent) {
 		this.$.LockPasswordSetter.hide();
@@ -398,12 +410,13 @@ enyo.kind({
 			this.$.setPwd1.setValue("");
 			this.$.setPwd2.setValue("");
 		} else {
-			this.$.setPwdErrMsg.setContent("Passwords don't match");
+			this.$.setPwdErrMsg.setContent($L("Passwords do not match"));
 			this.$.LockPasswordSetter.openAtCenter();
 		}
 	},
 	pwdSetterCancelTapped: function(inSender, inEvent) {
 		this.$.LockPasswordSetter.hide();
+		this.$.setPwdErrMsg.setContent("");
 		this.$.setPwd1.setValue("");
 		this.$.setPwd2.setValue("");
 	},
@@ -420,21 +433,22 @@ enyo.kind({
 	},
 	pwdCheckerCancelTapped: function(inSender, inEvent) {
 		this.$.LockPasswordChecker.hide();
+		this.$.checkPwdErrMsg.setContent("");
 		this.$.checkPwd.setValue("");
 	},
 	pinPadDoneTapped: function(inSender, inEvent) {
 		this.$.PINPad.hide();
 		this.$.pinPadErrMsg.setContent("");
-		if (!this.currentLockKnown) {
+		if (!this.currentPINKnown) {
 			if (this.palm) {
 				this.$.MatchDevicePasscode.send({passCode:this.$.digits.content});
 				this.log("Match passcode sent");
 			} else {
 				this.log("Match passcode suppressed");
 			}
+			this.$.digits.setContent("");
 		} else if (this.pin1 === "") {
 			this.pin1 = this.$.digits.content;
-			this.$.pinPadErrMsg.setContent("");
 			this.$.digits.setContent("");
 			this.$.pinInstruction.setContent($L("Confirm PIN"));
 			this.$.PINPad.openAtCenter();
@@ -447,16 +461,16 @@ enyo.kind({
 			} else {
 				this.log("Set lock PIN suppressed");
 			}
-			this.$.pinPadErrMsg.setContent("");
 			this.$.digits.setContent("");
-			this.pin = "";
+			this.pin1 = "";
 		} else {
-			this.$.pinPadErrMsg.setContent("PINs don't match");
+			this.$.pinPadErrMsg.setContent($L("PINs do not match"));
 			this.$.PINPad.openAtCenter();
 		}
 	},
 	pinPadCancelTapped: function(inSender, inEvent) {
 		this.$.PINPad.hide();
+		this.currentPINKnown = false;
 		this.$.pinPadErrMsg.setContent("");
 		this.$.digits.setContent("");
 		this.pin1 = "";
@@ -508,6 +522,17 @@ enyo.kind({
 		}*/
 
 		this.$.ImportWallpaper.send(params);
+	},
+	handleBackGesture: function(inSender, inEvent) {
+		if (this.$.LockPasswordSetter.showing) {
+			this.pwdSetterCancelTapped();
+		} else if (this.$.LockPasswordChecker.showing) {
+			this.pwdCheckerCancelTapped();
+		} else if (this.$.PINPad.showing) {
+			this.pinPadCancelTapped();
+		} else {
+			this.doBackbutton();
+		}
 	},
 	//Service Callbacks
 	handleGetPropertiesResponse: function(inSender, inResponse) {
@@ -640,13 +665,19 @@ enyo.kind({
 				this.log("Set no lock password sent");
 				break;
 			case "pin":
+				this.currentPINKnown = true;
+				this.$.pinInstruction.setContent($L("Enter PIN"));
+				this.$.PINPad.openAtCenter();
 				break;
 			case "password":
+				this.$.LockPasswordSetter.openAtCenter();
 				break;
 			}
 		} else {
 			this.log("The given passcode was incorrect");
 		}
+		// Make sure the controls reflect the current state
+		// until it is no longer the current state
 		this.$.GetDeviceLockMode.send({});
 		this.log("Get lockmode sent");
 	},

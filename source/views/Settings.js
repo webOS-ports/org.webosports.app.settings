@@ -44,7 +44,7 @@ enyo.kind({
 	realtimeFit: true,
 	arrangerKind: "CollapsingArranger",
 	events: {
-		onBackMain: "",
+		onBackMain: ""
 	},
 	handlers: {
 		onBackbutton: "backButton"
@@ -172,13 +172,15 @@ enyo.kind({
 			this.$.CertificatesPanel.handleBackGesture();
 		else if (this.currentPanel === "DateTimePanel")
 			this.$.DateTimePanel.handleBackGesture();
+		else if (this.currentPanel === "ScreenLockPanel")
+			this.$.ScreenLockPanel.handleBackGesture();
 		else
 			this.setIndex(0);
 	},
 	backButton: function(inSender, inEvent){
 		this.log("sender:", inSender, ", event:", inEvent);
 		this.setIndex(0);
-	},
+	}
 });
 
 enyo.kind({
@@ -190,7 +192,7 @@ enyo.kind({
 		onCoreNaviDragStart: "handleCoreNaviDragStart",
 		onCoreNaviDrag: "handleCoreNaviDrag",
 		onCoreNaviDragFinish: "handleCoreNaviDragFinish",
-		onrelaunch: "handleRelaunch",
+		onrelaunch: "handleRelaunch"
 		},
 		{name: "AppPanels", kind: "AppPanels", fit: true},
 		{kind: "CoreNavi", fingerTracking: true}
@@ -255,5 +257,5 @@ enyo.kind({
 		inEvent.ddx = -inEvent.ddx;
 		inEvent.xDirection = -inEvent.xDirection;
 		return inEvent;
-	},
+	}
 });
