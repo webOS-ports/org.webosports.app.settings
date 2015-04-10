@@ -74,11 +74,6 @@ enyo.kind({
 		}]
 	}
 	],
-	reflow: function(inSender , inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);
-		this.inherited(arguments);
-		this.render;
-	},
 	handlers: {
 		onmousedown: "pressed",
 		ondragstart: "released",
