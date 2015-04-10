@@ -62,6 +62,10 @@
     line-height: 44px;
     border-bottom: 1px solid #AAAAAA;
 }
+.tz-group-item {
+    padding: 8px;
+    border-bottom: 1px solid #AAAAAA;
+}
 .error-popup {
     position: absolute;
     left: 0;
@@ -84,7 +88,6 @@
 .wifi-list-icon {
 	vertical-align: middle;
  	padding: 10px;
- 
 }
 .wifi-join-button {
     padding: 8px 0;
