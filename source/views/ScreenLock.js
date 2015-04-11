@@ -453,9 +453,11 @@ enyo.kind({
 			}
 			this.$.digits.setContent("");
 		} else if (this.pin1 === "") {
-			this.pin1 = this.$.digits.content;
-			this.$.digits.setContent("");
-			this.$.pinInstruction.setContent($L("Confirm PIN"));
+			if (this.$.digits.content !== "") {
+				this.pin1 = this.$.digits.content;
+				this.$.digits.setContent("");
+				this.$.pinInstruction.setContent($L("Confirm PIN"));
+			}
 			this.$.PINPad.openAtCenter();
 		} else if (this.$.digits.content === this.pin1) {
 			if (this.palm) {
