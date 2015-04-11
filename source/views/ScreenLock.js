@@ -29,13 +29,13 @@ enyo.kind({
 	actOnChange_lockModePicker: false,
 	components:[
 		{kind: "onyx.Toolbar",
-		style: "line-height: 36px;",
+		style: "line-height: 28px;",
 		components:[
 				{content: "Screen & Lock"},
 		]},
 		{name: "ImagePicker", kind: "FilePicker", fileType:["image"], onPickFile: "selectedImageFile", autoDismiss: true},
 		{name: "LockPasswordSetter", kind: "enyo.ModalDialog",
-		 scrim: true,
+		 floating: true, scrim: true,
 		 components: [
 			 {content: $L("Set Password")},
 			 {name: "setPwdErrMsg", content: ""},
@@ -46,12 +46,13 @@ enyo.kind({
 			  placeholder: $L("Confirm password")},
 			 {tag: "br"},
 			 {kind: "onyx.Button", content: $L("Done"), classes: "onyx-affirmative",
-			  ontap: "pwdSetterDoneTapped"},
+			  style: "width: 100%;", ontap: "pwdSetterDoneTapped"},
 			 {tag: "br"},
-			 {kind: "onyx.Button", content: $L("Cancel"),
+			 {kind: "onyx.Button", content: $L("Cancel"), style: "width: 100%;",
 			  ontap: "pwdSetterCancelTapped"}
 		 ]},
 		{name: "LockPasswordChecker", kind: "enyo.ModalDialog",
+		 floating: true, scrim: true,
 		 components: [
 			 {content: $L("Enter Password")},
 			 {name: "checkPwdErrMsg", content: ""},
@@ -59,24 +60,26 @@ enyo.kind({
 			  placeholder: $L("Enter password")},
 			 {tag: "br"},
 			 {kind: "onyx.Button", content: $L("Done"), classes: "onyx-affirmative",
-			  ontap: "pwdCheckerDoneTapped"},
+			  style: "width: 100%;", ontap: "pwdCheckerDoneTapped"},
 			 {tag: "br"},
-			 {kind: "onyx.Button", content: $L("Cancel"),
+			 {kind: "onyx.Button", content: $L("Cancel"), style: "width: 100%;",
 			  ontap: "pwdCheckerCancelTapped"}
 		 ]},
 		{name: "PINPad", kind: "enyo.ModalDialog",
+		 floating: true, scrim: true,
 		 components: [
 			 {name: "pinInstruction", content: ""},
 			 {tag: "br"},
 			 {name: "pinPadErrMsg", content: ""},
 			 {tag: "br"},
-			 {name: "digits", content: ""},
+			 {name: "digits", content: "", value: "", allowHtml: true,
+			  style: "height: 24px; text-align: center"},
 			 {tag: "br"},
 			 {kind: "PINNumberPad", onKeyTapped: "pinKeyTapped"},
-			 {kind: "onyx.Button", content: $L("Cancel"),
+			 {kind: "onyx.Button", content: $L("Cancel"), style: "width: 100%;",
 			  ontap: "pinPadCancelTapped"},
 			 {kind: "onyx.Button", content: $L("Done"), classes: "onyx-affirmative",
-			  ontap: "pinPadDoneTapped"}
+			  style: "width: 100%;", ontap: "pinPadDoneTapped"}
 		 ]},
 		{kind: "Scroller",
 		touch: true,
@@ -446,20 +449,22 @@ enyo.kind({
 		this.$.pinPadErrMsg.setContent("");
 		if (!this.currentPINKnown) {
 			if (this.palm) {
-				this.$.MatchDevicePasscode.send({passCode:this.$.digits.content});
+				this.$.MatchDevicePasscode.send({passCode:this.$.digits.value});
 				this.log("Match passcode sent");
 			} else {
 				this.log("Match passcode suppressed");
 			}
 			this.$.digits.setContent("");
+			this.$.digits.value = "";
 		} else if (this.pin1 === "") {
-			if (this.$.digits.content !== "") {
-				this.pin1 = this.$.digits.content;
+			if (this.$.digits.value !== "") {
+				this.pin1 = this.$.digits.value;
 				this.$.digits.setContent("");
+				this.$.digits.value = "";
 				this.$.pinInstruction.setContent($L("Confirm PIN"));
 			}
 			this.$.PINPad.openAtCenter();
-		} else if (this.$.digits.content === this.pin1) {
+		} else if (this.$.digits.value === this.pin1) {
 			if (this.palm) {
 				this.$.SetDevicePasscode.send({lockMode:"pin",passCode:this.pin1});
 				this.log("Set lock PIN sent");
@@ -469,10 +474,12 @@ enyo.kind({
 				this.log("Set lock PIN suppressed");
 			}
 			this.$.digits.setContent("");
+			this.$.digits.value = "";
 			this.pin1 = "";
 		} else {
 			this.$.pinPadErrMsg.setContent($L("PINs do not match"));
 			this.$.digits.setContent("");
+			this.$.digits.value = "";
 			this.$.PINPad.openAtCenter();
 		}
 	},
@@ -483,17 +490,20 @@ enyo.kind({
 		this.currentPINKnown = false;
 		this.$.pinPadErrMsg.setContent("");
 		this.$.digits.setContent("");
+		this.$.digits.value = "";
 		this.pin1 = "";
 	},
 	pinKeyTapped: function(inSender, inEvent) {
 		switch (inEvent.value) {
 		case "0": case "1": case "2": case "3": case "4":
 		case "5": case "6": case "7": case "8": case "9":
-			this.$.digits.setContent(this.$.digits.content + inEvent.value);
+			this.$.digits.setContent(this.$.digits.content + "&#149;"); // Big Dot
+			this.$.digits.value += inEvent.value;
 			break;
 		default:
 			// Must be backspace then
-			this.$.digits.setContent(this.$.digits.content.slice(0, -1));
+			this.$.digits.setContent(this.$.digits.content.slice(0, -6));
+			this.$.digits.value = this.$.digits.value.slice(0, -1);
 			break;
 		}
 	},
