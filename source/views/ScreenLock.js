@@ -411,11 +411,14 @@ enyo.kind({
 			this.$.setPwd2.setValue("");
 		} else {
 			this.$.setPwdErrMsg.setContent($L("Passwords do not match"));
+			this.$.setPwd2.setValue("");
 			this.$.LockPasswordSetter.openAtCenter();
 		}
 	},
 	pwdSetterCancelTapped: function(inSender, inEvent) {
 		this.$.LockPasswordSetter.hide();
+		this.$.GetDeviceLockMode.send({});
+		this.log("Get lockmode sent");
 		this.$.setPwdErrMsg.setContent("");
 		this.$.setPwd1.setValue("");
 		this.$.setPwd2.setValue("");
@@ -433,6 +436,8 @@ enyo.kind({
 	},
 	pwdCheckerCancelTapped: function(inSender, inEvent) {
 		this.$.LockPasswordChecker.hide();
+		this.$.GetDeviceLockMode.send({});
+		this.log("Get lockmode sent");
 		this.$.checkPwdErrMsg.setContent("");
 		this.$.checkPwd.setValue("");
 	},
@@ -465,11 +470,14 @@ enyo.kind({
 			this.pin1 = "";
 		} else {
 			this.$.pinPadErrMsg.setContent($L("PINs do not match"));
+			this.$.digits.setContent("");
 			this.$.PINPad.openAtCenter();
 		}
 	},
 	pinPadCancelTapped: function(inSender, inEvent) {
 		this.$.PINPad.hide();
+		this.$.GetDeviceLockMode.send({});
+		this.log("Get lockmode sent");
 		this.currentPINKnown = false;
 		this.$.pinPadErrMsg.setContent("");
 		this.$.digits.setContent("");
