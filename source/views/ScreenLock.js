@@ -39,11 +39,13 @@ enyo.kind({
 		 components: [
 			 {content: $L("Set Password")},
 			 {name: "setPwdErrMsg", content: ""},
-			 {name: "setPwd1", kind: "onyx.Input", type: "password",
-			  placeholder: $L("Enter password")},
+			 {kind: "onyx.InputDecorator", components: [
+				 {name: "setPwd1", kind: "onyx.Input", type: "password",
+				  placeholder: $L("Enter password")}]},
 			 {tag: "br"},
-			 {name: "setPwd2", kind: "onyx.Input", type: "password",
-			  placeholder: $L("Confirm password")},
+			 {kind: "onyx.InputDecorator", components: [
+				 {name: "setPwd2", kind: "onyx.Input", type: "password",
+				  placeholder: $L("Confirm password")}]},
 			 {tag: "br"},
 			 {kind: "onyx.Button", content: $L("Done"), classes: "onyx-affirmative",
 			  style: "width: 100%;", ontap: "pwdSetterDoneTapped"},
@@ -56,8 +58,9 @@ enyo.kind({
 		 components: [
 			 {content: $L("Enter Password")},
 			 {name: "checkPwdErrMsg", content: ""},
-			 {name: "checkPwd", kind: "onyx.Input", type: "password",
-			  placeholder: $L("Enter password")},
+			 {kind: "onyx.InputDecorator", components: [
+				 {name: "checkPwd", kind: "onyx.Input", type: "password",
+				  placeholder: $L("Enter password")}]},
 			 {tag: "br"},
 			 {kind: "onyx.Button", content: $L("Done"), classes: "onyx-affirmative",
 			  style: "width: 100%;", ontap: "pwdCheckerDoneTapped"},
