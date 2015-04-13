@@ -6,7 +6,7 @@ enyo.kind({
 		onKeyTapped: ""
 	},
 	defaultKind: enyo.kind({kind: "onyx.Button",
-				classes: "onyx-toolbar",
+				classes: "onyx-toolbar, onyx-light",
 				style: "width: 33.3%; height: 25%; font-size: 32pt; font-weight: bold;",
 				ontap: "keyTapped"}),
 	components:[
@@ -22,8 +22,8 @@ enyo.kind({
 		{components: [{kind: "onyx.Icon"}], style: "border-radius: 0 0 0 16px;",
 		 disabled: true},
 		{content: "0", style: "border-radius: 0;"},
-		{components: [{kind: "onyx.Icon", src: "assets/Pin-icon-delete.png"
-		               ,style: "width: 50px; height: 50px;"}],
+		{components: [{kind: "onyx.Icon", src: "assets/Pin-icon-delete.png",
+		               style: "width: 50px; height: 50px;"}],
 		 style: "border-radius: 0 0 16px 0;"},
 	],
 	keyTapped: function(inSender) {
