@@ -4,6 +4,7 @@ enyo.depends(
 	"SystemUpdates.js",
 	"SystemUpdates.css",
 	"Sound.js",
+	"PINNumberPad.js",
 	"ScreenLock.js",
 	"pickRingTones.js",
 	"Licenses.js",
