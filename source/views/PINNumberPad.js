@@ -23,7 +23,7 @@ enyo.kind({
 		 disabled: true},
 		{content: "0", style: "border-radius: 0;"},
 		{components: [{kind: "onyx.Icon", src: "assets/Pin-icon-delete.png",
-		               style: "width: 50px; height: 50px;"}],
+		               style: "width: 36px; height: 30px;"}],
 		 style: "border-radius: 0 0 16px 0;"},
 	],
 	keyTapped: function(inSender) {
