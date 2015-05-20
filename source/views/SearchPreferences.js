@@ -57,7 +57,6 @@ enyo.kind({
 			return;
 		}
 		this.$.GetAllSearchPreference.send({});
-		this.$.GetUniversalSearchList.send({});
 		this.palm = true;
 	},
 	reflow: function(inSender) {
@@ -84,20 +83,20 @@ enyo.kind({
 		if (inResponse.SearchPreference !== undefined &&
 		    inResponse.SearchPreference.defaultSearchEngine !== undefined) {
 			this.preferredSearch = inResponse.SearchPreference.defaultSearchEngine;
+			this.$.GetUniversalSearchList.send({});
 		}
 	},
 	handleGetUniversalSearchListResponse: function(inSender, inResponse) {
 		if (inResponse["UniversalSearchList"] !== undefined) {
-			var i = 0;
-			for (var item in inResponse["UniversalSearchList"]) {
+			for (var i = 0; i < inResponse.UniversalSearchList.length; ++i) {
+				var item = inResponse.UniversalSearchList[i];
 				this.$.SearchEnginePicker.
-					createComponents({content: item.displayName},
-					                 {owner: this.$.SearchEnginePicker});
+					createComponent({content: item.displayName});
 				if (item.displayName === this.preferredSearch) {
-					this.$.SearchEnginePicker.getClientControls()[i].setActive(true);
+					this.$.SearchEnginePicker.getClientControls()[i+1].setActive(true);
 				}
-				++i;
 			}
+			this.render();
 		}
 	}
 });
