@@ -25,9 +25,11 @@ enyo.kind({
 					  {kind: "onyx.GroupboxHeader", content: "Default Search Engine"},
 					  {kind: "enyo.FittableColumns", classes: "group-item",
 					   components: [
-						   {content: "", fit: true},
-						   {kind: "onyx.PickerDecorator", components: [
-							   {},
+						   {name: "searchEngineIcon", kind: "onyx.Icon",
+						    style: "width: 48px; height: 48px"},
+						   {kind: "onyx.PickerDecorator", fit: true,
+						    components: [
+							   {name: "SearchEngineButton"},
 							   {name: "SearchEnginePicker",
 							    kind: "onyx.Picker",
 							    onChange: "searchEngineChanged",
@@ -88,15 +90,30 @@ enyo.kind({
 	},
 	handleGetUniversalSearchListResponse: function(inSender, inResponse) {
 		if (inResponse["UniversalSearchList"] !== undefined) {
+			var newIx;
 			for (var i = 0; i < inResponse.UniversalSearchList.length; ++i) {
 				var item = inResponse.UniversalSearchList[i];
 				this.$.SearchEnginePicker.
 					createComponent({content: item.displayName});
-				if (item.displayName === this.preferredSearch) {
-					this.$.SearchEnginePicker.getClientControls()[i+1].setActive(true);
+				// We cannot rely on it that the built in preferred engine
+				// has been specified with the same case as it has been
+				// specified in the built in list of options. Hoorah!
+				if (item.displayName.toLowerCase() ===
+				    this.preferredSearch.toLowerCase()) {
+					newIx = i;
 				}
 			}
-			this.render();
+			if (typeof newIx !== "undefined") {
+				this.$.searchEngineIcon.setSrc(
+					inResponse.UniversalSearchList[newIx].iconFilePath);
+				newSel = this.$.SearchEnginePicker.getClientControls()[newIx];
+				this.$.SearchEnginePicker.silence();
+				this.$.SearchEnginePicker.setSelected(newSel);
+				this.$.SearchEnginePicker.unsilence();
+				this.$.SearchEngineButton.setContent(newSel.content);
+			}
+			this.$.SearchEngineIcon.render();
+			this.$.SearchEnginePicker.render();
 		}
 	}
 });
