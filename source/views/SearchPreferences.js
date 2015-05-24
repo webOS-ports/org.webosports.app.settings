@@ -3,6 +3,9 @@ enyo.kind({
 	layoutKind: "FittableRowsLayout",
 	palm: false,
 	preferredSearch: undefined,
+	// onyx.Picker onChange always gets called twice
+	// but we only want to act once.
+	actOnChange_searchEnginePicker: false,
 	components:[
 		{kind: "onyx.Toolbar",
 		 style: "line-height: 28px;",
@@ -12,7 +15,9 @@ enyo.kind({
 			  style: "height: 100%; margin: 0;",
 			  components: [
 				  {name: "Title",
-				   content: "Just Type Preferences"}
+				   // On HP webOS 2.2.4 this was "Just Type Preferences".
+				   // I am not sure that is accurate for LuneOS.
+				   content: "Search Preferences"}
 			  ]}
 		 ]},
 		{kind: "Scroller",
@@ -29,8 +34,8 @@ enyo.kind({
 						    style: "width: 48px; height: 48px"},
 						   {kind: "onyx.PickerDecorator", fit: true,
 						    components: [
-							   {name: "SearchEngineButton"},
-							   {name: "SearchEnginePicker",
+							   {name: "searchEngineButton", content: "Not set"},
+							   {name: "searchEnginePicker",
 							    kind: "onyx.Picker",
 							    onChange: "searchEngineChanged",
 							    components: []
@@ -49,7 +54,10 @@ enyo.kind({
 		{kind: "enyo.LunaService", method: "getUniversalSearchList",
 		 name: "GetUniversalSearchList",
 		 service: "luna://com.palm.universalsearch",
-		 onComplete: "handleGetUniversalSearchListResponse"}
+		 onComplete: "handleGetUniversalSearchListResponse"},
+		{kind: "enyo.LunaService", method: "setSearchPreference",
+		 name: "SetSearchPreference",
+		 service: "luna://com.palm.universalsearch"}
 	],
 	//Handlers
 	create: function(inSender, inEvent) {
@@ -74,11 +82,21 @@ enyo.kind({
 	},
 	//Action Handlers
 	searchEngineChanged: function(inSender, inEvent) {
-		if(this.palm) {
+		if (this.actOnChange_searchEnginePicker) {
+			if (this.palm) {
+				this.$.SetSearchPreference.send({key: "defaultSearchEngine",
+				                                 value: inEvent.selected.content});
+				this.log("Set defaultSearchEngine " + inEvent.selected.content + " sent");
+				// A sure, if rather indirect, way to update the icon
+				// we are displaying
+				this.preferredSearch = inEvent.selected.content;
+				this.$.GetUniversalSearchList.send({});
+			}
+			else {
+				this.log("Set defaultSearchEngine " + inEvent.selected.content + " suppressed");
+			}
 		}
-		else {
-			this.log(inSender.selected);
-		}
+		this.actOnChange_searchEnginePicker = !this.actOnChange_searchEnginePicker;
 	},
 	//Service Callbacks
 	handleGetAllSearchPreferenceResponse: function(inSender, inResponse) {
@@ -89,11 +107,14 @@ enyo.kind({
 		}
 	},
 	handleGetUniversalSearchListResponse: function(inSender, inResponse) {
+		var newIx;
+		var item;
+		var newSel;
 		if (inResponse["UniversalSearchList"] !== undefined) {
-			var newIx;
+			this.$.searchEnginePicker.destroyClientControls();
 			for (var i = 0; i < inResponse.UniversalSearchList.length; ++i) {
-				var item = inResponse.UniversalSearchList[i];
-				this.$.SearchEnginePicker.
+				item = inResponse.UniversalSearchList[i];
+				this.$.searchEnginePicker.
 					createComponent({content: item.displayName});
 				// We cannot rely on it that the built in preferred engine
 				// has been specified with the same case as it has been
@@ -106,14 +127,13 @@ enyo.kind({
 			if (typeof newIx !== "undefined") {
 				this.$.searchEngineIcon.setSrc(
 					inResponse.UniversalSearchList[newIx].iconFilePath);
-				newSel = this.$.SearchEnginePicker.getClientControls()[newIx];
-				this.$.SearchEnginePicker.silence();
-				this.$.SearchEnginePicker.setSelected(newSel);
-				this.$.SearchEnginePicker.unsilence();
-				this.$.SearchEngineButton.setContent(newSel.content);
+				newSel = this.$.searchEnginePicker.getClientControls()[newIx];
+				this.$.searchEnginePicker.silence();
+				this.$.searchEnginePicker.setSelected(newSel);
+				this.$.searchEnginePicker.unsilence();
+				this.$.searchEngineButton.setContent(newSel.content);
 			}
-			this.$.SearchEngineIcon.render();
-			this.$.SearchEnginePicker.render();
+			this.$.searchEnginePicker.render();
 		}
 	}
 });
