@@ -47,11 +47,11 @@ enyo.kind({
 		{kind: "onyx.Toolbar", components:[
 			{name: "Grabber", kind: "onyx.Grabber"},
 		]},
-		{kind: "enyo.LunaService", method: "getAllSearchPreference",
+		{kind: "enyo.LunaService", method: "getAllSearchPreference", subscribe: true,
 		 name: "GetAllSearchPreference",
 		 service: "luna://com.palm.universalsearch",
 		 onComplete: "handleGetAllSearchPreferenceResponse"},
-		{kind: "enyo.LunaService", method: "getUniversalSearchList",
+		{kind: "enyo.LunaService", method: "getUniversalSearchList", subscribe: true,
 		 name: "GetUniversalSearchList",
 		 service: "luna://com.palm.universalsearch",
 		 onComplete: "handleGetUniversalSearchListResponse"},
@@ -87,10 +87,6 @@ enyo.kind({
 				this.$.SetSearchPreference.send({key: "defaultSearchEngine",
 				                                 value: inEvent.selected.content});
 				this.log("Set defaultSearchEngine " + inEvent.selected.content + " sent");
-				// A sure, if rather indirect, way to update the icon
-				// we are displaying
-				this.preferredSearch = inEvent.selected.content;
-				this.$.GetUniversalSearchList.send({});
 			}
 			else {
 				this.log("Set defaultSearchEngine " + inEvent.selected.content + " suppressed");
