@@ -85,7 +85,7 @@ enyo.kind({
 		if (this.actOnChange_searchEnginePicker) {
 			if (this.palm) {
 				this.$.SetSearchPreference.send({key: "defaultSearchEngine",
-				                                 value: inEvent.selected.content});
+				                                 value: inEvent.selected.content.toLowerCase()});
 				this.log("Set defaultSearchEngine " + inEvent.selected.content + " sent");
 			}
 			else {
