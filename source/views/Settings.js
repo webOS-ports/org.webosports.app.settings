@@ -97,6 +97,7 @@ enyo.kind({
 				{kind: "ListItem", icon: "icon.png", title: "Screen & Lock", ontap: "openPanel", targetPanel: "ScreenLockPanel"},
 				{kind: "ListItem", icon: "icon.png", title: "Date & Time", ontap: "openPanel", targetPanel: "DateTimePanel"},
 				{kind: "ListItem", icon: "icon.png", title: "Sound & Ringtones", ontap: "openPanel", targetPanel: "AudioPanel"},
+				{kind: "ListItem", icon: "icon.png", title: "Search Preferences", ontap: "openPanel", targetPanel: "SearchPreferencesPanel"},
 				{kind: "ListItem", icon: "icon.png", title: "Language & Input", ontap: "openPanel", targetPanel: "LanguageInputPanel"},
 				{kind: "ListItem", name: "DevModemListItem", icon: "icon.png", title: "Developer Options", ontap: "openPanel", targetPanel: "DevOptionsPanel", showing: false},
 				{kind: "ListItem", icon: "icon.png", title: "About", ontap: "openPanel", targetPanel: "AboutPanel"}
@@ -116,6 +117,7 @@ enyo.kind({
 			{name: "ScreenLockPanel", kind: "ScreenLock"},
 			{name: "DateTimePanel", kind: "DateTime"},
 			{name: "AudioPanel", kind: "Sound"},
+			{name: "SearchPreferencesPanel", kind: "SearchPreferences"},
 			{name: "DevOptionsPanel", kind: "DevOptions"},
 			{name: "TelephonyPanel", kind: "Telephony"},
 			{name: "LanguageInputPanel", kind: "LanguageInput"},
