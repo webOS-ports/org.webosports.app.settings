@@ -2,7 +2,8 @@ enyo.kind({
 	name: "SearchPreferences",
 	layoutKind: "FittableRowsLayout",
 	palm: false,
-	preferredSearch: undefined,
+	preferredSearchId: undefined,
+	universalSearchList: undefined,
 	// onyx.Picker onChange always gets called twice
 	// but we only want to act once.
 	actOnChange_searchEnginePicker: false,
@@ -82,14 +83,31 @@ enyo.kind({
 	},
 	//Action Handlers
 	searchEngineChanged: function(inSender, inEvent) {
+		var id;
 		if (this.actOnChange_searchEnginePicker) {
 			if (this.palm) {
-				this.$.SetSearchPreference.send({key: "defaultSearchEngine",
-				                                 value: inEvent.selected.content.toLowerCase()});
-				this.log("Set defaultSearchEngine " + inEvent.selected.content + " sent");
+				// The picker does not tell us the selected id,
+				// it tells us the selected displayName.
+				// (At least it is a reasonable assumption that
+				// both are unique sets.)
+				for (var i = 0; i < this.universalSearchList.length; ++i) {
+					if (inEvent.selected.content ===
+					    this.universalSearchList[i].displayName) {
+						id = this.universalSearchList[i].id;
+					}
+				}
+				if (id !== undefined) {
+					this.$.SetSearchPreference.send({key: "defaultSearchEngine",
+					                                 value: id});
+					this.log("Set defaultSearchEngine " + id + " sent");
+				} else {
+					this.log("Somehow selected unknown search engine: " +
+					         inEvent.selected.content);
+				}
 			}
 			else {
-				this.log("Set defaultSearchEngine " + inEvent.selected.content + " suppressed");
+				this.log("Set defaultSearchEngine " + inEvent.selected.content +
+				         " suppressed");
 			}
 		}
 		this.actOnChange_searchEnginePicker = !this.actOnChange_searchEnginePicker;
@@ -98,7 +116,7 @@ enyo.kind({
 	handleGetAllSearchPreferenceResponse: function(inSender, inResponse) {
 		if (inResponse.SearchPreference !== undefined &&
 		    inResponse.SearchPreference.defaultSearchEngine !== undefined) {
-			this.preferredSearch = inResponse.SearchPreference.defaultSearchEngine;
+			this.preferredSearchId = inResponse.SearchPreference.defaultSearchEngine;
 			this.$.GetUniversalSearchList.send({});
 		}
 	},
@@ -107,27 +125,30 @@ enyo.kind({
 		var item;
 		var newSel;
 		if (inResponse["UniversalSearchList"] !== undefined) {
+			// Keep a note of the list.
+			// searchEngineChanged assumes it and the picker map one-to-one
+			// so set things up that way.
+			this.universalSearchList = inResponse.UniversalSearchList;
 			this.$.searchEnginePicker.destroyClientControls();
-			for (var i = 0; i < inResponse.UniversalSearchList.length; ++i) {
-				item = inResponse.UniversalSearchList[i];
+			for (var i = 0; i < this.universalSearchList.length; ++i) {
+				item = this.universalSearchList[i];
 				this.$.searchEnginePicker.
 					createComponent({content: item.displayName});
-				// We cannot rely on it that the built in preferred engine
-				// has been specified with the same case as it has been
-				// specified in the built in list of options. Hoorah!
-				if (item.displayName.toLowerCase() ===
-				    this.preferredSearch.toLowerCase()) {
+				if (item.id === this.preferredSearchId) {
 					newIx = i;
 				}
 			}
 			if (typeof newIx !== "undefined") {
 				this.$.searchEngineIcon.setSrc(
-					inResponse.UniversalSearchList[newIx].iconFilePath);
+					this.universalSearchList[newIx].iconFilePath);
 				newSel = this.$.searchEnginePicker.getClientControls()[newIx];
 				this.$.searchEnginePicker.silence();
 				this.$.searchEnginePicker.setSelected(newSel);
 				this.$.searchEnginePicker.unsilence();
 				this.$.searchEngineButton.setContent(newSel.content);
+			} else {
+				this.$.searchEngineButton.setContent("Unrecognised: " +
+					this.preferredSearchId);
 			}
 			this.$.searchEnginePicker.render();
 		}
