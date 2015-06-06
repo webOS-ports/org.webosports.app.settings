@@ -1,4 +1,3 @@
-
 var phonyringTones = [
 		{
 			"name": "Tones 3 beep",
@@ -41,7 +40,7 @@ enyo.kind({
 			]}
 		]},
 		{name: "playButton", kind: "onyx.IconButton", active: "false", style: "float: left;", src: "assets/Email-btn_controls_play.png", ontap: "playTapped"},
-		{kind: "onyx.Button", content: "Close", style: "float: right;", ontap: "closePpoup"},
+		{kind: "onyx.Button", content: "Close", style: "float: right;", ontap: "closePopup"},
 		{name: "audio", kind: "enyo.Audio"}
 	],
 	
@@ -92,11 +91,10 @@ enyo.kind({
 		
 	},
 	
-	closePpoup: function(inSender, inEvent) {
+	closePopup: function(inSender, inEvent) {
 		// TO DO - Auto-generated code
 		this.$.audio.pause();
 		this.doClose();
 		this.$.toneList.refresh();
-	},
-
+	}
 });
