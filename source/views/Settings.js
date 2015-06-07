@@ -139,7 +139,7 @@ enyo.kind({
 	},
 	//Action Functions
 	wifiActiveChanged: function(inSender, inEvent) {
-		this.$.WiFiToggle.setValue(inEvent.value);
+		this.$.WiFiToggle.setValue(inEvent.value);//@@
 	},
 	wifiToggleChanged: function(inSender) {
 		this.$.WiFiPanel.setToggleValue(inSender.value);
@@ -147,7 +147,7 @@ enyo.kind({
 	},
 	muteChanged: function(inSender, inEvent) {
 		this.$.muteToggle.silence();
-		this.$.muteToggle.setValue(inEvent.value);
+		this.$.muteToggle.setValue(inEvent.mute);
 		this.$.muteToggle.unsilence();
 	},
 	muteToggleChanged: function(inSender) {

@@ -132,9 +132,9 @@ enyo.kind({
 		this.$.muteToggle.setValue(value);
 	},
 	muteToggleChanged: function(inSender, inEvent) {
-		this.mute = inEvent;
+		this.mute = inEvent.value;
 		// @@ Call the service here
-		this.doMuteChanged(inEvent);
+		this.doMuteChanged({mute: this.mute});
 	},
 	ringerPopup: function(inSender, inEvent) {
 		this.$.ringPickerPopup.show();
@@ -174,6 +174,7 @@ enyo.kind({
 			this.$.muteToggle.silence();
 			this.$.muteToggle.setValue(this.mute);
 			this.$.muteToggle.unsilence();
+			this.doMuteChanged({mute: this.mute});
 		}
 	}
 });
