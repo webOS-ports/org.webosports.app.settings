@@ -39,7 +39,8 @@ enyo.kind({
 						{kind: "enyo.FittableColumns", classes: "group-item", components: [
 							{style: "padding-top: 0px;", content: "Volume "},
 							{kind: "onyx.TooltipDecorator", style: "padding-top: 2.5px;", fit: true, components: [
-								{name: "volumeSlider", kind: "onyx.Slider", value: "20", onChanging: "volumeChange"}
+								{name: "volumeSlider", kind: "onyx.Slider",
+								 onChanging: "volumeChange", onChange: "volumeChange"}
 							]}
 						]},
 						{kind: "enyo.FittableColumns", classes: "group-item", style: "padding-bottom: 1px;", components: [
@@ -66,10 +67,10 @@ enyo.kind({
 						{kind: "enyo.FittableColumns", classes: "group-item", components: [
 							{content: "Ringer Volume ", style:  "padding-top: 0px;"},
 							{kind: "onyx.TooltipDecorator", style: "padding-top: 2.5px;", fit: true, components: [
-								{name:"ringerSlider", kind: "onyx.Slider", value: "20", onChanging: "ringerVolumeChange"}
+								{name:"ringerSlider", kind: "onyx.Slider", onChanging: "ringerVolumeChange"}
 							]}
 						]},
-						{ kind: "enyo.FittableColumns", classes: "group-item", style: "padding: 0px;", components: [
+						{kind: "enyo.FittableColumns", classes: "group-item", style: "padding: 0px;", components: [
 							{name: "ringerPicker", kind: "onyx.Button", fit: true,  content: "Ring tone Picker ", ontap: "ringerPopup"},
 						]},
 					]}
@@ -88,7 +89,11 @@ enyo.kind({
 		]},
 		{name: "GetAudioStatus", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
 		 subscribe: true,
-		 method: "getStatus", onComplete: "handleGetAudioStatusResponse"}
+		 method: "getStatus", onComplete: "handleGetAudioStatusResponse"},
+		{name: "SetMute", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
+		 method: "setMute"},
+		{name: "SetVolume", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
+		 method: "setVolume"}
 	],
 	//Handlers
 	create: function() {
@@ -102,11 +107,10 @@ enyo.kind({
 			this.system = true;
 			this.ringerVolume = 65;
 			this.systemVolume = 45;
-		}
-		this.showState();
-		if (!window.PalmSystem) {
+			this.showState();
 			return;
 		}
+		this.palm = true;
 		this.$.GetAudioStatus.send({});
 	},
 	reflow: function (inSender) {
@@ -122,7 +126,7 @@ enyo.kind({
 	showState: function() {
 		this.$.muteToggle.setValue(this.mute);
 		this.$.keyClicksToggle.setValue(this.keys);
-		this.$.vibrateToggle.setValue(this.vibrate);	
+		this.$.vibrateToggle.setValue(this.vibrate);
 		this.$.systemSoundToggle.setValue(this.system);
 		this.$.volumeSlider.setValue(this.systemVolume);
 		this.$.ringerSlider.setValue(this.ringerVolume);
@@ -133,7 +137,9 @@ enyo.kind({
 	},
 	muteToggleChanged: function(inSender, inEvent) {
 		this.mute = inEvent.value;
-		// @@ Call the service here
+		if (this.palm) {
+			this.$.SetMute.send({mute: this.mute});
+		}
 		this.doMuteChanged({mute: this.mute});
 	},
 	ringerPopup: function(inSender, inEvent) {
@@ -156,7 +162,10 @@ enyo.kind({
 		this.system = inEvent.value;
 	},
 	volumeChange: function(inSender, inEvent) {
-		this.systemVolume = inEvent.value;
+		this.systemVolume = parseInt(inEvent.value, 10);
+		if (this.palm) {
+			this.$.SetVolume.send({volume: this.systemVolume});
+		}
 	},
 	ringerVolumeChange: function(inSender, inEvent) {
 		this.ringerVolume = inEvent.value;
