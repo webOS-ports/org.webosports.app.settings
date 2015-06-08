@@ -13,6 +13,7 @@ enyo.kind({
 	mute: false,
 	keys: false,
 	vibrate: false,
+	micMute: false,
 	system: false,
 	systemVolume: 0,
 	ringerVolume: 0,
@@ -51,17 +52,25 @@ enyo.kind({
 							]}
 						]},
 						{kind: "enyo.FittableColumns", classes: "group-item", components: [
-							{name: "vibrate", fit: true, content: "Vibrate"},
+							{fit: true, content: "Vibrate"},
 							{kind: "onyx.TooltipDecorator", components: [
 								{name: "vibrateToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "vib"},
 								{kind: "onyx.Tooltip", content: "Keyboard Vibrate on/off"}
 							]}
 						]},
 						{kind: "enyo.FittableColumns", classes: "group-item", components: [
+							{fit: true, content: "Mic Mute"},
+							{kind: "onyx.TooltipDecorator", components: [
+								{name: "micMuteToggle", kind: "onyx.ToggleButton", style: "float: right;",
+								 onChange: "micMuteToggleChanged"},
+								{kind: "onyx.Tooltip", content: "Mic mute on/off"}
+							]}
+						]},
+						{kind: "enyo.FittableColumns", classes: "group-item", components: [
 							{fit: true, content: "System Sounds"},
 							{kind: "onyx.TooltipDecorator", components: [
 								{name: "systemSoundToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "systemSounds"},
-								{kind: "onyx.Tooltip", content: "System sound  on/off"}
+								{kind: "onyx.Tooltip", content: "System sound on/off"}
 							]}
 						]},
 						{kind: "enyo.FittableColumns", classes: "group-item", components: [
@@ -93,7 +102,9 @@ enyo.kind({
 		{name: "SetMute", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
 		 method: "setMute"},
 		{name: "SetVolume", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
-		 method: "setVolume"}
+		 method: "setVolume"},
+		{name: "SetMicMute", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
+		 method: "setMicMute"}
 	],
 	//Handlers
 	create: function() {
@@ -158,6 +169,12 @@ enyo.kind({
 	vib: function(inSender, inEvent) {
 		this.vibrate = inEvent.value;
 	},
+	micMuteToggleChanged: function(inSender, inEvent) {
+		this.micMute = inEvent.value;
+		if (this.palm) {
+			this.$.SetMicMute.send({micMute: this.micMute});
+		}
+	},
 	systemSounds: function(inSender, inEvent) {
 		this.system = inEvent.value;
 	},
@@ -184,6 +201,12 @@ enyo.kind({
 			this.$.muteToggle.setValue(this.mute);
 			this.$.muteToggle.unsilence();
 			this.doMuteChanged({mute: this.mute});
+		}
+		if (inResponse.micMute != undefined) {
+			this.micMute = inResponse.micMute;
+			this.$.micMuteToggle.silence();
+			this.$.micMuteToggle.setValue(this.micMute);
+			this.$.micMuteToggle.unsilence();
 		}
 	}
 });
