@@ -24,7 +24,8 @@ enyo.kind({
 		onClose: "",
 		onTone: ""
 	},
-	
+
+	palm: false,
 	pickedName: "",
 	pickedScr: "",
 
@@ -50,9 +51,10 @@ enyo.kind({
 		if (!window.PalmSystem) {
 			// if we're outside the webOS system add some entries for easier testing
 			this.ringTones = phonyringTones;
-        }
-        this.loadData();
-        this.$.toneList.setCount(this.ringTones.length);
+		}
+		this.palm = true;
+		this.loadData();
+		this.$.toneList.setCount(this.ringTones.length);
 	},
 	
 	loadData: function(inSender, inEvent) {
@@ -88,7 +90,6 @@ enyo.kind({
 		this.doTone(this.pickedName);
 		
 		console.log(" tone picked =",  this.ringTones[i].scr);
-		
 	},
 	
 	closePopup: function(inSender, inEvent) {

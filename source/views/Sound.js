@@ -47,14 +47,16 @@ enyo.kind({
 						{kind: "enyo.FittableColumns", classes: "group-item", style: "padding-bottom: 1px;", components: [
 							{fit: true, content: "Keyboard Clicks"},
 							{kind: "onyx.TooltipDecorator", components: [
-								{name: "keyClicksToggle", kind: "onyx.ToggleButton", style: "float: right; ", onChange: "keyClicks"},
+								{name: "keyClicksToggle", kind: "onyx.ToggleButton", style: "float: right;",
+								 disabled: true, onChange: "keyClicks"},
 								{kind: "onyx.Tooltip", content: "Keyboard Clicks on/off"}
 							]}
 						]},
 						{kind: "enyo.FittableColumns", classes: "group-item", components: [
 							{fit: true, content: "Vibrate"},
 							{kind: "onyx.TooltipDecorator", components: [
-								{name: "vibrateToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "vib"},
+								{name: "vibrateToggle", kind: "onyx.ToggleButton", style: "float: right;",
+								 disabled: true, onChange: "vib"},
 								{kind: "onyx.Tooltip", content: "Keyboard Vibrate on/off"}
 							]}
 						]},
@@ -69,14 +71,16 @@ enyo.kind({
 						{kind: "enyo.FittableColumns", classes: "group-item", components: [
 							{fit: true, content: "System Sounds"},
 							{kind: "onyx.TooltipDecorator", components: [
-								{name: "systemSoundToggle", kind: "onyx.ToggleButton", style: "float: right;", onChange: "systemSounds"},
+								{name: "systemSoundToggle", kind: "onyx.ToggleButton", style: "float: right;",
+								 disabled: true, onChange: "systemSounds"},
 								{kind: "onyx.Tooltip", content: "System sound on/off"}
 							]}
 						]},
 						{kind: "enyo.FittableColumns", classes: "group-item", components: [
 							{content: "Ringer Volume ", style:  "padding-top: 0px;"},
 							{kind: "onyx.TooltipDecorator", style: "padding-top: 2.5px;", fit: true, components: [
-								{name:"ringerSlider", kind: "onyx.Slider", onChanging: "ringerVolumeChange"}
+								{name:"ringerSlider", kind: "onyx.Slider",
+								 disabled: true, onChanging: "ringerVolumeChange"}
 							]}
 						]},
 						{kind: "enyo.FittableColumns", classes: "group-item", style: "padding: 0px;", components: [
