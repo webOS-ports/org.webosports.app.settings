@@ -23,54 +23,28 @@ enyo.kind({
 			fit: true,
 			components: [
 				{
-					name: "SSID",
-					content: "SSID"
-				}, //ssid
+                    name: "DeviceType",
+                    kind: "Image",
+                    src: "assets/bluetooth/other.png",
+                    style: "width: 32px; height: 32px; margin: 4px;",
+                    //TODO: classes
+                },
+                {
+					name: "DeviceName",
+					content: "DeviceName",
+                    style: "padding-left: 10px; line-height: 38px;",
+                    fit: true
+				}, //Device Name
 				{
-					kind: "enyo.FittableColumns",
-					style: "float: right; height: 44px;",
-					components: [
-					{
-						name: "Active",
-						kind: "Image",
-						src: "assets/wifi/checkmark.png",
-						showing: false,
-						classes: "wifi-list-icon"
-					},
-					{
-						name: "Padlock",
-						kind: "Image",
-						src: "assets/secure-icon.png",
-						showing: false,
-						classes: "wifi-list-icon"
-					},
-					{
-						name: "Signal",
-						kind: "Image",
-						src: "assets/wifi/signal-icon.png",
-						classes: "wifi-list-icon"
-					}]
+					name: "MoreInfo",
+					kind: "onyx.Button",
+					content: "Info",
+                    showing: false //TODO: Icon
+                    //src: "assets/wifi/signal-icon.png",
+					//classes: "wifi-list-icon"
 				} // icons
+                //TODO: Spinner
 			]
-		},
-		{
-			kind: "enyo.FittableColumns",
-			fit: true,
-			components: [
-			{
-				name: "StatusMessage",
-				content: "",
-				classes: "wifi-message-status",
-				showing: false,
-				style: "padding-top: 10px;"
-			},
-			{
-				name: "spin",
-				kind: "onyx.Spinner",
-				showing: false,
-				style: "padding: 30px; float: right;",
-				classes: "onyx-light"
-			}]
 		}]
 	}
 	],
@@ -87,49 +61,38 @@ enyo.kind({
 	}
 });
 
-var phonyFoundNetworks = [
+var mockDevices = [
+    //Device types: phone, keyboard, audio, other
     {
-            "name": "BTWiFi",
-            "security": [ "none" ],
-            "strength": 77,
-            "state": "ready"
+        name: "Phone",
+        type: "phone",
+        enabled: true,
+        connected: false
     },
     {
-            "name": "BTWiFi-with-FON",
-            "security": [ "none" ],
-            "strength": 69,
-            "state": "idle"
+        name: "Keyboard",
+        type: "keyboard",
+        enabled: false,
+        connected: false
     },
     {
-            "name": "NONAME",
-            "state": "idle",
-            "security": [ "psk" ],
-            "strength": 86
+        name: "Headset",
+        type: "audio",
+        enabled: true,
+        connected: true
     },
     {
-            "name": "SKY13476",
-            "state": "association",
-            "security": [ "psk" ],
-            "strength": 86
-    },
-    {
-            "name": "BTHub3-8MP5",
-            "security": [ "psk" ],
-            "strength": 64,
-            "state": "failure"
-    },
-    {
-            "name": "open-net",
-            "security": [ "none" ],
-            "strength": 70,
-            "state": "idle"
+        name: "Computer",
+        type: "other",
+        enabled: false,
+        connected: false
     }
 ];
 
 enyo.kind({
     name: "Bluetooth",
     layoutKind: "FittableRowsLayout",
-    foundNetworks: null,
+    foundDevices: null,
     events: {
         onActiveChanged: "",
         onBackbutton: ""
@@ -213,14 +176,14 @@ enyo.kind({
                             components: [
                                 {
                                     kind: "onyx.GroupboxHeader",
-                                    content: "Choose a Network",
+                                    content: "Devices",
                                 },
                                 {
                                     classes: "networks-scroll",
                                     kind: "Scroller",
                                     touch: true,
+                                    touchOverscroll: false,
                                     horizontal: "hidden",
-                                    fit: true,
                                     components: [{
                                             name: "SearchRepeater",
                                             kind: "Repeater",
@@ -235,10 +198,6 @@ enyo.kind({
                                             ]
                                     }]
                                 },
-                                {name: "networkSearch", kind: "enyo.FittableColumns", showing: false, classes: "wifi-join-button", components: [
-									{content: "Searching for networks", fit: true, classes: "networkSearch"},
-									{name: "spin2",	kind: "onyx.Spinner", showing: true, style: "padding: 30px;", classes: "onyx-light" },
-                                ]},				//network search spinner
                                 {
                                     name: "JoinButton",
                                     kind: "enyo.FittableColumns",
@@ -249,7 +208,7 @@ enyo.kind({
                                             src: "assets/wifi/join-plus-icon.png"
                                         },
                                         {
-                                            content: "Join Network",
+                                            content: "Add Device",
                                             fit: true
                                         },
                                         
@@ -578,14 +537,13 @@ enyo.kind({
             // Bluetooth is enabled by default
             this.handleBluetoothEnabled();
             // if we're outside the webOS system add some entries for easier testing
-            this.foundNetworks = phonyFoundNetworks;
-            this.$.SearchRepeater.setCount(this.foundNetworks.length);
+            this.foundDevices = mockDevices;
+            this.$.SearchRepeater.setCount(this.foundDevices.length);
             return;
         }
 
         this.palm = true;
 
-        console.log(navigator);
         if (!navigator.BluetoothManager)
             return;
 
@@ -620,7 +578,7 @@ enyo.kind({
         this.doActiveChanged(inEvent);
     },
     listItemTapped: function (inSender, inEvent) {
-        var selectedNetwork = this.foundNetworks[inEvent.index];
+        var selectedNetwork = this.foundDevices[inEvent.index];
 
         // don't try to connect to already connected or connecting network
         if (selectedNetwork.state != "idle" && selectedNetwork.state != "failure") {
@@ -653,9 +611,9 @@ enyo.kind({
     },
     triggerWifiConnect: function () {
         var i, path = "";
-        for (i = 0; i < this.foundNetworks.length; i++) {
-            if (this.foundNetworks[i].name === this.wifiTarget.ssid) {
-                path = this.foundNetworks[i].path;
+        for (i = 0; i < this.foundDevices.length; i++) {
+            if (this.foundDevices[i].name === this.wifiTarget.ssid) {
+                path = this.foundDevices[i].path;
             }
         }
         this.currentNetwork = {
@@ -680,69 +638,49 @@ enyo.kind({
         return 0;
     },
     setupSearchRow: function (inSender, inEvent) {
-    	var ssid = "";
-    	if(enyo.Panels.isScreenNarrow()){
-    		if(this.foundNetworks[inEvent.index].name.length >= 18){					// if the SSID is longer shorten it for the narrow page only
-    			ssid = this.foundNetworks[inEvent.index].name.slice(0,18) + "..";
-    		}else{
-    			ssid = this.foundNetworks[inEvent.index].name;
-    		}
-    	}else{
-    		ssid = this.foundNetworks[inEvent.index].name;
-    	}
-    	
-        inEvent.item.$.wiFiListItem.$.SSID.setContent( ssid );
-
-        switch (this.foundNetworks[inEvent.index].state) {
-        case "association":
-        case "configuration":
-            inEvent.item.$.wiFiListItem.$.Active.setShowing(false);
-            inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(true);
-            inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("Connecting ...");
-            inEvent.item.$.wiFiListItem.$.spin.setShowing(true);
-            break;
-        case "ready":
-
-        case "online":
-            inEvent.item.$.wiFiListItem.$.Active.setShowing(true);
-            inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(false);
-            inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("");
-            inEvent.item.$.wiFiListItem.$.spin.setShowing(false);
-        	break;
-        case "failure":
-            inEvent.item.$.wiFiListItem.$.Active.setShowing(false);
-            inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(true);
-            inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("Association failed!");
-            inEvent.item.$.wiFiListItem.$.spin.setShowing(false);
-            break;
-        case "idle":
-        default:
-            inEvent.item.$.wiFiListItem.$.Active.setShowing(false);
-            inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(false);
-            inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("");
-            inEvent.item.$.wiFiListItem.$.spin.setShowing(false);
-            break;
+        var deviceName = "";
+        if(enyo.Panels.isScreenNarrow() && this.foundDevices[inEvent.index].name.length >= 18){ // if the name is longer shorten it for the narrow page only
+            deviceName = this.foundDevices[inEvent.index].name.slice(0,18) + "..";
+        }else{
+            deviceName = this.foundDevices[inEvent.index].name;
         }
 
-        if (!this.foundNetworks[inEvent.index].security.contains("none")) {
-            inEvent.item.$.wiFiListItem.$.Padlock.setShowing(true);
+        inEvent.item.$.bluetoothListItem.$.DeviceName.setContent( deviceName );
+
+        switch (this.foundDevices[inEvent.index].type) {
+            case "phone":
+                inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/phone.png");
+                inEvent.item.$.bluetoothListItem.$.MoreInfo.setShowing(true);
+                break;
+            case "keyboard":
+                inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/keyboard.png");
+                break;
+            case "audio":
+                inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/audio.png");
+                break;
+            case "other":
+                inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/computer.png");
+                break;
         }
 
-        if (this.foundNetworks[inEvent.index].strength) {
-            var bars = this.signalStrengthToBars(this.foundNetworks[inEvent.index].strength);
-            inEvent.item.$.wiFiListItem.$.Signal.setSrc("assets/wifi/signal-icon-" + bars + ".png");
-		}
+        inEvent.item.$.bluetoothListItem.$.DeviceName.addRemoveClass("bluetooth-disabled", !this.foundDevices[inEvent.index].enabled);
+
+        if (this.foundDevices[inEvent.index].enabled){
+            inEvent.item.$.bluetoothListItem.$.DeviceName.addRemoveClass("bluetooth-active", this.foundDevices[inEvent.index].connected);
+            //TODO: Change icon to "active" icon if active.
+        }
     },
     setupKnownNetworkRow: function (inSender, inEvent) {
+
     	var ssid = "";	
 		if(enyo.Panels.isScreenNarrow()){
-    		if(this.foundNetworks[inEvent.index].name.length >= 18){					// if the SSID is longer shortten it for the narrow page only
-    			ssid = this.foundNetworks[inEvent.index].name.slice(0,18) + "..";
+    		if(this.foundDevices[inEvent.index].name.length >= 18){					// if the SSID is longer shortten it for the narrow page only
+    			ssid = this.foundDevices[inEvent.index].name.slice(0,18) + "..";
     		}else{
-    			ssid = this.foundNetworks[inEvent.index].name;
+    			ssid = this.foundDevices[inEvent.index].name;
     		}
     	}else{
-    		ssid = this.foundNetworks[inEvent.index].name;
+    		ssid = this.foundDevices[inEvent.index].name;
     	}
         inEvent.item.$.wiFiListItem.$.SSID.setContent( ssid );
         inEvent.item.$.wiFiListItem.$.Security.setContent(this.knownNetworks[inEvent.index].security);
@@ -861,13 +799,8 @@ enyo.kind({
         this.showNetworksList();
     },
     updateSpinnerState: function(action) {
-		this.log("action:", action);
-		
-		if (action === "start" ){
-			this.$.networkSearch.show();
-		}else{
-			this.$.networkSearch.hide();
-		}
+		//TODO: remove?
+        this.log("action:", action);
     },
 
     handleBackGesture: function(inSender, inEvent) {
@@ -885,9 +818,9 @@ enyo.kind({
 	},
 
     //Utility Functions
-    clearFoundNetworks: function () {
-        this.foundNetworks = [];
-        this.$.SearchRepeater.setCount(this.foundNetworks.length);
+    clearfoundDevices: function () {
+        this.foundDevices = [];
+        this.$.SearchRepeater.setCount(this.foundDevices.length);
     },
     validatePassword: function (key) {
         var pass = false;
@@ -903,7 +836,7 @@ enyo.kind({
 		if (null === this.autoscan) {
             this.log("Starting autoscan ...");
             this.autoscan = window.setInterval(enyo.bind(this, "triggerAutoscan"), 15000);
-            if (!this.foundNetworks) {
+            if (!this.foundDevices) {
                 this.triggerAutoscan();
                 this.log("this.triggerAutoscan();");
             }
@@ -927,17 +860,17 @@ enyo.kind({
     //Service Callbacks
     handleRetrieveNetworksResponse: function (networks) {
         this.log(networks);
-        this.clearFoundNetworks();
+        this.clearfoundDevices();
         if (networks) {
-            this.foundNetworks = networks;
-            this.$.SearchRepeater.setCount(this.foundNetworks.length);
+            this.foundDevices = networks;
+            this.$.SearchRepeater.setCount(this.foundDevices.length);
             if (this.wifiTarget && this.connecting != true) {
                 this.triggerWifiConnect();
             }
         }
     },
     handleRetrieveNetworksFailed: function() {
-        this.clearFoundNetworks();
+        this.clearfoundDevices();
     },
     handleBluetoothEnabled: function() {
         this.$.BluetoothToggle.setValue(true);
