@@ -12,80 +12,182 @@ Array.prototype.contains = function(obj) {
 
 enyo.kind({
 	name: "BluetoothListItem",
-	classes: "group-item-wrapper",
+	//classes: "group-item-wrapper",
+    style: "position: relative;",
+
+    events: {
+        onDeleteDevice: "",
+        onDeviceNameChanged: "",
+        onInfoButtonTapped: ""
+    },
+
 	components: [
-	{
-		classes: "group-item",
-		layoutKind: "enyo.FittableRowsLayout",
-		components: [
-		{
-			kind: "enyo.FittableColumns",
-			fit: true,
-			components: [
-				{
-                    name: "DeviceType",
-                    kind: "Image",
-                    src: "assets/bluetooth/other.png",
-                    style: "width: 32px; height: 32px; margin: 4px;",
-                    //TODO: classes
-                },
+        {
+            name: "BluetoothSlider",
+            kind: "enyo.Slideable",
+            min: 0,
+            max: 110,
+            unit: "%",
+            value: 0,
+            style: "position:inherit; z-index:20; background-color: #EAEAEA; line-height: 38px;",
+            preventDragPropagation: false,
+            classes: "group-item",
+            onmousedown: "pressed",
+            ondragstart: "handleDrag",
+            onmouseup: "released",
+            components: [
                 {
-					name: "DeviceName",
-					content: "DeviceName",
-                    style: "padding-left: 10px; line-height: 38px;",
-                    fit: true
-				}, //Device Name
-				{
-					name: "MoreInfo",
-					kind: "onyx.Button",
-					content: "Info",
-                    showing: false //TODO: Icon
-                    //src: "assets/wifi/signal-icon.png",
-					//classes: "wifi-list-icon"
-				} // icons
-                //TODO: Spinner
-			]
-		}]
-	}
+                    kind: "enyo.FittableColumns",
+                    fit: true,
+                    components: [
+                        {
+                            name: "DeviceType",
+                            kind: "Image",
+                            src: "assets/bluetooth/other.png",
+                            style: "width: 32px; height: 32px; margin: 4px;",
+                            //TODO: classes
+                        },
+                        {fit: true, components: [
+                            {
+                                name: "DeviceName",
+                                content: "DeviceName",
+                                style: "padding-left: 10px; line-height: 36px;",
+                                onhold: "editDeviceName"
+                            },
+                            {name: "DeviceNameInputDecorator", kind: "onyx.InputDecorator", style: "height: 18px;", showing: false, components: [
+                                {name: "DeviceNameInput", kind: "onyx.Input", placeholder: "DeviceName", style: "line-height: 24px;", selectOnFocus: true, onchange: "inputChange", onblur: "inputLostFocus"}
+                            ]}
+                        ]}, //Device Name
+                        {
+                            name: "MoreInfo",
+                            kind: "enyo.Button",
+                            showing: false,
+                            style: "margin-left: 10px;",
+                            components: [
+                                { kind: "Image", src: "assets/bluetooth/info.png", style: "width: 32px; height: 32px;"}
+                            ],
+                            ontap: "infoButtonTapped"
+                        }, // icons
+                        {
+                            name: "ConnectingSpinner",
+                            kind: "Image",
+                            src: "assets/bluetooth/connecting.gif",
+                            style: "width: 32px; height: 32px; margin: 4px; padding-top: 4px;",
+                            showing: false
+                        },
+                    ]
+                },
+            ],
+        },
+        {
+            classes: "group-item",
+            style: "position:absolute; top:0px; z-index:10; line-height: 38px; text-align: center; width: 100%; background-image:url('assets/bg.png');", components: [
+                {kind: "onyx.Button", content: "Cancel", ontap: "closeSlider"},
+                {kind: "onyx.Button", content: "Delete", classes: "onyx-negative", style: "margin-left: 10px;", ontap: "deleteDevice"}
+            ],
+            ontap: "closeSlider"
+        }
 	],
-	handlers: {
-		onmousedown: "pressed",
-		ondragstart: "released",
-		onmouseup: "released"
+
+    resizeHandler: function()
+    {
+        this.inherited(arguments);
+        console.log("Ping!");
+        console.log(this.$.BluetoothSlider.getBounds());
+    },
+
+	pressed: function(inSender, inEvent) {
+        if (!this.$.DeviceNameInputDecorator.getShowing() && inEvent.originator !== this.$.MoreInfo)
+        {
+            this.addClass("onyx-selected");
+            this.$.BluetoothSlider.applyStyle("background-color", "#C4E3FE");
+        }
 	},
-	pressed: function() {
-		this.addClass("onyx-selected");
+	
+    released: function() {
+        this.removeClass("onyx-selected");
+        this.$.BluetoothSlider.applyStyle("background-color", "#EAEAEA");
 	},
-	released: function() {
-		this.removeClass("onyx-selected");
-	}
+
+    infoButtonTapped: function() {
+        this.doInfoButtonTapped();
+    },
+
+    /*
+    *   Slider
+    */
+    
+    handleDrag: function() {
+        this.released();
+        this.$.BluetoothSlider.preventDragPropagation = true;
+    },
+    
+    closeSlider: function() {
+        this.$.BluetoothSlider.animateToMin();
+        this.$.BluetoothSlider.preventDragPropagation = false;
+        return true;
+    },
+
+    deleteDevice: function() {
+        this.doDeleteDevice();
+        return true;
+    },
+
+    /*
+    *   Device Name
+    */
+    editDeviceName: function() {
+        this.$.DeviceName.setShowing(false);
+        this.$.DeviceNameInputDecorator.setShowing(true);
+        this.$.BluetoothSlider.draggable = false;
+        this.$.DeviceNameInput.focus();
+        return true;
+    },
+
+    inputChange: function() {
+        this.doDeviceNameChanged();
+    },
+
+    inputLostFocus: function() {
+        this.$.DeviceName.setShowing(true);
+        this.$.DeviceNameInputDecorator.setShowing(false);
+        this.$.BluetoothSlider.draggable = true;
+        return true;
+    }
 });
 
 var mockDevices = [
     //Device types: phone, keyboard, audio, other
+    //States: 0 - Not Connected, 1 - Connecting, 2 - Connected
     {
         name: "Phone",
         type: "phone",
         enabled: true,
-        connected: false
+        connectionState: 0
     },
     {
         name: "Keyboard",
         type: "keyboard",
         enabled: false,
-        connected: false
+        connectionState: 0
     },
     {
         name: "Headset",
         type: "audio",
         enabled: true,
-        connected: true
+        connectionState: 2
     },
     {
         name: "Computer",
         type: "other",
-        enabled: false,
-        connected: false
+        enabled: true,
+        connectionState: 1
+    },
+    {
+        name: "Toaster",
+        type: "other",
+        enabled: true,
+        connectionState: 0
     }
 ];
 
@@ -163,15 +265,15 @@ enyo.kind({
                         }
                     ]
                 },
-                /* Network list panel */
+                /* Device list panel */
                 {
                     kind: "enyo.FittableRows",
-                   	components: [
+                    components: [
                         {
                             name: "NetworkList",
                             kind: "onyx.Groupbox",
                             layoutKind: "FittableRowsLayout",
-                         	style: "padding: 35px 10% 35px 10%;",
+                            style: "padding: 35px 10% 35px 10%;",
                             fit: true,
                             components: [
                                 {
@@ -180,6 +282,7 @@ enyo.kind({
                                 },
                                 {
                                     classes: "networks-scroll",
+                                    style: "border-bottom: 0px;",
                                     kind: "Scroller",
                                     touch: true,
                                     touchOverscroll: false,
@@ -205,7 +308,7 @@ enyo.kind({
                                     components: [
                                         {
                                             kind: "Image",
-                                            src: "assets/wifi/join-plus-icon.png"
+                                            src: "assets/bluetooth/join-plus-icon.png"
                                         },
                                         {
                                             content: "Add Device",
@@ -578,6 +681,7 @@ enyo.kind({
         this.doActiveChanged(inEvent);
     },
     listItemTapped: function (inSender, inEvent) {
+        return true;
         var selectedNetwork = this.foundDevices[inEvent.index];
 
         // don't try to connect to already connected or connecting network
@@ -646,6 +750,7 @@ enyo.kind({
         }
 
         inEvent.item.$.bluetoothListItem.$.DeviceName.setContent( deviceName );
+        inEvent.item.$.bluetoothListItem.$.DeviceNameInput.setValue( deviceName );
 
         switch (this.foundDevices[inEvent.index].type) {
             case "phone":
@@ -666,8 +771,26 @@ enyo.kind({
         inEvent.item.$.bluetoothListItem.$.DeviceName.addRemoveClass("bluetooth-disabled", !this.foundDevices[inEvent.index].enabled);
 
         if (this.foundDevices[inEvent.index].enabled){
-            inEvent.item.$.bluetoothListItem.$.DeviceName.addRemoveClass("bluetooth-active", this.foundDevices[inEvent.index].connected);
-            //TODO: Change icon to "active" icon if active.
+            inEvent.item.$.bluetoothListItem.$.ConnectingSpinner.setShowing(this.foundDevices[inEvent.index].connectionState == 1);
+            inEvent.item.$.bluetoothListItem.$.DeviceName.addRemoveClass("bluetooth-active", this.foundDevices[inEvent.index].connectionState == 2);
+
+            if (this.foundDevices[inEvent.index].connectionState == 2)
+            {
+                switch (this.foundDevices[inEvent.index].type) {
+                    case "phone":
+                        inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/phone-active.png");
+                        break;
+                    case "keyboard":
+                        inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/keyboard-active.png");
+                        break;
+                    case "audio":
+                        inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/audio-active.png");
+                        break;
+                    case "other":
+                        inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/computer-active.png");
+                        break;
+                }
+            }
         }
     },
     setupKnownNetworkRow: function (inSender, inEvent) {
