@@ -307,8 +307,8 @@ enyo.kind({
                                             components: [
                                                 {
                                                     kind: "BluetoothListItem",
-                                                    ontap: "listItemTapped",
                                                     onInfoButtonTapped: "handleInfoButtonTapped"
+                                                    onDeviceTapped: "listItemTapped",
                                                 }
                                             ]
                                     }]
