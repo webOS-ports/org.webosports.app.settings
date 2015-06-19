@@ -89,13 +89,6 @@ enyo.kind({
         }
 	],
 
-    resizeHandler: function()
-    {
-        this.inherited(arguments);
-        console.log("Ping!");
-        console.log(this.$.BluetoothSlider.getBounds());
-    },
-
 	pressed: function(inSender, inEvent) {
         if (!this.$.DeviceNameInputDecorator.getShowing() && inEvent.originator !== this.$.MoreInfo)
         {
