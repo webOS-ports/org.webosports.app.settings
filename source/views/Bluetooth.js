@@ -66,7 +66,7 @@ enyo.kind({
                             components: [
                                 { kind: "Image", src: "assets/bluetooth/info.png", style: "width: 32px; height: 32px;"}
                             ],
-                            ontap: "infoButtonTapped"
+                            ontap: "doInfoButtonTapped"
                         }, // icons
                         {
                             name: "ConnectingSpinner",
@@ -101,10 +101,6 @@ enyo.kind({
         this.removeClass("onyx-selected");
         this.$.BluetoothSlider.applyStyle("background-color", "#EAEAEA");
 	},
-
-    infoButtonTapped: function() {
-        this.doInfoButtonTapped();
-    },
 
     /*
     *   Slider
