@@ -307,8 +307,9 @@ enyo.kind({
                                             components: [
                                                 {
                                                     kind: "BluetoothListItem",
-                                                    onInfoButtonTapped: "handleInfoButtonTapped"
                                                     onDeviceTapped: "listItemTapped",
+                                                    onInfoButtonTapped: "handleInfoButtonTapped",
+                                                    onDeviceNameChanged: "handleDeviceNameChanged"
                                                 }
                                             ]
                                     }]
@@ -872,10 +873,15 @@ enyo.kind({
         var network = this.$.NetworkConfiguration.currentNetwork;
 
         navigator.BluetoothManager.removeNetwork(network.path);
+    handleDeviceNameChanged: function(inSender, inEvent)
+    {
+        var selectedDevice = this.foundDevices[inEvent.index];
+        selectedDevice.name = inEvent.originator.$.DeviceNameInput.getValue();
 
-        this.showDevicesList();
+        //TODO: Update device info in the service
+        //IE: navigator.BluetoothManager.updateDevice(selectedDevice);
+        this.$.DeviceRepeater.build();
     },
-
     handleBackGesture: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);	
 		
