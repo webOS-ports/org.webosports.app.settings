@@ -622,7 +622,7 @@ enyo.kind({
                                 {
                                     kind: "onyx.Button",
                                     content: "Done",
-                                    ontap: "showNetworksList"
+                                    ontap: "showDevicesList"
                                 },
                             ]
                         },
@@ -841,19 +841,19 @@ enyo.kind({
         }
 
         // switch back to network list view
-        this.showNetworksList();
+        this.showDevicesList();
 		delete password;
         this.$.PasswordInput.setValue("");
     },
     onNetworkConnectAborted: function (inSender, inEvent) {
         // switch back to network list view
-        this.showNetworksList(inSender, inEvent);
+        this.showDevicesList(inSender, inEvent);
 
         this.$.PasswordInput.setValue("");
     },
     onOtherJoinCancelled: function (inSender, inEvent) {
         // switch back to network list view
-        this.showNetworksList(inSender, inEvent);
+        this.showDevicesList(inSender, inEvent);
 
         this.$.ssidInput.setValue("");
         this.$.SecurityTypePicker.setSelected(this.$.OpenSecurityItem);
@@ -863,7 +863,7 @@ enyo.kind({
         this.stopAutoscan();
         this.$.BluetoothPanels.setIndex(0);
     },
-    showNetworksList: function (inSender, inEvent) {
+    showDevicesList: function (inSender, inEvent) {
 		this.updateSpinnerState("start");
         return this.$.BluetoothPanels.setIndex(1);
     },
@@ -890,7 +890,7 @@ enyo.kind({
     activateBluetooth: function (inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
 		this.updateSpinnerState("start");
-        this.showNetworksList();
+        this.showDevicesList();
 		if (!navigator.BluetoothManager)
             return;
         navigator.BluetoothManager.enabled = true;
@@ -938,7 +938,7 @@ enyo.kind({
 
         navigator.BluetoothManager.removeNetwork(network.path);
 
-        this.showNetworksList();
+        this.showDevicesList();
     },
     updateSpinnerState: function(action) {
 		//TODO: remove?
