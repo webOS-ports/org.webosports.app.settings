@@ -723,15 +723,6 @@ enyo.kind({
     onAddDeviceButtonTapped: function (inSender, inEvent) {
 		this.showAddDevice();
     },
-    signalStrengthToBars: function(strength) {
-        if(strength > 0 && strength < 34)
-            return 1;
-        else if(strength >= 34 && strength < 50)
-            return 2;
-        else if(strength >= 50)
-            return 3;
-        return 0;
-    },
     setupDeviceRow: function (inSender, inEvent) {
         var deviceName = "";
         if(enyo.Panels.isScreenNarrow() && this.foundDevices[inEvent.index].name.length >= 18){ // if the name is longer shorten it for the narrow page only
