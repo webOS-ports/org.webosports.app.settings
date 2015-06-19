@@ -32,6 +32,7 @@ enyo.kind({
             value: 0,
             style: "position:inherit; z-index:20; background-color: #EAEAEA; line-height: 38px;",
             preventDragPropagation: false,
+            newDevice: false,
             classes: "group-item",
             onmousedown: "pressed",
             ondragstart: "handleDrag",
@@ -105,6 +106,11 @@ enyo.kind({
         this.$.BluetoothSlider.applyStyle("background-color", "#EAEAEA");
 	},
 
+    isNewDevice: function() {
+        this.newDevice = true;
+        this.$.BluetoothSlider.draggable = false;
+    },
+
     /*
     *   Slider
     */
@@ -129,6 +135,7 @@ enyo.kind({
     *   Device Name
     */
     editDeviceName: function() {
+        if (this.newDevice) return true;
         this.$.DeviceName.setShowing(false);
         this.$.DeviceNameInputDecorator.setShowing(true);
         this.$.BluetoothSlider.draggable = false;
