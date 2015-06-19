@@ -262,6 +262,7 @@ enyo.kind({
                     kind: "enyo.FittableRows",
                     components: [
                         {
+                            //TODO: Update this based as the discoverable status of the device is changed.
                             name: "DiscoverableStatus",
                             kind: "enyo.FittableColumns",
                             style: "padding: 35px 10% 0 10%;",
