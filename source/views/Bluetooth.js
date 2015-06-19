@@ -803,7 +803,6 @@ enyo.kind({
         //TODO: Pass type of device into the panel so that we know:
         // a) Which panel to display (device info vs device options)
         // b) which options to display (ie Mirror SMS)
-        console.log("PING!!!!!!!")
         this.showDeviceInfo();
     },
     triggerWifiConnect: function () {
