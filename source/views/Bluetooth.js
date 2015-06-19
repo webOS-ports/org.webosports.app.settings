@@ -942,6 +942,7 @@ enyo.kind({
         return this.$.BluetoothPanels.setIndex(1);
     },
     showDeviceInfo: function (inSender, inEvent) {
+        //TODO: Set device options based on the selected device
         this.$.BluetoothPanels.setIndex(2);
         this.stopAutoscan();
     },
