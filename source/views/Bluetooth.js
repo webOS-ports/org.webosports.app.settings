@@ -314,7 +314,7 @@ enyo.kind({
                                     }]
                                 },
                                 {
-                                    name: "JoinButton",
+                                    name: "AddDeviceButton",
                                     kind: "enyo.FittableColumns",
                                     classes: "wifi-join-button",
                                     components: [
@@ -328,7 +328,7 @@ enyo.kind({
                                         },
                                         
                                     ],
-                                    ontap: "onJoinButtonTapped",
+                                    ontap: "onAddDeviceButtonTapped",
                                     handlers: {
                                         onmousedown: "pressed",
                                         ondragstart: "released",
@@ -721,8 +721,8 @@ enyo.kind({
         this.$.PopupSSID.setContent(this.currentNetwork.ssid);
         this.showNetworkConnect();
     },
-    onJoinButtonTapped: function (inSender, inEvent) {
-		this.showJoinNetwork();
+    onAddDeviceButtonTapped: function (inSender, inEvent) {
+		this.showAddDevice();
     },
     signalStrengthToBars: function(strength) {
         if(strength > 0 && strength < 34)
@@ -850,7 +850,7 @@ enyo.kind({
         this.$.BluetoothPanels.setIndex(3);
         this.stopAutoscan();
     },
-    showNetworkConfiguration: function (inSender, inEvent) {
+    showAddDevice: function (inSender, inEvent) {
         this.$.BluetoothPanels.setIndex(4);
         this.stopAutoscan();
     },
