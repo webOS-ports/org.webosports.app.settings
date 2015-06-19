@@ -784,22 +784,6 @@ enyo.kind({
             }
         }
     },
-    setupKnownNetworkRow: function (inSender, inEvent) {
-
-    	var ssid = "";	
-		if(enyo.Panels.isScreenNarrow()){
-    		if(this.foundDevices[inEvent.index].name.length >= 18){					// if the SSID is longer shortten it for the narrow page only
-    			ssid = this.foundDevices[inEvent.index].name.slice(0,18) + "..";
-    		}else{
-    			ssid = this.foundDevices[inEvent.index].name;
-    		}
-    	}else{
-    		ssid = this.foundDevices[inEvent.index].name;
-    	}
-        inEvent.item.$.wiFiListItem.$.SSID.setContent( ssid );
-        inEvent.item.$.wiFiListItem.$.Security.setContent(this.knownNetworks[inEvent.index].security);
-        inEvent.item.$.wiFiListItem.$.Signal.setShowing(false);
-    },
     onNetworkConnect: function (inSender, inEvent) {
 		var password = this.$.PasswordInput.getValue();
 		
