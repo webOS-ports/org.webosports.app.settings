@@ -696,22 +696,6 @@ enyo.kind({
     {
         this.$.SearchStatusMessage.setContent("Searching for " + inEvent.content.toLowerCase() + " devices...");
     },
-    triggerWifiConnect: function () {
-        var i, path = "";
-        for (i = 0; i < this.foundDevices.length; i++) {
-            if (this.foundDevices[i].name === this.wifiTarget.ssid) {
-                path = this.foundDevices[i].path;
-            }
-        }
-        this.currentNetwork = {
-            ssid: this.wifiTarget.ssid,
-            path: path,
-            security: this.wifiTarget.securityType
-        };
-        this.connecting = true;
-        this.$.PopupSSID.setContent(this.currentNetwork.ssid);
-        this.showNetworkConnect();
-    },
     onAddDeviceButtonTapped: function (inSender, inEvent) {
 		this.showAddDevice();
     },
