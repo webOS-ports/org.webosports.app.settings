@@ -642,7 +642,6 @@ enyo.kind({
 //        }
 
         this.doActiveChanged({value: navigator.BluetoothManager.enabled});
-        this.updateSpinnerState("start");
     },
     reflow: function (inSender) {
         this.inherited(arguments);
@@ -837,7 +836,6 @@ enyo.kind({
         this.$.BluetoothPanels.setIndex(0);
     },
     showDevicesList: function (inSender, inEvent) {
-		this.updateSpinnerState("start");
         return this.$.BluetoothPanels.setIndex(1);
     },
     showDeviceInfo: function (inSender, inEvent) {
@@ -858,13 +856,11 @@ enyo.kind({
         this.$.BluetoothToggle.setValue(value);
     },
     showError: function (message) {
-		this.updateSpinnerState();
         this.$.ErrorMessage.setContent(message);
         this.$.ErrorPopup.show();
     },
     activateBluetooth: function (inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
-		this.updateSpinnerState("start");
         this.showDevicesList();
 		if (!navigator.BluetoothManager)
             return;
@@ -915,21 +911,15 @@ enyo.kind({
 
         this.showDevicesList();
     },
-    updateSpinnerState: function(action) {
-		//TODO: remove?
-        this.log("action:", action);
-    },
 
     handleBackGesture: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);	
 		
 		if(this.$.BluetoothPanels.getIndex() > 1){
 			this.$.BluetoothPanels.setIndex(1);
-			this.updateSpinnerState();					// stop the spinner
 		}else{
 			if( this.$.BluetoothPanels.getIndex() === 1 || this.$.BluetoothPanels.getIndex() === 0){
 				this.doBackbutton();
-				this.updateSpinnerState();				// stop the spinner
 			}
 		}
 	},
@@ -960,7 +950,6 @@ enyo.kind({
         }
     },
     triggerAutoscan: function() {
-		this.updateSpinnerState("start");
 		if (!navigator.BluetoothManager)
             return;
         navigator.BluetoothManager.retrieveNetworks(enyo.bind(this, "handleRetrieveNetworksResponse"),
@@ -972,7 +961,6 @@ enyo.kind({
             window.clearInterval(this.autoscan);
             this.autoscan = null;
         }
-        this.updateSpinnerState();
     },
     //Service Callbacks
     handleRetrieveNetworksResponse: function (networks) {
