@@ -84,6 +84,7 @@ enyo.kind({
             ],
         },
         {
+            name: "SliderButtons",
             classes: "group-item",
             style: "position:absolute; top:0px; z-index:10; line-height: 38px; text-align: center; width: 100%; background-image:url('assets/bg.png');", components: [
                 {kind: "onyx.Button", content: "Cancel", ontap: "closeSlider"},
@@ -109,6 +110,7 @@ enyo.kind({
     isNewDevice: function() {
         this.newDevice = true;
         this.$.BluetoothSlider.draggable = false;
+        this.$.SliderButtons.hide();
     },
 
     /*
@@ -194,27 +196,33 @@ var foundDevices = [
     //Device types: phone, keyboard, audio, other
     {
         name: "Pre3",
-        type: "phone"
+        type: "phone",
+        connecting: false
     },
     {
         name: "Mako",
-        type: "phone"
+        type: "phone",
+        connecting: false
     },
     {
         name: "Tenderloin",
-        type: "phone"
+        type: "phone",
+        connecting: false
     },
     {
         name: "HP TouchPad Wireless Keyboard",
-        type: "keyboard"
+        type: "keyboard",
+        connecting: false
     },
     {
         name: "My PC",
         type: "other",
+        connecting: false
     },
     {
         name: "WebOS Toaster",
         type: "other",
+        connecting: false
     }
 ];
 
@@ -222,13 +230,12 @@ enyo.kind({
     name: "Bluetooth",
     layoutKind: "FittableRowsLayout",
     foundDevices: null,
+    searchResults: null,
     events: {
         onActiveChanged: "",
         onBackbutton: ""
     },
-    currentSSID: "",
     palm: false,
-    findNetworksRequest: null,
     autoscan: null,
     debug: false,
     components: [
@@ -529,6 +536,12 @@ enyo.kind({
                                     ]
                                 },
                                 {
+                                    name: "PhoneMessage",
+                                    content: "Please note, some phones support only a single handsfree call.",
+                                    style: "margin-top: 5px; margin-bottom: 20px; font-size: 14px;",
+                                    showing: false
+                                },
+                                {
                                     kind: "onyx.Groupbox",
                                     components: [
                                         {
@@ -547,6 +560,7 @@ enyo.kind({
                                                             style: "width: 100%; text-align: right;"
                                                         },
                                                         {
+                                                            name: "DeviceSearchPicker",
                                                             kind: "onyx.Picker",
                                                             onChange: "deviceSearchPickerChanged",
                                                             components: [
@@ -572,9 +586,43 @@ enyo.kind({
                                     ]
                                 },
                                 {
+                                    name: "FoundDeviceList",
+                                    kind: "onyx.Groupbox",
+                                    layoutKind: "FittableRowsLayout",
+                                    fit: true,
+                                    showing: false,
+                                    components: [
+                                        {
+                                            kind: "onyx.GroupboxHeader",
+                                            content: "Found Devices",
+                                        },
+                                        {
+                                            classes: "networks-scroll",
+                                            kind: "Scroller",
+                                            touch: true,
+                                            touchOverscroll: false,
+                                            horizontal: "hidden",
+                                            components: [{
+                                                    name: "FoundDeviceRepeater",
+                                                    kind: "Repeater",
+                                                    count: 0,
+                                                    onSetupItem: "setupFoundDeviceRow",
+                                                    
+                                                    components: [
+                                                        {
+                                                            kind: "BluetoothListItem",
+                                                            onDeviceTapped: "foundDeviceTapped",
+                                                        }
+                                                    ]
+                                            }]
+                                        }
+                                    ]
+                                },
+                                {
                                     name: "NoDevicesFoundMessage",
                                     kind: "enyo.FittableRows",
                                     style: "margin-top: 20px; text-align: center; font-size: 16px;",
+                                    showing: false,
                                     components: [
                                         {
                                             style: "font-weight: bold;",
@@ -684,6 +732,27 @@ enyo.kind({
 
         this.$.DeviceRepeater.build();
     },
+    foundDeviceTapped: function (inSender, inEvent) {
+        var selectedDevice = this.searchResults[inEvent.index];
+
+        // if we are connecting, set the status to disconnected
+        if (selectedDevice.connecting) {
+            selectedDevice.connecting = false;
+            this.$.SearchStatusMessage.setContent("Searching for " + this.$.DeviceSearchPicker.selected.content.toLowerCase() + " devices...");
+            //TODO: Use Bluetooth Service cancel the connection attempt
+            //IE navigator.BluetoothManager.disconnectDevice(selectedDevice, enyo.bind(this, "handleDeviceDisconnectSucceeded"), enyo.bind(this, "handleDeviceDisconnectFailed"));
+        }
+        // if we are not connected, set the status to connecting (1)
+        else if (!selectedDevice.connecting)
+        {
+            selectedDevice.connecting = true;
+            this.$.SearchStatusMessage.setContent("Connecting...");
+            //TODO: Use Bluetooth Service to connect and add the device
+            //IE navigator.BluetoothManager.connectDevice(selectedDevice, enyo.bind(this, "handleDeviceConnectSucceeded"), enyo.bind(this, "handleDeviceConnectFailed"));
+        }
+
+        this.$.FoundDeviceRepeater.build();
+    },
     handleInfoButtonTapped: function(inSender, inEvent)
     {
         //TODO: Pass type of device into the panel so that we know:
@@ -695,6 +764,9 @@ enyo.kind({
     deviceSearchPickerChanged: function(inSender, inEvent)
     {
         this.$.SearchStatusMessage.setContent("Searching for " + inEvent.content.toLowerCase() + " devices...");
+        this.$.PhoneMessage.setShowing(inEvent.content.toLowerCase() === "phone");
+        //TODO: Start Search
+        if (this.$.FoundDeviceList) this.handleDeviceSearchResults();
     },
     onAddDeviceButtonTapped: function (inSender, inEvent) {
 		this.showAddDevice();
@@ -751,6 +823,33 @@ enyo.kind({
             }
         }
     },
+    setupFoundDeviceRow: function (inSender, inEvent) {
+        var deviceName = "";
+        if(enyo.Panels.isScreenNarrow() && this.foundDevices[inEvent.index].name.length >= 18){ // if the name is longer shorten it for the narrow page only
+            deviceName = this.searchResults[inEvent.index].name.slice(0,18) + "..";
+        }else{
+            deviceName = this.searchResults[inEvent.index].name;
+        }
+
+        inEvent.item.$.bluetoothListItem.isNewDevice();
+        inEvent.item.$.bluetoothListItem.$.DeviceName.setContent( deviceName );
+        inEvent.item.$.bluetoothListItem.$.ConnectingSpinner.setShowing(this.searchResults[inEvent.index].connecting);
+
+        switch (this.searchResults[inEvent.index].type) {
+            case "phone":
+                inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/phone.png");
+                break;
+            case "keyboard":
+                inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/keyboard.png");
+                break;
+            case "audio":
+                inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/audio.png");
+                break;
+            case "other":
+                inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/computer.png");
+                break;
+        }
+    },
     //Action Functions
     showBluetoothDisabled: function (inSender, inEvent) {
         this.stopAutoscan();
@@ -772,6 +871,8 @@ enyo.kind({
     showAddDevice: function (inSender, inEvent) {
         this.$.BluetoothPanels.setIndex(4);
         this.stopAutoscan();
+        //TODO: trigger search
+        this.handleDeviceSearchResults();
     },
     setToggleValue: function (value) {
         this.$.BluetoothToggle.setValue(value);
@@ -824,6 +925,32 @@ enyo.kind({
         //TODO: Update device info in the service
         //IE: navigator.BluetoothManager.updateDevice(selectedDevice);
         this.$.DeviceRepeater.build();
+    },
+    handleDeviceSearchResults: function(inSender, inEvent)
+    {
+        this.$.FoundDeviceList.hide();
+        this.$.NoDevicesFoundMessage.hide();
+
+        //TODO: get results from service. In the mean time, we'll fake it.
+        var searchDeviceType = this.$.DeviceSearchPicker.selected.content.toLowerCase();
+        
+        var filterFunction = function(value, index, array)
+        {
+            return value.type === searchDeviceType;
+        };
+
+        this.searchResults = foundDevices.filter(filterFunction);
+
+        if (this.searchResults.length > 0)
+        {
+            this.$.FoundDeviceList.show();
+            this.$.FoundDeviceRepeater.setCount(this.searchResults.length);
+            //this.$.FoundDeviceRepeater.build();
+        }
+        else
+        {
+            this.$.NoDevicesFoundMessage.show();
+        }
     },
     handleBackGesture: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);	
