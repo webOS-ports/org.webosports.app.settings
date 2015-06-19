@@ -314,7 +314,8 @@ enyo.kind({
                                             components: [
                                                 {
                                                     kind: "BluetoothListItem",
-                                                    ontap: "listItemTapped"
+                                                    ontap: "listItemTapped",
+                                                    onInfoButtonTapped: "handleInfoButtonTapped"
                                                 }
                                             ]
                                     }]
@@ -350,6 +351,71 @@ enyo.kind({
                                
                             ]
 						}]
+                },
+                /* Device Info panel */
+                {
+                    kind: "enyo.FittableRows",
+                    components: [
+                        {
+                            kind: "onyx.Groupbox",
+                            layoutKind: "FittableRowsLayout",
+                            style: "padding: 35px 10% 35px 10%;",
+                            fit: true,
+                            components: [
+                                {
+                                    kind: "onyx.GroupboxHeader",
+                                    content: "Device Info",
+                                },
+                                {
+                                    kind: "FittableColumns",
+                                    classes: "group-item",
+                                    components: [
+                                        {
+                                            content: "Auto-Connect",
+                                            fit: true
+                                        },
+                                        {
+                                            name: "autoConnectToggleButton",
+                                            kind: "onyx.ToggleButton",
+                                            value: true,
+                                            style: "height: 31px;"
+                                        },
+                                    ]
+                                },
+                                {
+                                    kind: "FittableColumns",
+                                    classes: "group-item",
+                                    components: [
+                                        {
+                                            content: "Mirror Phone Calls",
+                                            fit: true
+                                        },
+                                        {
+                                            name: "mirrorPhoneCallsToggleButton",
+                                            kind: "onyx.ToggleButton",
+                                            value: true,
+                                            style: "height: 31px;"
+                                        },
+                                    ]
+                                },
+                                {
+                                    kind: "FittableColumns",
+                                    classes: "group-item",
+                                    components: [
+                                        {
+                                            content: "Mirror SMS",
+                                            fit: true
+                                        },
+                                        {
+                                            name: "mirrorSMSToggleButton",
+                                            kind: "onyx.ToggleButton",
+                                            value: true,
+                                            style: "height: 31px;"
+                                        },
+                                    ]
+                                },
+                            ]
+                        }]
                 },
                 /* Network connect panel */
                 {
@@ -732,6 +798,14 @@ enyo.kind({
             });
         }
     },
+    handleInfoButtonTapped: function(inSender, inEvent)
+    {
+        //TODO: Pass type of device into the panel so that we know:
+        // a) Which panel to display (device info vs device options)
+        // b) which options to display (ie Mirror SMS)
+        console.log("PING!!!!!!!")
+        this.showDeviceInfo();
+    },
     triggerWifiConnect: function () {
         var i, path = "";
         for (i = 0; i < this.foundDevices.length; i++) {
@@ -867,7 +941,7 @@ enyo.kind({
 		this.updateSpinnerState("start");
         return this.$.BluetoothPanels.setIndex(1);
     },
-    showNetworkConnect: function (inSender, inEvent) {
+    showDeviceInfo: function (inSender, inEvent) {
         this.$.BluetoothPanels.setIndex(2);
         this.stopAutoscan();
     },
