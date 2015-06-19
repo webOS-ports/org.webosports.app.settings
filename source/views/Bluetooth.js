@@ -938,6 +938,7 @@ enyo.kind({
 
         return pass;
     },
+    //TODO: This section will need to be re-architected to attempt to autoconnect to devices, etc.
     startAutoscan: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
 		if (null === this.autoscan) {
