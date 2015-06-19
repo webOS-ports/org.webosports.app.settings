@@ -190,6 +190,34 @@ var mockDevices = [
     }
 ];
 
+var foundDevices = [
+    //Device types: phone, keyboard, audio, other
+    {
+        name: "Pre3",
+        type: "phone"
+    },
+    {
+        name: "Mako",
+        type: "phone"
+    },
+    {
+        name: "Tenderloin",
+        type: "phone"
+    },
+    {
+        name: "HP TouchPad Wireless Keyboard",
+        type: "keyboard"
+    },
+    {
+        name: "My PC",
+        type: "other",
+    },
+    {
+        name: "WebOS Toaster",
+        type: "other",
+    }
+];
+
 enyo.kind({
     name: "Bluetooth",
     layoutKind: "FittableRowsLayout",
