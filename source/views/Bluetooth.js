@@ -309,7 +309,7 @@ enyo.kind({
                                             name: "SearchRepeater",
                                             kind: "Repeater",
                                             count: 0,
-                                            onSetupItem: "setupSearchRow",
+                                            onSetupItem: "setupDeviceRow",
                                             
                                             components: [
                                                 {
@@ -760,7 +760,7 @@ enyo.kind({
             return 3;
         return 0;
     },
-    setupSearchRow: function (inSender, inEvent) {
+    setupDeviceRow: function (inSender, inEvent) {
         var deviceName = "";
         if(enyo.Panels.isScreenNarrow() && this.foundDevices[inEvent.index].name.length >= 18){ // if the name is longer shorten it for the narrow page only
             deviceName = this.foundDevices[inEvent.index].name.slice(0,18) + "..";
