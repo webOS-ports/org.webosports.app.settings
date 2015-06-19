@@ -841,18 +841,6 @@ enyo.kind({
 	},
     handleNetworkConnectFailed: function() {
 	},
-    connectNetwork: function (inSender, inEvent) {
-        this.log("connectNetwork", inEvent);
-
-        if (!this.palm)
-            return;
-
-        var networkToConnect = {
-            path: inEvent.path,
-            hidden: false,
-            security: "",
-            password: ""
-        };
 
         if (inEvent.password != "") {
             this.log("Connecting to PSK network");
