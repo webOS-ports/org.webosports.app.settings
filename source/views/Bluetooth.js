@@ -837,10 +837,18 @@ enyo.kind({
             return;
         navigator.BluetoothManager.enabled = false;
     },
-    handleNetworkConnectSucceeded: function() {
+    handleDeviceConnectSucceeded: function() {
+        //TODO: Update device connectionStatus to 2, rebuild repeater.
 	},
-    handleNetworkConnectFailed: function() {
+    handleDeviceConnectFailed: function() {
+        //TODO: Display appropriate error
 	},
+    handleDeviceDisconnectSucceeded: function() {
+        //TODO: Any necessary logic
+    },
+    handleDeviceDisconnectFailed: function() {
+        //TODO: Display appropriate error
+    },
 
         if (inEvent.password != "") {
             this.log("Connecting to PSK network");
