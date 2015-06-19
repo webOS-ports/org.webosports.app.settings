@@ -890,15 +890,6 @@ enyo.kind({
         this.foundDevices = [];
         this.$.DeviceRepeater.setCount(this.foundDevices.length);
     },
-    validatePassword: function (key) {
-        var pass = false;
-
-        if (8 <= key.length && 63 >= key.length) {
-            pass = true;
-        }
-
-        return pass;
-    },
     //TODO: This section will need to be re-architected to attempt to autoconnect to devices, etc.
     startAutoscan: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
