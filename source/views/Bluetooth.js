@@ -18,7 +18,8 @@ enyo.kind({
     events: {
         onDeleteDevice: "",
         onDeviceNameChanged: "",
-        onInfoButtonTapped: ""
+        onInfoButtonTapped: "",
+        onDeviceTapped: ""
     },
 
 	components: [
@@ -45,6 +46,7 @@ enyo.kind({
                             kind: "Image",
                             src: "assets/bluetooth/other.png",
                             style: "width: 32px; height: 32px; margin: 4px;",
+                            ontap: "doDeviceTapped",
                             //TODO: classes
                         },
                         {fit: true, components: [
@@ -52,6 +54,7 @@ enyo.kind({
                                 name: "DeviceName",
                                 content: "DeviceName",
                                 style: "padding-left: 10px; line-height: 36px;",
+                                ontap: "doDeviceTapped",
                                 onhold: "editDeviceName"
                             },
                             {name: "DeviceNameInputDecorator", kind: "onyx.InputDecorator", style: "height: 18px;", showing: false, components: [
