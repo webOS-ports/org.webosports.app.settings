@@ -465,38 +465,31 @@ enyo.kind({
                         }
                     ]
                 },
-                /* Network configuration panel */
+                /* Add Device panel */
                 {
-                    name: "NetworkConfiguration",
+                    name: "AddDevice",
                     layoutKind: "FittableRowsLayout",
                     classes: "content-wrapper",
-                    currentNetwork: null,
                     components: [
                         {
                             classes: "content-aligner",
                             components: [
                                 {
-                                    classes: "content-heading",
-                                    content: "Network Info goes here..."
-                                },
-                                {
-                                    kind: "onyx.Groupbox",
+                                    //TODO: Update this based as the search status is changed.
+                                    name: "SearchStatus",
+                                    kind: "enyo.FittableColumns",
+                                    style: "padding-bottom: 15px;",
                                     components: [
                                         {
-                                            kind: "FittableColumns",
-                                            classes: "group-item",
-                                            style: "height: 40px; padding-top: 15px;",
-                                            components: [
-                                                {
-                                                    content: "Automatic IP Setings",
-                                                    fit: true
-                                                },
-                                                {
-                                                    kind: "onyx.ToggleButton",
-                                                    value: true,
-                                                    style: "height: 31px;"
-                                                },
-                                            ]
+                                            name: "SearchSpinner",
+                                            kind: "Image",
+                                            src: "assets/bluetooth/connecting.gif",
+                                            style: "width: 32px; height: 32px; margin-right: 10px;"
+                                        },
+                                        {
+                                            name: "SearchStatusMessage",
+                                            content: "Searching for audio devices...",
+                                            style: "line-height: 30px; font-size: 18px;"
                                         }
                                     ]
                                 },
@@ -504,93 +497,62 @@ enyo.kind({
                                     kind: "onyx.Groupbox",
                                     components: [
                                         {
-                                            kind: "onyx.InputDecorator",
-                                            layoutKind: "FittableColumnsLayout",
+                                            kind: "enyo.FittableColumns",
                                             components: [
                                                 {
-                                                    name: "AddressInput",
-                                                    kind: "onyx.Input",
-                                                    fit: true
+                                                    content: "Type",
+                                                    style: "margin-left: 5px; line-height: 30px; font-size: 18px;",
                                                 },
                                                 {
-                                                    content: "Address",
-                                                    classes: "config - label"
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            kind: "onyx.InputDecorator",
-                                            layoutKind: "FittableColumnsLayout",
-                                            components: [
-                                                {
-                                                    name: "SubnetInput",
-                                                    kind: "onyx.Input",
-                                                    fit: true
-                                                },
-                                                {
-                                                    content: "Subnet",
-                                                    classes: "config-label"
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            kind: "onyx.InputDecorator",
-                                            layoutKind: "FittableColumnsLayout",
-                                            components: [
-                                                {
-                                                    name: "GatewayInput",
-                                                    kind: "onyx.Input",
-                                                    fit: true
-                                                },
-                                                {
-                                                    content: "Gateway",
-                                                    classes: "config-label"
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            kind: "onyx.InputDecorator",
-                                            layoutKind: "FittableColumnsLayout",
-                                            components: [
-                                                {
-                                                    name: "DNSServerInput1",
-                                                    kind: "onyx.Input",
-                                                    fit: true
-                                                },
-                                                {
-                                                    content: "DNS Server",
-                                                    classes: "config-label"
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            kind: "onyx.InputDecorator",
-                                            layoutKind: "FittableColumnsLayout",
-                                            components: [
-                                                {
-                                                    name: "DNSServerInput2",
-                                                    kind: "onyx.Input",
-                                                    fit: true
-                                                },
-                                                {
-                                                    content: "DNS Server",
-                                                    classes: "config-label"
+                                                    kind: "onyx.PickerDecorator",
+                                                    fit: true,
+                                                    components: [
+                                                        {
+                                                            classes: "config-label",
+                                                            style: "width: 100%; text-align: right;"
+                                                        },
+                                                        {
+                                                            kind: "onyx.Picker",
+                                                            onChange: "deviceSearchPickerChanged",
+                                                            components: [
+                                                                {
+                                                                    content: "Audio",
+                                                                    active: true
+                                                                },
+                                                                {
+                                                                    content: "Phone"
+                                                                },
+                                                                {
+                                                                    content: "Keyboard"
+                                                                },
+                                                                {
+                                                                    content: "Other"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
                                                 }
                                             ]
                                         }
                                     ]
                                 },
                                 {
-                                    kind: "onyx.Button",
-                                    classes: "onyx-negative",
-                                    content: "Forget Network",
-                                    ontap: "forgetNetwork"
-                                },
-                                {
-                                    kind: "onyx.Button",
-                                    content: "Done",
-                                    ontap: "showDevicesList"
-                                },
+                                    name: "NoDevicesFoundMessage",
+                                    kind: "enyo.FittableRows",
+                                    style: "margin-top: 20px; text-align: center; font-size: 16px;",
+                                    components: [
+                                        {
+                                            style: "font-weight: bold;",
+                                            content: "No devices found."
+                                        },
+                                        {
+                                            tag: "br"
+                                        },
+                                        {
+                                            content: "Please make sure that your Bluetooth device is on and in paring mode."
+                                        }
+                                    ]
+                                }
                             ]
                         },
                     ]
@@ -694,6 +656,10 @@ enyo.kind({
         // b) which options to display (ie Mirror SMS)
         //this.showDeviceInfo();
         this.showDeviceOptions();
+    },
+    deviceSearchPickerChanged: function(inSender, inEvent)
+    {
+        this.$.SearchStatusMessage.setContent("Searching for " + inEvent.content.toLowerCase() + " devices...");
     },
     triggerWifiConnect: function () {
         var i, path = "";
