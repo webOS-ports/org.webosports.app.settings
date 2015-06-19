@@ -270,7 +270,25 @@ enyo.kind({
                     kind: "enyo.FittableRows",
                     components: [
                         {
-                            name: "NetworkList",
+                            name: "DiscoverableStatus",
+                            kind: "enyo.FittableColumns",
+                            style: "padding: 35px 10% 0 10%;",
+                            components: [
+                                {
+                                    name: "DiscoverableSpinner",
+                                    kind: "Image",
+                                    src: "assets/bluetooth/connecting.gif",
+                                    style: "width: 32px; height: 32px; margin-right: 10px;"
+                                },
+                                {
+                                    name: "DiscoverableStatusMessage",
+                                    content: "Making your device visible and discoverable to others.", //"Your device is now discoverable."
+                                    style: "line-height: 30px;"
+                                }
+                            ]
+                        },
+                        {
+                            name: "DeviceList",
                             kind: "onyx.Groupbox",
                             layoutKind: "FittableRowsLayout",
                             style: "padding: 35px 10% 35px 10%;",
@@ -664,7 +682,8 @@ enyo.kind({
     reflow: function (inSender) {
         this.inherited(arguments);
         if (enyo.Panels.isScreenNarrow()){
-        	this.$.NetworkList.setStyle("padding: 35px 5% 35px 5%;");
+            this.$.DeviceList.setStyle("padding: 35px 5% 35px 5%;");
+            this.$.DiscoverableStatus.setStyle("padding: 35px 5% 35px 5%;");
             this.$.Grabber.applyStyle("visibility", "hidden");
         }else{
             this.$.Grabber.applyStyle("visibility", "visible");
