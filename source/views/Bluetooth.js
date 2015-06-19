@@ -767,36 +767,6 @@ enyo.kind({
             }
         }
     },
-    onNetworkConnect: function (inSender, inEvent) {
-		var password = this.$.PasswordInput.getValue();
-		
-        if (this.validatePassword(password)) {
-            this.connectNetwork(this, {
-                path: this.currentNetwork.path,
-                password: password
-            });
-        } else {
-			this.showError("Entered password is invalid");
-        }
-
-        // switch back to network list view
-        this.showDevicesList();
-		delete password;
-        this.$.PasswordInput.setValue("");
-    },
-    onNetworkConnectAborted: function (inSender, inEvent) {
-        // switch back to network list view
-        this.showDevicesList(inSender, inEvent);
-
-        this.$.PasswordInput.setValue("");
-    },
-    onOtherJoinCancelled: function (inSender, inEvent) {
-        // switch back to network list view
-        this.showDevicesList(inSender, inEvent);
-
-        this.$.ssidInput.setValue("");
-        this.$.SecurityTypePicker.setSelected(this.$.OpenSecurityItem);
-    },
     //Action Functions
     showBluetoothDisabled: function (inSender, inEvent) {
         this.stopAutoscan();
