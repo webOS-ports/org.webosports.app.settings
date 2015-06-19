@@ -309,6 +309,7 @@ enyo.kind({
                                                     kind: "BluetoothListItem",
                                                     onDeviceTapped: "listItemTapped",
                                                     onInfoButtonTapped: "handleInfoButtonTapped",
+                                                    onDeleteDevice: "handleDeviceDeleted",
                                                     onDeviceNameChanged: "handleDeviceNameChanged"
                                                 }
                                             ]
@@ -849,26 +850,17 @@ enyo.kind({
     handleDeviceDisconnectFailed: function() {
         //TODO: Display appropriate error
     },
+    handleDeviceDeleted: function(inSender, inEvent) {
+        var selectedDevice = this.foundDevices[inEvent.index];
 
-        if (inEvent.password != "") {
-            this.log("Connecting to PSK network");
-            networkToConnect.security = "psk";
-            networkToConnect.password = inEvent.password;
-        }
-        else {
-            this.log("Connecting to unsecured network");
-        }
+        //TODO: Remove device from the service
+        //IE: navigator.BluetoothManager.removeDevice(selectedDevice);
 
-        navigator.BluetoothManager.connectNetwork(networkToConnect,
-                                             enyo.bind(this, "handleNetworkConnectSucceeded"),
-                                             enyo.bind(this, "handleNetworkConnectFailed"));
+        this.foundDevices.splice(inEvent.index, 1);
 
-        this.triggerAutoscan();
+        this.$.DeviceRepeater.setCount(this.foundDevices.length);
+        this.$.DeviceRepeater.build();
     },
-    forgetNetwork: function(inSender, inEvent) {
-        var network = this.$.NetworkConfiguration.currentNetwork;
-
-        navigator.BluetoothManager.removeNetwork(network.path);
     handleDeviceNameChanged: function(inSender, inEvent)
     {
         var selectedDevice = this.foundDevices[inEvent.index];
