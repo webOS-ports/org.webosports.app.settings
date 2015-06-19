@@ -672,14 +672,17 @@ enyo.kind({
         // if we are connected (2) or connecting (1), set the status to disconnected (0)
         if (selectedDevice.connectionState === 2 || selectedDevice.connectionState === 1) {
             selectedDevice.connectionState = 0;
+            //TODO: Use Bluetooth Service to update device status
+            //IE navigator.BluetoothManager.disconnectDevice(selectedDevice, enyo.bind(this, "handleDeviceDisconnectSucceeded"), enyo.bind(this, "handleDeviceDisconnectFailed"));
         }
         // if we are not connected, set the status to connecting (1)
         else if (selectedDevice.connectionState === 0)
         {
             selectedDevice.connectionState = 1;
+            //TODO: Use Bluetooth Service to update device status
+            //IE navigator.BluetoothManager.connectDevice(selectedDevice, enyo.bind(this, "handleDeviceConnectSucceeded"), enyo.bind(this, "handleDeviceConnectFailed"));
         }
 
-        //TODO: Use Bluetooth Service to update device status
         this.$.DeviceRepeater.build();
     },
     handleInfoButtonTapped: function(inSender, inEvent)
