@@ -417,6 +417,59 @@ enyo.kind({
                             ]
                         }]
                 },
+                /* Device Options panel */
+                {
+                    kind: "enyo.FittableRows",
+                    components: [
+                        {
+                            kind: "onyx.Groupbox",
+                            layoutKind: "FittableRowsLayout",
+                            style: "padding: 35px 10% 5px 10%;",
+                            components: [
+                                {
+                                    kind: "onyx.GroupboxHeader",
+                                    content: "Device Options",
+                                },
+                                {
+                                    kind: "FittableColumns",
+                                    classes: "group-item",
+                                    components: [
+                                        {
+                                            content: "Phonebook Access",
+                                            fit: true
+                                        },
+                                        {
+                                            name: "phonebookAccessToggleButton",
+                                            kind: "onyx.ToggleButton",
+                                            value: true,
+                                            style: "height: 31px;"
+                                        },
+                                    ]
+                                },
+                                {
+                                    kind: "FittableColumns",
+                                    classes: "group-item",
+                                    components: [
+                                        {
+                                            content: "Message Access",
+                                            fit: true
+                                        },
+                                        {
+                                            name: "messageAccessToggleButton",
+                                            kind: "onyx.ToggleButton",
+                                            value: true,
+                                            style: "height: 31px;"
+                                        },
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            style: "padding: 5px 10% 35px 10%; font-size: 14px;",
+                            content: "Requires a device that supports Phonebook Access Profile and Message Access Profile."
+                        }
+                    ]
+                },
                 /* Network connect panel */
                 {
                     name: "NetworkConnect",
@@ -803,7 +856,8 @@ enyo.kind({
         //TODO: Pass type of device into the panel so that we know:
         // a) Which panel to display (device info vs device options)
         // b) which options to display (ie Mirror SMS)
-        this.showDeviceInfo();
+        //this.showDeviceInfo();
+        this.showDeviceOptions();
     },
     triggerWifiConnect: function () {
         var i, path = "";
@@ -945,7 +999,8 @@ enyo.kind({
         this.$.BluetoothPanels.setIndex(2);
         this.stopAutoscan();
     },
-    showJoinNetwork: function(inSender, inEvent) {
+    showDeviceOptions: function(inSender, inEvent) {
+        //TODO: Set device options based on the selected device
         this.$.BluetoothPanels.setIndex(3);
         this.stopAutoscan();
     },
