@@ -299,7 +299,7 @@ enyo.kind({
                                     touchOverscroll: false,
                                     horizontal: "hidden",
                                     components: [{
-                                            name: "SearchRepeater",
+                                            name: "DeviceRepeater",
                                             kind: "Repeater",
                                             count: 0,
                                             onSetupItem: "setupDeviceRow",
@@ -624,7 +624,7 @@ enyo.kind({
             this.handleBluetoothEnabled();
             // if we're outside the webOS system add some entries for easier testing
             this.foundDevices = mockDevices;
-            this.$.SearchRepeater.setCount(this.foundDevices.length);
+            this.$.DeviceRepeater.setCount(this.foundDevices.length);
             return;
         }
 
@@ -902,7 +902,7 @@ enyo.kind({
     //Utility Functions
     clearfoundDevices: function () {
         this.foundDevices = [];
-        this.$.SearchRepeater.setCount(this.foundDevices.length);
+        this.$.DeviceRepeater.setCount(this.foundDevices.length);
     },
     validatePassword: function (key) {
         var pass = false;
@@ -944,7 +944,7 @@ enyo.kind({
         this.clearfoundDevices();
         if (networks) {
             this.foundDevices = networks;
-            this.$.SearchRepeater.setCount(this.foundDevices.length);
+            this.$.DeviceRepeater.setCount(this.foundDevices.length);
             if (this.wifiTarget && this.connecting != true) {
                 this.triggerWifiConnect();
             }
