@@ -655,7 +655,7 @@ enyo.kind({
     },
     //Action Handlers
     toggleButtonChanged: function (inSender, inEvent) {
-        if (inEvent.value == true){
+        if (inEvent.value === true){
             this.activateBluetooth(this);
         } else{
             this.deactivateBluetooth(this);
