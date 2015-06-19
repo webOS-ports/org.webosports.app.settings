@@ -664,37 +664,23 @@ enyo.kind({
         this.doActiveChanged(inEvent);
     },
     listItemTapped: function (inSender, inEvent) {
-        return true;
-        var selectedNetwork = this.foundDevices[inEvent.index];
+        var selectedDevice = this.foundDevices[inEvent.index];
 
-        // don't try to connect to already connected or connecting network
-        if (selectedNetwork.state != "idle" && selectedNetwork.state != "failure") {
-            this.$.NetworkConfiguration.currentNetwork = {
-                path: selectedNetwork.path
-            };
-            this.showNetworkConfiguration();
-            return;
+        // don't try and connect to a device that is disabled
+        if (selectedDevice.enabled === false) return true;
+
+        // if we are connected (2) or connecting (1), set the status to disconnected (0)
+        if (selectedDevice.connectionState === 2 || selectedDevice.connectionState === 1) {
+            selectedDevice.connectionState = 0;
+        }
+        // if we are not connected, set the status to connecting (1)
+        else if (selectedDevice.connectionState === 0)
+        {
+            selectedDevice.connectionState = 1;
         }
 
-        this.currentNetwork = {
-            ssid: selectedNetwork.name,
-            path: selectedNetwork.path,
-            security: selectedNetwork.security
-        };
-
-        // When the network does not have any security configured it will always
-        // have the "none" security type set
-        if (!this.currentNetwork.security.contains("none")) {
-            this.log("Connecting to secured network");
-            this.$.PopupSSID.setContent(this.currentNetwork.ssid);
-            this.showNetworkConnect();
-        } else {
-            this.log("Connect to open network");
-            this.connectNetwork(this, {
-                path: this.currentNetwork.path,
-                password: ""
-            });
-        }
+        //TODO: Use Bluetooth Service to update device status
+        this.$.DeviceRepeater.build();
     },
     handleInfoButtonTapped: function(inSender, inEvent)
     {
