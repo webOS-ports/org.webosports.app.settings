@@ -208,12 +208,12 @@ enyo.kind({
                             name: "NetworkList",
                             kind: "onyx.Groupbox",
                             layoutKind: "FittableRowsLayout",
-                         	style: "padding: 35px 10% 35px 10%;",
+                            style: "padding: 35px 10% 35px 10%;",
                             fit: true,
                             components: [
                                 {
                                     kind: "onyx.GroupboxHeader",
-                                    content: "Choose a Network",
+                                    content: "Choose a Network"
                                 },
                                 {
                                     classes: "networks-scroll",
@@ -226,7 +226,6 @@ enyo.kind({
                                             kind: "Repeater",
                                             count: 0,
                                             onSetupItem: "setupSearchRow",
-                                            
                                             components: [
                                                 {
                                                     kind: "WiFiListItem",
@@ -588,6 +587,8 @@ enyo.kind({
         if (!navigator.WiFiManager)
             return;
 
+        // Not much seems to happen if the WiFi status is changed
+        // outside of the Settings app.
         navigator.WiFiManager.onenabled = enyo.bind(this, "handleWiFiEnabled");
         navigator.WiFiManager.ondisabled = enyo.bind(this, "handleWiFiDisabled");
         navigator.WiFiManager.onnetworkschange = enyo.bind(this, "handleWiFiNetworksChanged");
@@ -938,6 +939,8 @@ enyo.kind({
     handleRetrieveNetworksFailed: function() {
         this.clearFoundNetworks();
     },
+    // Not convinced this happens if the WiFi status is changed
+    // outside of the Settings app.
     handleWiFiEnabled: function() {
         this.$.WiFiToggle.setValue(true);
         this.$.WiFiPanels.setIndex(1);
