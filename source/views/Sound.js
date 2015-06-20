@@ -183,8 +183,17 @@ enyo.kind({
 		this.system = inEvent.value;
 	},
 	volumeChange: function(inSender, inEvent) {
-		this.systemVolume = parseInt(inEvent.value, 10);
-		if (this.palm) {
+		// Stick to multiples of 11 (with 100 instead of 99).
+		// (I am pretty sure this should not be necessary.
+		//  Certainly, it makes no difference - setVolume still does not work -
+		//  on the Nexus 4.
+		//  Maybe it helps on other devices.)
+		var v = parseInt(11 * Math.round(inEvent.value / 11, 10));
+		if (v === 99) {
+			v = 100;
+		}
+		if (this.palm && this.systemVolume !== v) {
+			this.systemVolume = v;
 			this.$.SetVolume.send({volume: this.systemVolume});
 		}
 	},
