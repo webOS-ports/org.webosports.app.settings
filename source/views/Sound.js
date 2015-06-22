@@ -39,7 +39,7 @@ enyo.kind({
 							{style: "padding-top: 0px;", content: "Volume "},
 							{kind: "onyx.TooltipDecorator", style: "padding-top: 2.5px;", fit: true, components: [
 								{name: "volumeSlider", kind: "onyx.Slider",
-								 onChanging: "volumeChange", onChange: "volumeChange"}
+								 onChange: "volumeChange"}
 							]}
 						]},
 						{kind: "enyo.FittableColumns", classes: "group-item", style: "padding-bottom: 1px;", components: [
