@@ -17,8 +17,6 @@ enyo.kind({
 	system: false,
 	systemVolume: 0,
 	ringerVolume: 0,
-	ringTone: "??",
-	debug: false,
 	components: [
 		{kind: "onyx.Toolbar", layoutKind: "FittableColumnsLayout",
 		 classes: "onyx-toolbar", style: "line-height: 28px;", components: [
@@ -84,8 +82,9 @@ enyo.kind({
 							]}
 						]},
 						{kind: "enyo.FittableColumns", classes: "group-item", style: "padding: 0px;", components: [
-							{name: "ringerPicker", kind: "onyx.Button", fit: true,  content: "Ring tone Picker ", ontap: "ringerPopup"},
-						]},
+							{name: "ringerPicker", kind: "onyx.Button", fit: true,
+							 content: "Ringtone Picker", ontap: "ringerPopup"},
+						]}
 					]}
 				]}
 			]},
@@ -108,7 +107,9 @@ enyo.kind({
 		{name: "SetVolume", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
 		 method: "setVolume"},
 		{name: "SetMicMute", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
-		 method: "setMicMute"}
+		 method: "setMicMute"},
+		{name: "GetSystemPreferences", kind: "SystemService", method: "getPreferences",
+		 onComplete: "handleGetPreferencesResponse"}
 	],
 	//Handlers
 	create: function() {
@@ -127,6 +128,7 @@ enyo.kind({
 		}
 		this.palm = true;
 		this.$.GetAudioStatus.send({});
+		this.$.GetSystemPreferences.send({keys: ["ringtone"]});
 	},
 	reflow: function (inSender) {
 		this.inherited(arguments);
@@ -165,7 +167,7 @@ enyo.kind({
 		this.$.ringPickerPopup.hide();
 	},
 	tonepicked: function(inSender, inEvent) {
-		this.$.ringerPicker.setContent("Ring tone -- " + inEvent);
+		this.$.ringerPicker.setContent("Ringtone -- " + inEvent);
 	},
 	keyClicks: function(inSender, inEvent) {
 		this.keys = inEvent.value;
@@ -183,15 +185,7 @@ enyo.kind({
 		this.system = inEvent.value;
 	},
 	volumeChange: function(inSender, inEvent) {
-		// Stick to multiples of 11 (with 100 instead of 99).
-		// (I am pretty sure this should not be necessary.
-		//  Certainly, it makes no difference - setVolume still does not work -
-		//  on the Nexus 4.
-		//  Maybe it helps on other devices.)
-		var v = parseInt(11 * Math.round(inEvent.value / 11, 10));
-		if (v === 99) {
-			v = 100;
-		}
+		var v = inEvent.value;
 		if (this.palm && this.systemVolume !== v) {
 			this.systemVolume = v;
 			this.$.SetVolume.send({volume: this.systemVolume});
@@ -220,6 +214,13 @@ enyo.kind({
 			this.$.micMuteToggle.silence();
 			this.$.micMuteToggle.setValue(this.micMute);
 			this.$.micMuteToggle.unsilence();
+		}
+	},
+	handleGetPreferencesResponse: function(inSender, inResponse) {
+		// Set our controls to match the values in the response.
+
+		if (inResponse.ringtone != undefined) {
+			this.$.ringerPicker.setContent("Ringtone -- " + inResponse.ringtone.name);
 		}
 	}
 });
