@@ -185,7 +185,7 @@ enyo.kind({
 		this.system = inEvent.value;
 	},
 	volumeChange: function(inSender, inEvent) {
-		var v = inEvent.value;
+		var v = parseInt(this.$.volumeSlider.value, 10);
 		if (this.palm && this.systemVolume !== v) {
 			this.systemVolume = v;
 			this.$.SetVolume.send({volume: this.systemVolume});
