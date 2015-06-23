@@ -96,7 +96,15 @@ enyo.kind({
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Core"},
 				{kind: "ListItem", icon: "icon.png", title: "Screen & Lock", ontap: "openPanel", targetPanel: "ScreenLockPanel"},
 				{kind: "ListItem", icon: "icon.png", title: "Date & Time", ontap: "openPanel", targetPanel: "DateTimePanel"},
-				{kind: "ListItem", icon: "icon.png", title: "Sound & Ringtones", ontap: "openPanel", targetPanel: "AudioPanel"},
+				{kind: "ListItem", icon: "icon.png", title: "Sound & Ringtones", ontap: "openPanel", targetPanel: "AudioPanel",
+				components:[
+					// Absolute positioning is not ideal.
+					{name: "muteLabel", content: "Mute", style: "position: absolute; top: 4px; right: 92px; height: 31px;"},
+					{name: "muteToggle",
+					 kind: "onyx.ToggleButton",
+					 ontap: "muteToggleChanged",
+					 style: "position: absolute; top: 11px; right: 9px; height: 31px;" }
+				]},
 				{kind: "ListItem", icon: "icon.png", title: "Search Preferences", ontap: "openPanel", targetPanel: "SearchPreferencesPanel"},
 				{kind: "ListItem", icon: "icon.png", title: "Language & Input", ontap: "openPanel", targetPanel: "LanguageInputPanel"},
 				{kind: "ListItem", name: "DevModemListItem", icon: "icon.png", title: "Developer Options", ontap: "openPanel", targetPanel: "DevOptionsPanel", showing: false},
@@ -116,7 +124,7 @@ enyo.kind({
 			{name: "CertificatesPanel", kind: "Certificates"},
 			{name: "ScreenLockPanel", kind: "ScreenLock"},
 			{name: "DateTimePanel", kind: "DateTime"},
-			{name: "AudioPanel", kind: "Sound"},
+			{name: "AudioPanel", kind: "Sound", onMuteChanged: "muteChanged"},
 			{name: "SearchPreferencesPanel", kind: "SearchPreferences"},
 			{name: "DevOptionsPanel", kind: "DevOptions"},
 			{name: "TelephonyPanel", kind: "Telephony"},
@@ -131,10 +139,19 @@ enyo.kind({
 	},
 	//Action Functions
 	wifiActiveChanged: function(inSender, inEvent) {
-		this.$.WiFiToggle.setValue(inEvent.value);
+		this.$.WiFiToggle.setValue(inEvent.value);//@@
 	},
 	wifiToggleChanged: function(inSender) {
 		this.$.WiFiPanel.setToggleValue(inSender.value);
+		return true;
+	},
+	muteChanged: function(inSender, inEvent) {
+		this.$.muteToggle.silence();
+		this.$.muteToggle.setValue(inEvent.mute);
+		this.$.muteToggle.unsilence();
+	},
+	muteToggleChanged: function(inSender) {
+		this.$.AudioPanel.setMuteToggleValue(inSender.value);
 		return true;
 	},
 	onDevModeGetStatusResponse: function(inSender, inResponse) {
@@ -213,11 +230,15 @@ enyo.kind({
 			this.$.AppPanels.setDraggable(false);
 			this.$.AppPanels.$.ContentPanels.applyStyle("box-shadow", "0");
 			this.$.AppPanels.$.WiFiToggle.setShowing(true);
+			this.$.AppPanels.$.muteLabel.setShowing(true);
+			this.$.AppPanels.$.muteToggle.setShowing(true);
 		}
 		else {
 			this.$.AppPanels.setDraggable(true);
 			this.$.AppPanels.$.ContentPanels.applyStyle("box-shadow", "-4px 0px 4px rgba(0,0,0,0.3)");
 			this.$.AppPanels.$.WiFiToggle.setShowing(false);
+			this.$.AppPanels.$.muteLabel.setShowing(false);
+			this.$.AppPanels.$.muteToggle.setShowing(false);
 		}
 	},
 	handleRelaunch: function(inSender, inEvent) {

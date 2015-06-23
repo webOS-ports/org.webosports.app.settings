@@ -1,4 +1,3 @@
-
 var phonyringTones = [
 		{
 			"name": "Tones 3 beep",
@@ -25,7 +24,8 @@ enyo.kind({
 		onClose: "",
 		onTone: ""
 	},
-	
+
+	palm: false,
 	pickedName: "",
 	pickedScr: "",
 
@@ -41,7 +41,7 @@ enyo.kind({
 			]}
 		]},
 		{name: "playButton", kind: "onyx.IconButton", active: "false", style: "float: left;", src: "assets/Email-btn_controls_play.png", ontap: "playTapped"},
-		{kind: "onyx.Button", content: "Close", style: "float: right;", ontap: "closePpoup"},
+		{kind: "onyx.Button", content: "Close", style: "float: right;", ontap: "closePopup"},
 		{name: "audio", kind: "enyo.Audio"}
 	],
 	
@@ -51,9 +51,10 @@ enyo.kind({
 		if (!window.PalmSystem) {
 			// if we're outside the webOS system add some entries for easier testing
 			this.ringTones = phonyringTones;
-        }
-        this.loadData();
-        this.$.toneList.setCount(this.ringTones.length);
+		}
+		this.palm = true;
+		this.loadData();
+		this.$.toneList.setCount(this.ringTones.length);
 	},
 	
 	loadData: function(inSender, inEvent) {
@@ -89,14 +90,12 @@ enyo.kind({
 		this.doTone(this.pickedName);
 		
 		console.log(" tone picked =",  this.ringTones[i].scr);
-		
 	},
 	
-	closePpoup: function(inSender, inEvent) {
+	closePopup: function(inSender, inEvent) {
 		// TO DO - Auto-generated code
 		this.$.audio.pause();
 		this.doClose();
 		this.$.toneList.refresh();
-	},
-
+	}
 });
