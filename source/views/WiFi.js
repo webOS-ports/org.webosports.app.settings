@@ -40,7 +40,7 @@ enyo.kind({
 					{
 						name: "Padlock",
 						kind: "Image",
-						src: "assets/wifi/secure-icon.png",
+						src: "assets/secure-icon.png",
 						showing: false,
 						classes: "wifi-list-icon"
 					},
@@ -208,12 +208,12 @@ enyo.kind({
                             name: "NetworkList",
                             kind: "onyx.Groupbox",
                             layoutKind: "FittableRowsLayout",
-                         	style: "padding: 35px 10% 35px 10%;",
+                            style: "padding: 35px 10% 35px 10%;",
                             fit: true,
                             components: [
                                 {
                                     kind: "onyx.GroupboxHeader",
-                                    content: "Choose a Network",
+                                    content: "Choose a Network"
                                 },
                                 {
                                     classes: "networks-scroll",
@@ -226,7 +226,6 @@ enyo.kind({
                                             kind: "Repeater",
                                             count: 0,
                                             onSetupItem: "setupSearchRow",
-                                            
                                             components: [
                                                 {
                                                     kind: "WiFiListItem",
@@ -588,6 +587,8 @@ enyo.kind({
         if (!navigator.WiFiManager)
             return;
 
+        // Not much seems to happen if the WiFi status is changed
+        // outside of the Settings app.
         navigator.WiFiManager.onenabled = enyo.bind(this, "handleWiFiEnabled");
         navigator.WiFiManager.ondisabled = enyo.bind(this, "handleWiFiDisabled");
         navigator.WiFiManager.onnetworkschange = enyo.bind(this, "handleWiFiNetworksChanged");
@@ -681,7 +682,7 @@ enyo.kind({
     setupSearchRow: function (inSender, inEvent) {
     	var ssid = "";
     	if(enyo.Panels.isScreenNarrow()){
-    		if(this.foundNetworks[inEvent.index].name.length >= 18){					// if the SSID is longer shortten it for the narrow page only
+    		if(this.foundNetworks[inEvent.index].name.length >= 18){					// if the SSID is longer shorten it for the narrow page only
     			ssid = this.foundNetworks[inEvent.index].name.slice(0,18) + "..";
     		}else{
     			ssid = this.foundNetworks[inEvent.index].name;
@@ -938,6 +939,8 @@ enyo.kind({
     handleRetrieveNetworksFailed: function() {
         this.clearFoundNetworks();
     },
+    // Not convinced this happens if the WiFi status is changed
+    // outside of the Settings app.
     handleWiFiEnabled: function() {
         this.$.WiFiToggle.setValue(true);
         this.$.WiFiPanels.setIndex(1);
