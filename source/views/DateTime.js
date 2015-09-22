@@ -68,11 +68,11 @@ enyo.kind({
 							{kind: "onyx.Tooltip", content: "Network Time"}
 						]}
 					]},
-					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
+					{ name: "TimePickerRow", kind: "enyo.FittableColumns", classes: "group-item", components:[
 						{content: "Time", fit: true},
 						{name: "TimePicker", kind: "onyx.TimePicker", disabled: true, onSelect: "dateTimeChanged"},
 					]},
-					{ kind: "enyo.FittableColumns", classes: "group-item", components:[
+					{ name: "DatePickerRow", kind: "enyo.FittableColumns", classes: "group-item", components:[
 						{content: "Date", fit: true},
 						{name: "DatePicker", kind: "onyx.DatePicker", disabled: true, onSelect: "dateTimeChanged"},
 					]}
@@ -186,12 +186,12 @@ enyo.kind({
 	},
 	updateTimeControlStates: function() {
 		if (this.$.NetworkTimeToggle.value) {
-			this.$.TimePicker.setDisabled(true);
-			this.$.DatePicker.setDisabled(true);
+			this.$.TimePickerRow.setShowing(false);
+			this.$.DatePickerRow.setShowing(false);
 		}
 		else {
-			this.$.TimePicker.setDisabled(false);
-			this.$.DatePicker.setDisabled(false);
+			this.$.TimePickerRow.setShowing(true);
+			this.$.DatePickerRow.setShowing(true);
 		}
 	},
 	//Action Handlers
@@ -235,7 +235,7 @@ enyo.kind({
 		} else {
 			this.timeZones = [];
 			for (var i = 0; i < this.referenceTimeZones.length; i += 1) {
-				if (this.referenceTimeZones[i].City.toLowerCase().indexOf(searchTerm) >= 0) {
+				if (this.referenceTimeZones[i].Sitty.toLowerCase().indexOf(searchTerm) >= 0) {
 					this.timeZones.push(this.referenceTimeZones[i]);
 				}
 			}
@@ -268,34 +268,14 @@ enyo.kind({
 		} else {
 			offset = "UTC";
 		}
-		// Manage troublesome cases
-		if (!cty || cty.length === 0) {
-			cty = cntry; // Just for something to display
-		}
-		// Strip off redundant country leader (if present)
-		var tmpstr = cntry + "\/";
-		if (cty.indexOf(tmpstr) === 0) {
-			cty = cty.slice(tmpstr.length);
-		}
+		// Manage a handful of unwieldy entries.
+		// (Unfortunate that this tests positive even if we are in landscape orientation.)
 		if (enyo.Panels.isScreenNarrow()) {
-			// Verbose state names (No!)
-			var ndstr = "North Dakota\/";
-			var kystr = "Kentucky\/";
-			var instr = "Indiana\/";
-			if (cty.indexOf(ndstr) === 0) {
-				cty = "ND\/" + cty.slice(ndstr.length);
-			} else if (cty.indexOf(kystr) === 0) {
-				cty = "KY\/" + cty.slice(kystr.length);
-			} else if (cty.indexOf(instr) === 0) {
-				cty = "IN\/" + cty.slice(instr.length);
-			}
 			// Ref. http://www.timeanddate.com/time/zones/
 			if (dscrptn === "Fernando de Noronha Time") {
 				dscrptn = "FNT";
-			} else if (dscrptn === "Saint Pierre and Miquelon Standard Time") {
-				dscrptn = "Pierre &amp; Miquelon Standard Time";
 			}
-			// Arbitrary hack. Looks OK on a Nexus 4.
+			// Arbitrary. Looks OK on a Nexus 4.
 			if (cntry.length >= 31) {
 				cntry = cntry.slice(0,28) + "&hellip;";
 			}
@@ -342,8 +322,18 @@ enyo.kind({
 	},
 	handleGetPreferenceValuesResponse: function(inSender, inResponse) {
 		if (inResponse["timeZone"] !== undefined) {
-			// Safe to assume there is no search term at this stage (probably)
 			this.timeZones = this.referenceTimeZones = inResponse["timeZone"];
+			// Give the city-less entries "cities" to search on.
+			// ("Sitty" for searchable City.)
+			for (var i = 0; i < this.referenceTimeZones.length; i += 1) {
+				var cty = this.referenceTimeZones[i].City;
+				if (!cty || cty.length === 0) {
+					cty = this.referenceTimeZones[i].Country;
+				}
+				this.referenceTimeZones[i].Sitty = cty;
+			}
+			// Safe to assume there is no search term at this stage (probably)
+			this.timeZones = this.referenceTimeZones;
 			this.$.TimeZonesList.setCount(this.timeZones.length);
 		}
 	}
