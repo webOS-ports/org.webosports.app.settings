@@ -6,7 +6,6 @@ enyo.depends(
 	"Sound.js",
 	"PINNumberPad.js",
 	"ScreenLock.js",
-	"pickRingTones.js",
 	"Licenses.js",
 	"LanguageInput.js",
 	"DevOptions.js",
