@@ -82,6 +82,13 @@ enyo.kind({
 					ontap: "wifiToggleChanged",
 					style: "position: absolute; top: 11px; right: 9px; height: 31px;" }
 				]},
+				{kind: "ListItem", icon: "icon.png", title: "Bluetooth", ontap: "openPanel", targetPanel: "BluetoothPanel",
+				components:[
+					{name: "BluetoothToggle",
+					kind: "onyx.ToggleButton",
+					ontap: "bluetoothToggleChanged",
+					style: "position: absolute; top: 11px; right: 9px; height: 31px;" }
+				]},
 				{kind: "ListItem", icon: "icon.png", title: "Telephony", ontap: "openPanel", targetPanel: "TelephonyPanel"},
 
 				//Services
@@ -120,6 +127,7 @@ enyo.kind({
 		components:[
 			{kind: "EmptyPanel"},
 			{name: "WiFiPanel", kind: "WiFi", onActiveChanged: "wifiActiveChanged"},
+			{name: "BluetoothPanel", kind: "Bluetooth", onActiveChanged: "bluetoothActiveChanged"},
 			{name: "SystemUpdatesPanel", kind: "SystemUpdates"},
 			{name: "CertificatesPanel", kind: "Certificates"},
 			{name: "ScreenLockPanel", kind: "ScreenLock"},
@@ -143,6 +151,13 @@ enyo.kind({
 	},
 	wifiToggleChanged: function(inSender) {
 		this.$.WiFiPanel.setToggleValue(inSender.value);
+		return true;
+	},
+	bluetoothActiveChanged: function(inSender, inEvent) {
+		this.$.BluetoothToggle.setValue(inEvent.value);
+	},
+	bluetoothToggleChanged: function(inSender) {
+		this.$.BluetoothPanel.setToggleValue(inSender.value);
 		return true;
 	},
 	muteChanged: function(inSender, inEvent) {

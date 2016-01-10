@@ -83,6 +83,15 @@
 	padding-top: 5px;
 }
 /*
+ *   Bluetooth
+ */
+.bluetooth-active {
+    font-weight: bold;
+}
+.bluetooth-disabled {
+    color: gray;
+}
+/*
  *   WiFi
  */
 .wifi-list-icon {
