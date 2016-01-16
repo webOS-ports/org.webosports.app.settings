@@ -245,6 +245,7 @@ enyo.kind({
 			this.$.AppPanels.setDraggable(false);
 			this.$.AppPanels.$.ContentPanels.applyStyle("box-shadow", "0");
 			this.$.AppPanels.$.WiFiToggle.setShowing(true);
+			this.$.AppPanels.$.BluetoothToggle.setShowing(true);
 			this.$.AppPanels.$.muteLabel.setShowing(true);
 			this.$.AppPanels.$.muteToggle.setShowing(true);
 		}
@@ -252,6 +253,7 @@ enyo.kind({
 			this.$.AppPanels.setDraggable(true);
 			this.$.AppPanels.$.ContentPanels.applyStyle("box-shadow", "-4px 0px 4px rgba(0,0,0,0.3)");
 			this.$.AppPanels.$.WiFiToggle.setShowing(false);
+			this.$.AppPanels.$.BluetoothToggle.setShowing(false);
 			this.$.AppPanels.$.muteLabel.setShowing(false);
 			this.$.AppPanels.$.muteToggle.setShowing(false);
 		}
