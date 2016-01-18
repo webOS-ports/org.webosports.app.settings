@@ -517,7 +517,7 @@ enyo.kind({
                             classes: "content-aligner",
                             components: [
                                 {
-                                    //TODO: Update this based as the search status is changed.
+                                    //TODO: Update this as the search status is changed.
                                     name: "SearchStatus",
                                     kind: "enyo.FittableColumns",
                                     style: "padding-bottom: 15px;",
@@ -632,7 +632,7 @@ enyo.kind({
                                             tag: "br"
                                         },
                                         {
-                                            content: "Please make sure that your Bluetooth device is on and in paring mode."
+                                            content: "Please make sure that your Bluetooth device is on and in pairing mode."
                                         }
                                     ]
                                 }
@@ -660,7 +660,7 @@ enyo.kind({
             ]
         },
     ],
-    //Handlers
+    // Handlers
     create: function () {
         this.inherited(arguments);
 
@@ -677,44 +677,56 @@ enyo.kind({
 
         this.palm = true;
 
-        if (!navigator.BluetoothManager)
+        if (!navigator.BluetoothManager) {
+            this.log("No BluetoothManager extension!");
             return;
+	}
 
         navigator.BluetoothManager.onenabled = enyo.bind(this, "handleBluetoothEnabled");
         navigator.BluetoothManager.ondisabled = enyo.bind(this, "handleBluetoothDisabled");
-        navigator.BluetoothManager.onnetworkschange = enyo.bind(this, "handleBluetoothNetworksChanged");
+
+        navigator.BluetoothManager.ondevicefound = enyo.bind(this, "handleDeviceFound");
+        navigator.BluetoothManager.ondevicechanged = enyo.bind(this, "handleDeviceChanged");
+        navigator.BluetoothManager.ondeviceremoved = enyo.bind(this, "handleDeviceRemoved");
+        navigator.BluetoothManager.ondevicedisappeared = enyo.bind(this, "handleDeviceDisappeared");
+        navigator.BluetoothManager.onpropertychanged = enyo.bind(this, "handleBluetoothPropertyChanged");
+
+        navigator.BluetoothManager.onrequestpincode = enyo.bind(this, "handleBluetoothRequestPinCode");
+        navigator.BluetoothManager.onrequestpasskey = enyo.bind(this, "handleBluetoothRequestPasskey");
+        navigator.BluetoothManager.onconfirmpasskey = enyo.bind(this, "handleBluetoothConfirmPasskey");
 
 //        if (navigator.BluetoothManager.enabled) {
 //            this.handleBluetoothEnabled();
 //        }
 
-        this.doActiveChanged({value: navigator.BluetoothManager.enabled});
+        this.doActiveChanged({value: navigator.BluetoothManager.enabled});//@@
     },
     reflow: function (inSender) {
         this.inherited(arguments);
-        if (enyo.Panels.isScreenNarrow()){
+        if (enyo.Panels.isScreenNarrow()) {
             this.$.DeviceList.setStyle("padding: 35px 5% 35px 5%;");
             this.$.DiscoverableStatus.setStyle("padding: 35px 5% 35px 5%;");
             this.$.Grabber.applyStyle("visibility", "hidden");
-        }else{
+        } else {
             this.$.Grabber.applyStyle("visibility", "visible");
         }
     },
     //Action Handlers
-    toggleButtonChanged: function (inSender, inEvent) {
-        if (inEvent.value === true){
-            this.activateBluetooth(this);
-        } else{
-            this.deactivateBluetooth(this);
+    toggleButtonChanged: function(inSender, inEvent) {
+        if (inEvent.value === true) {
+            this.activateBluetooth();
+        } else {
+            this.deactivateBluetooth();
             this.managepopup = false;
        }
         this.doActiveChanged(inEvent);
     },
-    listItemTapped: function (inSender, inEvent) {
+    listItemTapped: function(inSender, inEvent) {
         var selectedDevice = this.foundDevices[inEvent.index];
 
-        // don't try and connect to a device that is disabled
-        if (selectedDevice.enabled === false) return true;
+        // Don't try to connect to a disabled device
+        if (selectedDevice.enabled === false)
+	    return true;
 
         // if we are connected (2) or connecting (1), set the status to disconnected (0)
         if (selectedDevice.connectionState === 2 || selectedDevice.connectionState === 1) {
@@ -732,7 +744,7 @@ enyo.kind({
 
         this.$.DeviceRepeater.build();
     },
-    foundDeviceTapped: function (inSender, inEvent) {
+    foundDeviceTapped: function(inSender, inEvent) {
         var selectedDevice = this.searchResults[inEvent.index];
 
         // if we are connecting, set the status to disconnected
@@ -757,7 +769,7 @@ enyo.kind({
     {
         //TODO: Pass type of device into the panel so that we know:
         // a) Which panel to display (device info vs device options)
-        // b) which options to display (ie Mirror SMS)
+        // b) which options to display (e.g. Mirror SMS)
         //this.showDeviceInfo();
         this.showDeviceOptions();
     },
@@ -766,21 +778,22 @@ enyo.kind({
         this.$.SearchStatusMessage.setContent("Searching for " + inEvent.content.toLowerCase() + " devices...");
         this.$.PhoneMessage.setShowing(inEvent.content.toLowerCase() === "phone");
         //TODO: Start Search
-        if (this.$.FoundDeviceList) this.handleDeviceSearchResults();
+        if (this.$.FoundDeviceList)
+	    this.handleDeviceSearchResults();
     },
-    onAddDeviceButtonTapped: function (inSender, inEvent) {
-		this.showAddDevice();
+    onAddDeviceButtonTapped: function(inSender, inEvent) {
+	this.showAddDevice();
     },
-    setupDeviceRow: function (inSender, inEvent) {
+    setupDeviceRow: function(inSender, inEvent) {
         var deviceName = "";
-        if(enyo.Panels.isScreenNarrow() && this.foundDevices[inEvent.index].name.length >= 18){ // if the name is longer shorten it for the narrow page only
+        if (enyo.Panels.isScreenNarrow() && this.foundDevices[inEvent.index].name.length >= 18) { // if the name is longer shorten it for the narrow page only
             deviceName = this.foundDevices[inEvent.index].name.slice(0,18) + "..";
-        }else{
+        } else {
             deviceName = this.foundDevices[inEvent.index].name;
         }
 
-        inEvent.item.$.bluetoothListItem.$.DeviceName.setContent( deviceName );
-        inEvent.item.$.bluetoothListItem.$.DeviceNameInput.setValue( deviceName );
+        inEvent.item.$.bluetoothListItem.$.DeviceName.setContent(deviceName);
+        inEvent.item.$.bluetoothListItem.$.DeviceNameInput.setValue(deviceName);
 
         switch (this.foundDevices[inEvent.index].type) {
             case "phone":
@@ -800,7 +813,7 @@ enyo.kind({
 
         inEvent.item.$.bluetoothListItem.$.DeviceName.addRemoveClass("bluetooth-disabled", !this.foundDevices[inEvent.index].enabled);
 
-        if (this.foundDevices[inEvent.index].enabled){
+        if (this.foundDevices[inEvent.index].enabled) {
             inEvent.item.$.bluetoothListItem.$.ConnectingSpinner.setShowing(this.foundDevices[inEvent.index].connectionState == 1);
             inEvent.item.$.bluetoothListItem.$.DeviceName.addRemoveClass("bluetooth-active", this.foundDevices[inEvent.index].connectionState == 2);
 
@@ -823,16 +836,16 @@ enyo.kind({
             }
         }
     },
-    setupFoundDeviceRow: function (inSender, inEvent) {
+    setupFoundDeviceRow: function(inSender, inEvent) {
         var deviceName = "";
-        if(enyo.Panels.isScreenNarrow() && this.foundDevices[inEvent.index].name.length >= 18){ // if the name is longer shorten it for the narrow page only
+        if (enyo.Panels.isScreenNarrow() && this.foundDevices[inEvent.index].name.length >= 18) { // if the name is longer shorten it for the narrow page only
             deviceName = this.searchResults[inEvent.index].name.slice(0,18) + "..";
-        }else{
+        } else {
             deviceName = this.searchResults[inEvent.index].name;
         }
 
         inEvent.item.$.bluetoothListItem.isNewDevice();
-        inEvent.item.$.bluetoothListItem.$.DeviceName.setContent( deviceName );
+        inEvent.item.$.bluetoothListItem.$.DeviceName.setContent(deviceName);
         inEvent.item.$.bluetoothListItem.$.ConnectingSpinner.setShowing(this.searchResults[inEvent.index].connecting);
 
         switch (this.searchResults[inEvent.index].type) {
@@ -851,14 +864,14 @@ enyo.kind({
         }
     },
     //Action Functions
-    showBluetoothDisabled: function (inSender, inEvent) {
+    showBluetoothDisabled: function(inSender, inEvent) {
         this.stopAutoscan();
         this.$.BluetoothPanels.setIndex(0);
     },
-    showDevicesList: function (inSender, inEvent) {
+    showDevicesList: function(inSender, inEvent) {
         return this.$.BluetoothPanels.setIndex(1);
     },
-    showDeviceInfo: function (inSender, inEvent) {
+    showDeviceInfo: function(inSender, inEvent) {
         //TODO: Set device options based on the selected device
         this.$.BluetoothPanels.setIndex(2);
         this.stopAutoscan();
@@ -868,27 +881,26 @@ enyo.kind({
         this.$.BluetoothPanels.setIndex(3);
         this.stopAutoscan();
     },
-    showAddDevice: function (inSender, inEvent) {
+    showAddDevice: function(inSender, inEvent) {
         this.$.BluetoothPanels.setIndex(4);
         this.stopAutoscan();
         //TODO: trigger search
         this.handleDeviceSearchResults();
     },
-    setToggleValue: function (value) {
+    setToggleValue: function(value) {
         this.$.BluetoothToggle.setValue(value);
     },
-    showError: function (message) {
+    showError: function(message) {
         this.$.ErrorMessage.setContent(message);
         this.$.ErrorPopup.show();
     },
-    activateBluetooth: function (inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);
+    activateBluetooth: function() {
         this.showDevicesList();
-		if (!navigator.BluetoothManager)
+	if (!navigator.BluetoothManager)
             return;
         navigator.BluetoothManager.enabled = true;
     },
-    deactivateBluetooth: function (inSender, inEvent) {
+    deactivateBluetooth: function() {
         this.showBluetoothDisabled();
         if (!navigator.BluetoothManager)
             return;
@@ -934,58 +946,53 @@ enyo.kind({
         //TODO: get results from service. In the mean time, we'll fake it.
         var searchDeviceType = this.$.DeviceSearchPicker.selected.content.toLowerCase();
         
-        var filterFunction = function(value, index, array)
-        {
+        var filterFunction = function(value, index, array) {
             return value.type === searchDeviceType;
         };
 
         this.searchResults = foundDevices.filter(filterFunction);
 
-        if (this.searchResults.length > 0)
-        {
+        if (this.searchResults.length > 0) {
             this.$.FoundDeviceList.show();
             this.$.FoundDeviceRepeater.setCount(this.searchResults.length);
             //this.$.FoundDeviceRepeater.build();
-        }
-        else
-        {
+        } else {
             this.$.NoDevicesFoundMessage.show();
         }
     },
-    handleBackGesture: function(inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);	
-		
-		if(this.$.BluetoothPanels.getIndex() > 1){
-			this.$.BluetoothPanels.setIndex(1);
-		}else{
-			if( this.$.BluetoothPanels.getIndex() === 1 || this.$.BluetoothPanels.getIndex() === 0){
-				this.doBackbutton();
-			}
-		}
-	},
+    handleBackGesture: function() {
+	if (this.$.BluetoothPanels.getIndex() > 1) {
+	    this.$.BluetoothPanels.setIndex(1);
+	} else {
+	    if (this.$.BluetoothPanels.getIndex() === 1 ||
+		this.$.BluetoothPanels.getIndex() === 0) {
+		this.doBackbutton();
+	    }
+	}
+    },
 
-    //Utility Functions
-    clearfoundDevices: function () {
+    // Utility Functions
+    clearFoundDevices: function () {
         this.foundDevices = [];
         this.$.DeviceRepeater.setCount(this.foundDevices.length);
     },
     //TODO: This section will need to be re-architected to attempt to autoconnect to devices, etc.
-    startAutoscan: function(inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);
-		if (null === this.autoscan) {
+    startAutoscan: function() {
+	if (null === this.autoscan) {
             this.log("Starting autoscan ...");
             this.autoscan = window.setInterval(enyo.bind(this, "triggerAutoscan"), 15000);
             if (!this.foundDevices) {
+		this.foundDevices = [];
                 this.triggerAutoscan();
-                this.log("this.triggerAutoscan();");
             }
         }
     },
     triggerAutoscan: function() {
-		if (!navigator.BluetoothManager)
+	if (!navigator.BluetoothManager)
             return;
-        navigator.BluetoothManager.retrieveNetworks(enyo.bind(this, "handleRetrieveNetworksResponse"),
-                                               enyo.bind(this, "handleRetrieveNetworksFailed"));
+        this.log("Discovering devices...");
+        navigator.BluetoothManager.discover(true);
+        this.log("discover was called.");
     },
     stopAutoscan: function() {
         if (null !== this.autoscan) {
@@ -994,20 +1001,47 @@ enyo.kind({
             this.autoscan = null;
         }
     },
-    //Service Callbacks
-    handleRetrieveNetworksResponse: function (networks) {
-        this.log(networks);
-        this.clearfoundDevices();
-        if (networks) {
-            this.foundDevices = networks;
-            this.$.DeviceRepeater.setCount(this.foundDevices.length);
-            if (this.wifiTarget && this.connecting != true) {
-                this.triggerWifiConnect();
-            }
-        }
+    // BluetoothManager Callbacks
+    handleDeviceFound: function(deviceInfo) {
+//	this.log(deviceInfo.name);
+//	this.log(deviceInfo.address);
+//	this.log(deviceInfo.type);
+	for (x in deviceInfo) {
+	    this.log(x + ": " + deviceInfo[x]);
+	}
+	    //if (deviceInfo.address === "00:1D:FE:7F:E5:F0") {
+		    //this.log("will pair");
+		//navigator.BluetoothManager.connectDevice(deviceInfo.address);
+	    //}
     },
-    handleRetrieveNetworksFailed: function() {
-        this.clearfoundDevices();
+    handleDeviceChanged: function(deviceInfo) {
+	this.log(deviceInfo);
+    },
+    handleDeviceRemoved: function(address) {
+	this.log(address);
+    },
+    handleDeviceDisappeared: function(address) {
+	this.log(address);
+    },
+    handleBluetoothPropertyChanged: function(key, deviceInfo) {
+	this.log(key);
+	this.log(deviceInfo);
+    },
+    handleBluetoothRequestPinCode: function(deviceInfo) {
+	//this.log(deviceInfo.alias);
+	this.log(deviceInfo.address);
+	this.log(deviceInfo.tag);
+	navigator.BluetoothManager.providePinCode(deviceInfo.tag,true,"0000");
+    },
+    handleBluetoothRequestPasskey: function(deviceInfo) {
+	this.log(deviceInfo.address);
+	this.log(deviceInfo.tag);
+	navigator.BluetoothManager.providePasskey(deviceInfo.tag,true,0);
+    },
+    handleBluetoothConfirmPasskey: function(deviceInfo) {
+	this.log(deviceInfo.address);
+	this.log(deviceInfo.tag);
+	navigator.BluetoothManager.confirmPasskey(deviceInfo.tag,true);
     },
     handleBluetoothEnabled: function() {
         this.$.BluetoothToggle.setValue(true);
@@ -1018,10 +1052,5 @@ enyo.kind({
         this.$.BluetoothPanels.setIndex(0);
         this.$.BluetoothToggle.setValue(false);
         this.stopAutoscan();
-    },
-    handleBluetoothNetworksChanged: function(networks) {
-        this.handleRetrieveNetworksResponse(networks);
-        this.stopAutoscan();
-    },
-    
+    }
 });

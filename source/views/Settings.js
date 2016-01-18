@@ -196,12 +196,13 @@ enyo.kind({
 			this.selectPanelByName("ContentPanels");
 	},
 
-	handleBack: function(inSender, inEvent){
-		this.log("sender:", inSender, ", event:", inEvent);
+	handleBack: function() {
 		if (this.currentPanel === "AboutPanel")
 			this.$.AboutPanel.handleBackGesture();
 		else if (this.currentPanel === "WiFiPanel" )
 			this.$.WiFiPanel.handleBackGesture();
+		else if (this.currentPanel === "BluetoothPanel" )
+			this.$.BluetoothPanel.handleBackGesture();
 		else if (this.currentPanel === "CertificatesPanel")
 			this.$.CertificatesPanel.handleBackGesture();
 		else if (this.currentPanel === "DateTimePanel")
