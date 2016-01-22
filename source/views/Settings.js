@@ -182,9 +182,10 @@ enyo.kind({
 	},
 	//Panel selection functions
 	openPanel: function(inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);
-		if (typeof inSender.targetPanel === 'undefined')
-			return;
+		if (typeof inSender.targetPanel === 'undefined') {
+		    this.log("No target panel defined!");
+		    return;
+		}
 		this.log("Opening panel ", inSender.targetPanel);
 		this.currentPanel = inSender.targetPanel;
 		this.$.ContentPanels.selectPanelByName(inSender.targetPanel);
