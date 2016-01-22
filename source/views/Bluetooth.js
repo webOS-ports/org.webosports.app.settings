@@ -158,13 +158,14 @@ enyo.kind({
 });
 
 // Use the DeviceInfo structure returned by navigator.BluetoothManager.
-// type: 0 (phone), 1 (keyboard), 2 (audio), 3 (other)
+// type: 3 (phone), 1 (keyboard), 7 (audio), 0 (other)
 // connection[ state]: 0 (Not Connected), 1 (Connecting), 2 (Connected)
+// But I also see 4 in the logs. What's that? Rejected?
 
 var mockDevices = [
     {
         name: "Phone",
-        type: 0, //"phone",
+        type: 3, //"phone",
         enabled: true,
         connection: 0
     },
@@ -176,19 +177,19 @@ var mockDevices = [
     },
     {
         name: "Headset",
-        type: 2, //"audio",
+        type: 7, //"audio",
         enabled: true,
         connection: 2
     },
     {
         name: "Computer",
-        type: 3, //"other",
+        type: 0, //"other",
         enabled: true,
         connection: 1
     },
     {
         name: "Toaster",
-        type: "other",
+        type: 0, //"other",
         enabled: true,
         connection: 0
     }
@@ -197,17 +198,17 @@ var mockDevices = [
 var foundDevices = [
     {
         name: "Pre3",
-        type: 0, //"phone",
+        type: 3, //"phone",
         connection: 0
     },
     {
         name: "Mako",
-        type: 0, //"phone",
+        type: 3, //"phone",
         connection: 0
     },
     {
         name: "Tenderloin",
-        type: 0, //"phone",
+        type: 3, //"phone",
         connection: 0
     },
     {
@@ -217,12 +218,12 @@ var foundDevices = [
     },
     {
         name: "My PC",
-        type: 3, //"other",
+        type: 0, //"other",
         connection: 0
     },
     {
         name: "WebOS Toaster",
-        type: 3, //"other",
+        type: 0, //"other",
         connection: 0
     }
 ];
@@ -729,18 +730,26 @@ enyo.kind({
         if (selectedDevice.enabled === false)
 	    return true;
 
-        // if we are connected (2) or connecting (1), set the status to disconnected (0)
+        // If we are connected (2) or connecting (1), set the status to disconnected (0)
         if (selectedDevice.connection === 2 || selectedDevice.connection === 1) {
             selectedDevice.connection = 0;
-            //TODO: Use Bluetooth Service to update device status
-            //IE navigator.BluetoothManager.disconnectDevice(selectedDevice, enyo.bind(this, "handleDeviceDisconnectSucceeded"), enyo.bind(this, "handleDeviceDisconnectFailed"));
+            if (!navigator.BluetoothManager) {
+		return;
+	    }
+            navigator.BluetoothManager.disconnectDevice(selectedDevice.address,
+							enyo.bind(this, "handleDeviceDisconnectSucceeded"),
+							enyo.bind(this, "handleDeviceDisconnectFailed"));
         }
-        // if we are not connected, set the status to connecting (1)
+        // If we are not connected, set the status to connecting (1)
         else if (selectedDevice.connection === 0)
         {
             selectedDevice.connection = 1;
-            //TODO: Use Bluetooth Service to update device status
-            //IE navigator.BluetoothManager.connectDevice(selectedDevice, enyo.bind(this, "handleDeviceConnectSucceeded"), enyo.bind(this, "handleDeviceConnectFailed"));
+            if (!navigator.BluetoothManager) {
+		return;
+	    }
+            navigator.BluetoothManager.connectDevice(selectedDevice.address,
+						     enyo.bind(this, "handleDeviceConnectSucceeded"),
+						     enyo.bind(this, "handleDeviceConnectFailed"));
         }
 
         this.$.DeviceRepeater.build();
@@ -797,17 +806,18 @@ enyo.kind({
         inEvent.item.$.bluetoothListItem.$.DeviceNameInput.setValue(deviceName);
 
         switch (this.foundDevices[inEvent.index].type) {
-            case 0: //"phone":
+            case 3: //"phone":
                 inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/phone.png");
                 inEvent.item.$.bluetoothListItem.$.MoreInfo.setShowing(true);
                 break;
             case 1: //"keyboard":
                 inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/keyboard.png");
                 break;
-            case 2: //"audio":
+            case 7: //"audio":
                 inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/audio.png");
                 break;
-            case 3: //"other":
+            case 0: //"other":
+	    default:
                 inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/computer.png");
                 break;
         }
@@ -821,16 +831,17 @@ enyo.kind({
             if (this.foundDevices[inEvent.index].connection == 2)
             {
                 switch (this.foundDevices[inEvent.index].type) {
-                    case 0: //"phone":
+                    case 3: //"phone":
                         inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/phone-active.png");
                         break;
                     case 1: //"keyboard":
                         inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/keyboard-active.png");
                         break;
-                    case 2: //"audio":
+                    case 7: //"audio":
                         inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/audio-active.png");
                         break;
-                    case 3: //"other":
+                    case 0: //"other":
+		    default:
                         inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/computer-active.png");
                         break;
                 }
@@ -850,16 +861,17 @@ enyo.kind({
         inEvent.item.$.bluetoothListItem.$.ConnectingSpinner.setShowing(this.searchResults[inEvent.index].connecting);
 
         switch (this.searchResults[inEvent.index].type) {
-            case 0: //"phone":
+            case 3: //"phone":
                 inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/phone.png");
                 break;
             case 1: //"keyboard":
                 inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/keyboard.png");
                 break;
-            case 2: //"audio":
+            case 7: //"audio":
                 inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/audio.png");
                 break;
-            case 3: //"other":
+            case 0: //"other":
+	    default:
                 inEvent.item.$.bluetoothListItem.$.DeviceType.setSrc("assets/bluetooth/computer.png");
                 break;
         }
@@ -1014,12 +1026,15 @@ enyo.kind({
 	//    this.log("will pair");
 	//    navigator.BluetoothManager.connectDevice(deviceInfo.address);
 	//}
+	deviceInfo.enabled = true;
 	this.foundDevices.push(deviceInfo);
 	this.$.DeviceRepeater.setCount(this.foundDevices.length);
 	this.$.DeviceRepeater.build();
     },
     handleDeviceChanged: function(deviceInfo) {
-	this.log(deviceInfo);
+	for (x in deviceInfo) {
+	    this.log(x + ": " + deviceInfo[x]);
+	}
     },
     handleDeviceRemoved: function(address) {
 	this.log(address);
