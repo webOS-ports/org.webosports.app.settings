@@ -1010,10 +1010,13 @@ enyo.kind({
 	for (x in deviceInfo) {
 	    this.log(x + ": " + deviceInfo[x]);
 	}
-	    //if (deviceInfo.address === "00:1D:FE:7F:E5:F0") {
-		    //this.log("will pair");
-		//navigator.BluetoothManager.connectDevice(deviceInfo.address);
-	    //}
+	//if (deviceInfo.address === "00:1D:FE:7F:E5:F0") {
+	//    this.log("will pair");
+	//    navigator.BluetoothManager.connectDevice(deviceInfo.address);
+	//}
+	this.foundDevices.push(deviceInfo);
+	this.$.DeviceRepeater.setCount(this.foundDevices.length);
+	this.$.DeviceRepeater.build();
     },
     handleDeviceChanged: function(deviceInfo) {
 	this.log(deviceInfo);
