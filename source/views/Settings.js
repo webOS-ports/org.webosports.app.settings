@@ -17,7 +17,7 @@ enyo.kind({
 	],
 	create: function() {
 		this.inherited(arguments);
-		// this.$.ItemIcon.setSrc(this.icon);
+		this.$.ItemIcon.setSrc(this.icon);
 		this.$.ItemTitle.setContent(this.title);
 	},
 	pressed: function() {
@@ -75,14 +75,14 @@ enyo.kind({
 			components:[
 				//Connectivity
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Connectivity"},
-				{kind: "ListItem", icon: "icon.png", title: "Wi-Fi", ontap: "openPanel", targetPanel: "WiFiPanel",
+				{kind: "ListItem", icon: "assets/icons/icon-wifi.png", title: "Wi-Fi", ontap: "openPanel", targetPanel: "WiFiPanel",
 				components:[
 					{name: "WiFiToggle",
 					kind: "onyx.ToggleButton",
 					ontap: "wifiToggleChanged",
 					style: "position: absolute; top: 11px; right: 9px; height: 31px;" }
 				]},
-				{kind: "ListItem", icon: "icon.png", title: "Telephony", ontap: "openPanel", targetPanel: "TelephonyPanel"},
+				{kind: "ListItem", icon: "assets/icons/icon-telephony.png", title: "Telephony", ontap: "openPanel", targetPanel: "TelephonyPanel"},
 
 				//Services
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Services"},
@@ -90,13 +90,13 @@ enyo.kind({
 
 				// Personal
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Personal"},
-				{kind: "ListItem", icon: "icon.png", title: "Certificates", ontap: "openPanel", targetPanel: "CertificatesPanel"},
+				{kind: "ListItem", icon: "assets/icons/icon-certificates.png", title: "Certificates", ontap: "openPanel", targetPanel: "CertificatesPanel"},
 
 				//Core Settings
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Core"},
-				{kind: "ListItem", icon: "icon.png", title: "Screen & Lock", ontap: "openPanel", targetPanel: "ScreenLockPanel"},
-				{kind: "ListItem", icon: "icon.png", title: "Date & Time", ontap: "openPanel", targetPanel: "DateTimePanel"},
-				{kind: "ListItem", icon: "icon.png", title: "Sound & Ringtones", ontap: "openPanel", targetPanel: "AudioPanel",
+				{kind: "ListItem", icon: "assets/icons/icon-screenandlock.png", title: "Screen & Lock", ontap: "openPanel", targetPanel: "ScreenLockPanel"},
+				{kind: "ListItem", icon: "assets/icons/icon-dateandtime.png", title: "Date & Time", ontap: "openPanel", targetPanel: "DateTimePanel"},
+				{kind: "ListItem", icon: "assets/icons/icon-soundandringtones.png", title: "Sound & Ringtones", ontap: "openPanel", targetPanel: "AudioPanel",
 				components:[
 					// Absolute positioning is not ideal.
 					{name: "muteLabel", content: "Mute", style: "position: absolute; top: 4px; right: 92px; height: 31px;"},
@@ -105,10 +105,10 @@ enyo.kind({
 					 ontap: "muteToggleChanged",
 					 style: "position: absolute; top: 11px; right: 9px; height: 31px;" }
 				]},
-				{kind: "ListItem", icon: "icon.png", title: "Search Preferences", ontap: "openPanel", targetPanel: "SearchPreferencesPanel"},
-				{kind: "ListItem", icon: "icon.png", title: "Language & Input", ontap: "openPanel", targetPanel: "LanguageInputPanel"},
-				{kind: "ListItem", name: "DevModemListItem", icon: "icon.png", title: "Developer Options", ontap: "openPanel", targetPanel: "DevOptionsPanel", showing: false},
-				{kind: "ListItem", icon: "icon.png", title: "About", ontap: "openPanel", targetPanel: "AboutPanel"}
+				{kind: "ListItem", icon: "assets/icons/icon-searchpreferences.png", title: "Search Preferences", ontap: "openPanel", targetPanel: "SearchPreferencesPanel"},
+				{kind: "ListItem", icon: "assets/icons/icon-languageandinput.png", title: "Language & Input", ontap: "openPanel", targetPanel: "LanguageInputPanel"},
+				{kind: "ListItem", name: "DevModemListItem", icon: "assets/icons/icon-devmode.png", title: "Developer Options", ontap: "openPanel", targetPanel: "DevOptionsPanel", showing: false},
+				{kind: "ListItem", icon: "assets/icons/icon-deviceinfo.png", title: "About", ontap: "openPanel", targetPanel: "AboutPanel"}
 			]}
 		]},
 		{name: "ContentPanels",
