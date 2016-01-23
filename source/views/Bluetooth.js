@@ -213,7 +213,7 @@ var foundDevices = [
     },
     {
         name: "HP TouchPad Wireless Keyboard",
-        type: 1, //"keyboard",
+        type: 14, //"keyboard",
         connection: 0
     },
     {
@@ -995,6 +995,7 @@ enyo.kind({
     //enum Connection { Disconnected=1, Connecting=2,
     //                  Connected=4, Disconnecting=8 };
     //
+    //How do we use these?
     //enum ConnectionMode { Audio, AudioSource, AudioSink, HandsfreeGateway,
     //                      HeadsetMode, Input };
     generalType: function(n) {
