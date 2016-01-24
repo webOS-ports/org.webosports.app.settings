@@ -1079,9 +1079,24 @@ enyo.kind({
     handleDeviceDisappeared: function(address) {
 	this.log(address);
     },
-    handleBluetoothPropertyChanged: function(key, deviceInfo) {
-	this.log(key);
-	this.log(deviceInfo);
+    handleBluetoothPropertyChanged: function(obj) {
+	for (key in obj) {
+	    var value = obj[key];
+	    this.log(key + ": " + value);
+	    switch (key) {
+	    case "Discoverable":
+		if (value === true) {
+		    this.$.DiscoverableSpinner.setShowing(false);
+		    this.$.DiscoverableStatusMessage.setContent(
+			"Your device is now discoverable.");
+		} else {
+		    this.$.DiscoverableSpinner.setShowing(true);
+		    this.$.DiscoverableStatusMessage.setContent(
+			"Making your device visible and discoverable to others.");
+		}
+		break;
+	    }
+	}
     },
     handleBluetoothRequestPinCode: function(deviceInfo) {
 	//this.log(deviceInfo.alias);
