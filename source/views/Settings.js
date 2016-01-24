@@ -82,6 +82,13 @@ enyo.kind({
 					ontap: "wifiToggleChanged",
 					style: "position: absolute; top: 11px; right: 9px; height: 31px;" }
 				]},
+				{kind: "ListItem", icon: "assets/icons/icon-bluetooth.png", title: "Bluetooth", ontap: "openPanel", targetPanel: "BluetoothPanel",
+				components:[
+					{name: "BluetoothToggle",
+					kind: "onyx.ToggleButton",
+					ontap: "bluetoothToggleChanged",
+					style: "position: absolute; top: 11px; right: 9px; height: 31px;" }
+				]},
 				{kind: "ListItem", icon: "assets/icons/icon-telephony.png", title: "Telephony", ontap: "openPanel", targetPanel: "TelephonyPanel"},
 
 				//Services
@@ -120,6 +127,7 @@ enyo.kind({
 		components:[
 			{kind: "EmptyPanel"},
 			{name: "WiFiPanel", kind: "WiFi", onActiveChanged: "wifiActiveChanged"},
+			{name: "BluetoothPanel", kind: "Bluetooth", onActiveChanged: "bluetoothActiveChanged"},
 			{name: "SystemUpdatesPanel", kind: "SystemUpdates"},
 			{name: "CertificatesPanel", kind: "Certificates"},
 			{name: "ScreenLockPanel", kind: "ScreenLock"},
@@ -145,6 +153,13 @@ enyo.kind({
 		this.$.WiFiPanel.setToggleValue(inSender.value);
 		return true;
 	},
+	bluetoothActiveChanged: function(inSender, inEvent) {
+		this.$.BluetoothToggle.setValue(inEvent.value);
+	},
+	bluetoothToggleChanged: function(inSender) {
+		this.$.BluetoothPanel.setToggleValue(inSender.value);
+		return true;
+	},
 	muteChanged: function(inSender, inEvent) {
 		this.$.muteToggle.silence();
 		this.$.muteToggle.setValue(inEvent.mute);
@@ -167,9 +182,10 @@ enyo.kind({
 	},
 	//Panel selection functions
 	openPanel: function(inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);
-		if (typeof inSender.targetPanel === 'undefined')
-			return;
+		if (typeof inSender.targetPanel === 'undefined') {
+		    this.log("No target panel defined!");
+		    return;
+		}
 		this.log("Opening panel ", inSender.targetPanel);
 		this.currentPanel = inSender.targetPanel;
 		this.$.ContentPanels.selectPanelByName(inSender.targetPanel);
@@ -181,12 +197,13 @@ enyo.kind({
 			this.selectPanelByName("ContentPanels");
 	},
 
-	handleBack: function(inSender, inEvent){
-		this.log("sender:", inSender, ", event:", inEvent);
+	handleBack: function() {
 		if (this.currentPanel === "AboutPanel")
 			this.$.AboutPanel.handleBackGesture();
 		else if (this.currentPanel === "WiFiPanel" )
 			this.$.WiFiPanel.handleBackGesture();
+		else if (this.currentPanel === "BluetoothPanel" )
+			this.$.BluetoothPanel.handleBackGesture();
 		else if (this.currentPanel === "CertificatesPanel")
 			this.$.CertificatesPanel.handleBackGesture();
 		else if (this.currentPanel === "DateTimePanel")
@@ -230,6 +247,7 @@ enyo.kind({
 			this.$.AppPanels.setDraggable(false);
 			this.$.AppPanels.$.ContentPanels.applyStyle("box-shadow", "0");
 			this.$.AppPanels.$.WiFiToggle.setShowing(true);
+			this.$.AppPanels.$.BluetoothToggle.setShowing(true);
 			this.$.AppPanels.$.muteLabel.setShowing(true);
 			this.$.AppPanels.$.muteToggle.setShowing(true);
 		}
@@ -237,6 +255,7 @@ enyo.kind({
 			this.$.AppPanels.setDraggable(true);
 			this.$.AppPanels.$.ContentPanels.applyStyle("box-shadow", "-4px 0px 4px rgba(0,0,0,0.3)");
 			this.$.AppPanels.$.WiFiToggle.setShowing(false);
+			this.$.AppPanels.$.BluetoothToggle.setShowing(false);
 			this.$.AppPanels.$.muteLabel.setShowing(false);
 			this.$.AppPanels.$.muteToggle.setShowing(false);
 		}

@@ -612,9 +612,9 @@ enyo.kind({
     //Action Handlers
     toggleButtonChanged: function (inSender, inEvent) {
         if (inEvent.value == true){
-            this.activateWiFi(this);
+            this.activateWiFi();
         } else{
-            this.deactivateWiFi(this);
+            this.deactivateWiFi();
             this.managepopup = false;
        }
         this.doActiveChanged(inEvent);
@@ -807,15 +807,14 @@ enyo.kind({
         this.$.ErrorMessage.setContent(message);
         this.$.ErrorPopup.show();
     },
-    activateWiFi: function (inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);
-		this.updateSpinnerState("start");
+    activateWiFi: function () {
+	this.updateSpinnerState("start");
         this.showNetworksList();
-		if (!navigator.WiFiManager)
+	if (!navigator.WiFiManager)
             return;
         navigator.WiFiManager.enabled = true;
     },
-    deactivateWiFi: function (inSender, inEvent) {
+    deactivateWiFi: function () {
         this.showWiFiDisabled();
         if (!navigator.WiFiManager)
             return;
@@ -898,9 +897,8 @@ enyo.kind({
 
         return pass;
     },
-    startAutoscan: function(inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);
-		if (null === this.autoscan) {
+    startAutoscan: function() {
+	if (null === this.autoscan) {
             this.log("Starting autoscan ...");
             this.autoscan = window.setInterval(enyo.bind(this, "triggerAutoscan"), 15000);
             if (!this.foundNetworks) {
@@ -926,7 +924,6 @@ enyo.kind({
     },
     //Service Callbacks
     handleRetrieveNetworksResponse: function (networks) {
-        this.log(networks);
         this.clearFoundNetworks();
         if (networks) {
             this.foundNetworks = networks;
