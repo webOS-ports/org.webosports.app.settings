@@ -82,7 +82,7 @@ enyo.kind({
 					ontap: "wifiToggleChanged",
 					style: "position: absolute; top: 11px; right: 9px; height: 31px;" }
 				]},
-				{kind: "ListItem", icon: "icon.png", title: "Bluetooth", ontap: "openPanel", targetPanel: "BluetoothPanel",
+				{kind: "ListItem", icon: "assets/icons/icon-bluetooth.png", title: "Bluetooth", ontap: "openPanel", targetPanel: "BluetoothPanel",
 				components:[
 					{name: "BluetoothToggle",
 					kind: "onyx.ToggleButton",
