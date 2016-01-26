@@ -159,27 +159,27 @@ enyo.kind({
 
 // Use the DeviceInfo structure returned by navigator.BluetoothManager.
 // type: 3 (phone), 14 (keyboard), 7 (audio), 0 (other)
-// connection[ state]: 0 (Not Connected), 1 (Connecting), 2 (Connected),
-// 4 (Connecting)
+// connection[ state]: 1 (Not Connected), 2 (Connecting), 4 (Connected),
+// 8 (Disconnecting)
 
 var mockDevices = [
     {
         name: "Phone",
         type: 3, //"phone",
         enabled: true,
-        connection: 0
+        connection: 1
     },
     {
         name: "Keyboard",
         type: 14, //"keyboard",
         enabled: false,
-        connection: 0
+        connection: 1
     },
     {
         name: "Headset",
         type: 7, //"audio",
         enabled: true,
-        connection: 2
+        connection: 4
     },
     {
         name: "Computer",
@@ -191,42 +191,11 @@ var mockDevices = [
         name: "Toaster",
         type: 0, //"other",
         enabled: true,
-        connection: 0
+        connection: 1
     }
 ];
 
-var foundDevices = [
-    {
-        name: "Pre3",
-        type: 3, //"phone",
-        connection: 0
-    },
-    {
-        name: "Mako",
-        type: 3, //"phone",
-        connection: 0
-    },
-    {
-        name: "Tenderloin",
-        type: 3, //"phone",
-        connection: 0
-    },
-    {
-        name: "HP TouchPad Wireless Keyboard",
-        type: 14, //"keyboard",
-        connection: 0
-    },
-    {
-        name: "My PC",
-        type: 0, //"other",
-        connection: 0
-    },
-    {
-        name: "WebOS Toaster",
-        type: 0, //"other",
-        connection: 0
-    }
-];
+var foundDevices = [];
 
 enyo.kind({
     name: "Bluetooth",
@@ -306,7 +275,6 @@ enyo.kind({
                     kind: "enyo.FittableRows",
                     components: [
                         {
-                            //TODO: Update this based as the discoverable status of the device is changed.
                             name: "DiscoverableStatus",
                             kind: "enyo.FittableColumns",
                             style: "padding: 35px 10% 0 10%;",
@@ -320,6 +288,25 @@ enyo.kind({
                                 {
                                     name: "DiscoverableStatusMessage",
                                     content: "Making your device visible and discoverable to others.", //"Your device is now discoverable."
+                                    style: "line-height: 30px;"
+                                }
+                            ]
+                        },
+                        {
+                            name: "DiscoveringStatus",
+			    showing: false,
+                            kind: "enyo.FittableColumns",
+                            style: "padding: 35px 10% 0 10%;",
+                            components: [
+                                {
+                                    name: "DiscoveringSpinner",
+                                    kind: "Image",
+                                    src: "assets/bluetooth/connecting.gif",
+                                    style: "width: 32px; height: 32px; margin-right: 10px;"
+                                },
+                                {
+                                    name: "DiscoveringStatusMessage",
+                                    content: "Searching for devices...",
                                     style: "line-height: 30px;"
                                 }
                             ]
@@ -703,6 +690,14 @@ enyo.kind({
 
         this.doActiveChanged({value: navigator.BluetoothManager.enabled});//@@
     },
+    destroy: function () {
+	// @@@My earphones.
+//	if (navigator.BluetoothManager) {
+//            navigator.BluetoothManager.removeDevice("00:18:91:3F:7A:50");
+//	}
+
+        this.inherited(arguments);
+    },
     reflow: function (inSender) {
         this.inherited(arguments);
         if (enyo.Panels.isScreenNarrow()) {
@@ -730,20 +725,18 @@ enyo.kind({
         if (selectedDevice.enabled === false)
 	    return true;
 
-        // If we are connected (2) or connecting (1), set the status to disconnected (0)
-        if (selectedDevice.connection === 2 || selectedDevice.connection === 1) {
-            selectedDevice.connection = 0;
+        // If we are connected (4) or connecting (2), set the status to disconnected (1)
+        // If we are not connected, set the status to connecting (2)
+        if (selectedDevice.connection === 4 || selectedDevice.connection === 2) {
+            selectedDevice.connection = 1;
             if (!navigator.BluetoothManager) {
 		return;
 	    }
             navigator.BluetoothManager.disconnectDevice(selectedDevice.address,
 							enyo.bind(this, "handleDeviceDisconnectSucceeded"),
 							enyo.bind(this, "handleDeviceDisconnectFailed"));
-        }
-        // If we are not connected, set the status to connecting (1)
-        else if (selectedDevice.connection === 0)
-        {
-            selectedDevice.connection = 1;
+        } else if (selectedDevice.connection === 1) {
+            selectedDevice.connection = 2;
             if (!navigator.BluetoothManager) {
 		return;
 	    }
@@ -758,16 +751,16 @@ enyo.kind({
         var selectedDevice = this.searchResults[inEvent.index];
 
         // if we are connecting, set the status to disconnected
-        if (selectedDevice.connection === 1) {
-            selectedDevice.connection = 0;
+        // if we are not connected, set the status to connecting (2)
+        if (selectedDevice.connection === 2) {
+            selectedDevice.connection = 1;
             this.$.SearchStatusMessage.setContent("Searching for " + this.$.DeviceSearchPicker.selected.content.toLowerCase() + " devices...");
             //TODO: Use Bluetooth Service cancel the connection attempt
             //IE navigator.BluetoothManager.disconnectDevice(selectedDevice, enyo.bind(this, "handleDeviceDisconnectSucceeded"), enyo.bind(this, "handleDeviceDisconnectFailed"));
         }
-        // if we are not connected, set the status to connecting (1)
-        else if (selectedDevice.connection !== 2)
+        else if (selectedDevice.connection !== 4)
         {
-            selectedDevice.connection = 1;
+            selectedDevice.connection = 2;
             this.$.SearchStatusMessage.setContent("Connecting...");
             //TODO: Use Bluetooth Service to connect and add the device
             //IE navigator.BluetoothManager.connectDevice(selectedDevice, enyo.bind(this, "handleDeviceConnectSucceeded"), enyo.bind(this, "handleDeviceConnectFailed"));
@@ -787,9 +780,11 @@ enyo.kind({
     {
         this.$.SearchStatusMessage.setContent("Searching for " + inEvent.content.toLowerCase() + " devices...");
         this.$.PhoneMessage.setShowing(inEvent.content.toLowerCase() === "phone");
-        //TODO: Start Search
-        if (this.$.FoundDeviceList)
-	    this.handleDeviceSearchResults();
+        //TODO: Start Search???
+	if (navigator.BluetoothManager)
+            navigator.BluetoothManager.discover(true);
+
+	//this.handleDeviceSearchResults();
     },
     onAddDeviceButtonTapped: function(inSender, inEvent) {
 	this.showAddDevice();
@@ -825,10 +820,11 @@ enyo.kind({
         inEvent.item.$.bluetoothListItem.$.DeviceName.addRemoveClass("bluetooth-disabled", !this.foundDevices[inEvent.index].enabled);
 
         if (this.foundDevices[inEvent.index].enabled) {
-            inEvent.item.$.bluetoothListItem.$.ConnectingSpinner.setShowing(this.foundDevices[inEvent.index].connection == 1);
-            inEvent.item.$.bluetoothListItem.$.DeviceName.addRemoveClass("bluetooth-active", this.foundDevices[inEvent.index].connection == 2);
+            inEvent.item.$.bluetoothListItem.$.ConnectingSpinner.setShowing(this.foundDevices[inEvent.index].connection == 2);
+            inEvent.item.$.bluetoothListItem.$.DeviceName.addRemoveClass("bluetooth-active", this.foundDevices[inEvent.index].connection == 4);
 
-            if (this.foundDevices[inEvent.index].connection == 2)
+	    // If connected...
+            if (this.foundDevices[inEvent.index].connection == 4)
             {
                 switch (this.generalType(this.foundDevices[inEvent.index].type)) {
                     case "phone":
@@ -897,8 +893,10 @@ enyo.kind({
     showAddDevice: function(inSender, inEvent) {
         this.$.BluetoothPanels.setIndex(4);
         this.stopAutoscan();
-        //TODO: trigger search
-        this.handleDeviceSearchResults();
+	if (navigator.BluetoothManager)
+            navigator.BluetoothManager.discover(true);
+
+//        this.handleDeviceSearchResults();
     },
     setToggleValue: function(value) {
         this.$.BluetoothToggle.setValue(value);
@@ -920,7 +918,8 @@ enyo.kind({
         navigator.BluetoothManager.enabled = false;
     },
     handleDeviceConnectSucceeded: function() {
-        //TODO: Update device connection to 2, rebuild repeater.
+	this.log();
+        //TODO: Update device connection to 4, rebuild repeater.
 	},
     handleDeviceConnectFailed: function() {
         //TODO: Display appropriate error
@@ -934,8 +933,9 @@ enyo.kind({
     handleDeviceDeleted: function(inSender, inEvent) {
         var selectedDevice = this.foundDevices[inEvent.index];
 
-        //TODO: Remove device from the service
-        //IE: navigator.BluetoothManager.removeDevice(selectedDevice);
+	if (navigator.BluetoothManager) {
+            navigator.BluetoothManager.removeDevice(selectedDevice.address);
+	}
 
         this.foundDevices.splice(inEvent.index, 1);
 
@@ -947,8 +947,10 @@ enyo.kind({
         var selectedDevice = this.foundDevices[inEvent.index];
         selectedDevice.name = inEvent.originator.$.DeviceNameInput.getValue();
 
-        //TODO: Update device info in the service
-        //IE: navigator.BluetoothManager.updateDevice(selectedDevice);
+	// No such function as updateDevice!
+//	if (navigator.BluetoothManager) {
+//            navigator.BluetoothManager.updateDevice(selectedDevice);
+//	}
         this.$.DeviceRepeater.build();
     },
     handleDeviceSearchResults: function(inSender, inEvent)
@@ -1093,6 +1095,13 @@ enyo.kind({
 		    this.$.DiscoverableSpinner.setShowing(true);
 		    this.$.DiscoverableStatusMessage.setContent(
 			"Making your device visible and discoverable to others.");
+		}
+		break;
+	    case "Discovering":
+		if (value === true) {
+		    this.$.DiscoveringStatus.setShowing(true);
+		} else {
+		    this.$.DiscoveringStatus.setShowing(false);
 		}
 		break;
 	    }
