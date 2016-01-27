@@ -93,7 +93,7 @@ enyo.kind({
 
 				//Services
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Services"},
-				{kind: "ListItem", icon: "icon.png", title: "System Updates", ontap: "openPanel", targetPanel: "SystemUpdatesPanel"},
+				{kind: "ListItem", icon: "assets/icons/icon-update.png", title: "System Updates", ontap: "openPanel", targetPanel: "SystemUpdatesPanel"},
 
 				// Personal
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Personal"},
