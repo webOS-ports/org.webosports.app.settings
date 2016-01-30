@@ -30,7 +30,7 @@ enyo.kind({
             max: 110,
             unit: "%",
             value: 0,
-            style: "position:inherit; z-index:20; background-color: #EAEAEA; line-height: 38px;",
+            style: "position:inherit; z-index:20; background-color: #EAEAEA; line-height: 55px;",
             preventDragPropagation: false,
             newDevice: false,
             classes: "group-item",
@@ -46,7 +46,7 @@ enyo.kind({
                             name: "DeviceType",
                             kind: "Image",
                             src: "assets/bluetooth/other.png",
-                            style: "width: 32px; height: 32px; margin: 4px;",
+                            style: "width: 32px; height: 32px; margin-top: 11px !important",
                             ontap: "doDeviceTapped",
                             //TODO: classes
                         },
@@ -54,21 +54,21 @@ enyo.kind({
                             {
                                 name: "DeviceName",
                                 content: "DeviceName",
-                                style: "padding-left: 10px; line-height: 36px;",
+                                style: "padding-left: 10px; line-height: 55px;",
                                 ontap: "doDeviceTapped",
                                 onhold: "editDeviceName"
                             },
-                            {name: "DeviceNameInputDecorator", kind: "onyx.InputDecorator", style: "height: 18px;", showing: false, components: [
-                                {name: "DeviceNameInput", kind: "onyx.Input", placeholder: "DeviceName", style: "line-height: 24px;", selectOnFocus: true, onchange: "inputChange", onblur: "inputLostFocus"}
+                            {name: "DeviceNameInputDecorator", kind: "onyx.InputDecorator", style: "height: 55px;", showing: false, components: [
+                                {name: "DeviceNameInput", kind: "onyx.Input", placeholder: "DeviceName", style: "line-height: 55px;", selectOnFocus: true, onchange: "inputChange", onblur: "inputLostFocus"}
                             ]}
                         ]}, //Device Name
                         {
                             name: "MoreInfo",
                             kind: "enyo.Button",
                             showing: false,
-                            style: "margin-left: 10px;",
+                            style: "margin-left: 10px; margin-top: 11px !important",
                             components: [
-                                { kind: "Image", src: "assets/bluetooth/info.png", style: "width: 32px; height: 32px;"}
+                                { kind: "Image", src: "assets/bluetooth/info.png", style: "width: 32px; height: 32px"}
                             ],
                             ontap: "doInfoButtonTapped"
                         }, // icons
@@ -86,7 +86,7 @@ enyo.kind({
         {
             name: "SliderButtons",
             classes: "group-item",
-            style: "position:absolute; top:0px; z-index:10; line-height: 38px; text-align: center; width: 100%; background-image:url('assets/bg.png');", components: [
+            style: "position:absolute; top:0px; z-index:10; line-height: 55px; text-align: center; width: 100%; background-image:url('assets/bg.png');", components: [
                 {kind: "onyx.Button", content: "Cancel", ontap: "closeSlider"},
                 {kind: "onyx.Button", content: "Delete", classes: "onyx-negative", style: "margin-left: 10px;", ontap: "deleteDevice"}
             ],
@@ -271,13 +271,14 @@ enyo.kind({
                     ]
                 },
                 /* Device list panel */
+		/* 67px is spinner height (55) + 2 x padding (6) */
                 {
                     kind: "enyo.FittableRows",
                     components: [
                         {
                             name: "DiscoverableStatus",
                             kind: "enyo.FittableColumns",
-                            style: "padding: 35px 10% 0 10%;",
+                            style: "padding: 35px 10% 0 10%; height: 67px",
                             components: [
                                 {
                                     name: "DiscoverableSpinner",
@@ -288,7 +289,7 @@ enyo.kind({
                                 {
                                     name: "DiscoverableStatusMessage",
                                     content: "Making your device visible and discoverable to others.", //"Your device is now discoverable."
-                                    style: "line-height: 55px;"
+                                    style: "line-height: 55px; font-size: 14px"
                                 }
                             ]
                         },
@@ -296,7 +297,7 @@ enyo.kind({
                             name: "DiscoveringStatus",
 			    showing: false,
                             kind: "enyo.FittableColumns",
-                            style: "padding: 35px 10% 0 10%;",
+                            style: "padding: 35px 10% 0 10%; height: 67px",
                             components: [
                                 {
                                     name: "DiscoveringSpinner",
@@ -307,7 +308,7 @@ enyo.kind({
                                 {
                                     name: "DiscoveringStatusMessage",
                                     content: "Searching for devices...",
-                                    style: "line-height: 55px;"
+                                    style: "line-height: 55px; font-size: 14px"
                                 }
                             ]
                         },
@@ -520,7 +521,7 @@ enyo.kind({
                                         {
                                             name: "SearchStatusMessage",
                                             content: "Searching for audio devices...",
-                                            style: "line-height: 55px; font-size: 18px;"
+                                            style: "line-height: 55px; font-size: 14px;"
                                         }
                                     ]
                                 },
