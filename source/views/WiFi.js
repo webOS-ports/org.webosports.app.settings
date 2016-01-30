@@ -235,8 +235,8 @@ enyo.kind({
                                     }]
                                 },
                                 {name: "networkSearch", kind: "enyo.FittableColumns", showing: false, classes: "wifi-join-button", components: [
-									{content: "Searching for networks", fit: true, classes: "networkSearch"},
-									{name: "spin2",	kind: "onyx.Spinner", showing: true, style: "padding: 30px;", classes: "onyx-light" },
+				    {content: "Searching for networks", fit: true, classes: "networkSearch"},
+				    {name: "spin2",	kind: "onyx.Spinner", showing: true, style: "padding: 30px;", classes: "onyx-light" },
                                 ]},				//network search spinner
                                 {
                                     name: "JoinButton",
