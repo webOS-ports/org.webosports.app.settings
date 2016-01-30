@@ -74,9 +74,9 @@ enyo.kind({
                         }, // icons
                         {
                             name: "ConnectingSpinner",
-                            kind: "Image",
-                            src: "assets/bluetooth/connecting.gif",
-                            style: "width: 32px; height: 32px; margin: 4px; padding-top: 4px;",
+                            kind: "onyx.Spinner",
+                            style: "width: 54px; height: 55px; margin: 4px; padding-top: 4px;",
+			    classes: "onyx-light",
                             showing: false
                         },
                     ]
@@ -167,7 +167,7 @@ var mockDevices = [
         name: "Phone",
         type: 3, //"phone",
         enabled: true,
-        connection: 1
+        connection: 2
     },
     {
         name: "Keyboard",
@@ -281,14 +281,14 @@ enyo.kind({
                             components: [
                                 {
                                     name: "DiscoverableSpinner",
-                                    kind: "Image",
-                                    src: "assets/bluetooth/connecting.gif",
-                                    style: "width: 32px; height: 32px; margin-right: 10px;"
+                                    kind: "onyx.Spinner",
+				    classes: "onyx-light",
+                                    style: "width: 54px; height: 55px; margin-right: 10px;"
                                 },
                                 {
                                     name: "DiscoverableStatusMessage",
                                     content: "Making your device visible and discoverable to others.", //"Your device is now discoverable."
-                                    style: "line-height: 30px;"
+                                    style: "line-height: 55px;"
                                 }
                             ]
                         },
@@ -300,14 +300,14 @@ enyo.kind({
                             components: [
                                 {
                                     name: "DiscoveringSpinner",
-                                    kind: "Image",
-                                    src: "assets/bluetooth/connecting.gif",
-                                    style: "width: 32px; height: 32px; margin-right: 10px;"
+                                    kind: "onyx.Spinner",
+				    classes: "onyx-light",
+                                    style: "width: 54px; height: 55px; margin-right: 10px;"
                                 },
                                 {
                                     name: "DiscoveringStatusMessage",
                                     content: "Searching for devices...",
-                                    style: "line-height: 30px;"
+                                    style: "line-height: 55px;"
                                 }
                             ]
                         },
@@ -513,14 +513,14 @@ enyo.kind({
                                     components: [
                                         {
                                             name: "SearchSpinner",
-                                            kind: "Image",
-                                            src: "assets/bluetooth/connecting.gif",
-                                            style: "width: 32px; height: 32px; margin-right: 10px;"
+                                            kind: "onyx.Spinner",
+					    classes: "onyx-light",
+                                            style: "width: 54px; height: 55px; margin-right: 10px;"
                                         },
                                         {
                                             name: "SearchStatusMessage",
                                             content: "Searching for audio devices...",
-                                            style: "line-height: 30px; font-size: 18px;"
+                                            style: "line-height: 55px; font-size: 18px;"
                                         }
                                     ]
                                 },
