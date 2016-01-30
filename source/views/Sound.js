@@ -103,7 +103,8 @@ enyo.kind({
 		{name: "SetMicMute", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
 		 method: "setMicMute"},
 		{name: "GetSystemPreferences", kind: "SystemService", method: "getPreferences",
-		 onComplete: "handleGetPreferencesResponse"}
+		 onComplete: "handleGetPreferencesResponse", subscribe: true},
+		{name: "SetSystemPreferences", kind: "SystemService", method: "setPreferences"}
 	],
 	//Handlers
 	create: function() {
@@ -122,7 +123,7 @@ enyo.kind({
 		}
 		this.palm = true;
 		this.$.GetAudioStatus.send({});
-		this.$.GetSystemPreferences.send({keys: ["ringtone"]});
+		this.$.GetSystemPreferences.send({"keys": ["ringtone"]});
 	},
 	reflow: function (inSender) {
 		this.inherited(arguments);
@@ -156,11 +157,10 @@ enyo.kind({
 	pickATone: function(inSender, inEvent) {
 		this.$.tonePicker.pickFile();
 	},
-	tonepicked: function(inSender, inEvent) {
+	tonePicked: function(inSender, inEvent) {
 		if(!inEvent || inEvent.length === 0)
 			return;
-		this.$.ringerPicker.setContent("Ringtone -- " + encodeURIComponent(inEvent[0].fullPath));
-		// TODO: Actually do something with this selection
+		this.$.SetSystemPreferences.send({"ringtone": inEvent[0]});
 	},
 	keyClicks: function(inSender, inEvent) {
 		this.keys = inEvent.value;
