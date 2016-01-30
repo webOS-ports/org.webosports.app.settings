@@ -607,7 +607,7 @@ enyo.kind({
     reflow: function (inSender) {
         this.inherited(arguments);
         if (enyo.Panels.isScreenNarrow()){
-        	this.$.NetworkList.setStyle("padding: 35px 5% 35px 5%;");
+            this.$.NetworkList.setStyle("padding: 35px 5% 35px 5%;");
             this.$.Grabber.applyStyle("visibility", "hidden");
         }else{
             this.$.Grabber.applyStyle("visibility", "visible");
@@ -649,7 +649,7 @@ enyo.kind({
             this.showNetworkConnect();
         } else {
             this.log("Connect to open network");
-            this.connectNetwork(this, {
+            this.connectNetwork({
                 path: this.currentNetwork.path,
                 password: ""
             });
@@ -672,7 +672,7 @@ enyo.kind({
         this.showNetworkConnect();
     },
     onJoinButtonTapped: function (inSender, inEvent) {
-		this.showJoinNetwork();
+	this.showJoinNetwork();
     },
     signalStrengthToBars: function(strength) {
         if(strength > 0 && strength < 34)
@@ -737,22 +737,22 @@ enyo.kind({
             inEvent.item.$.wiFiListItem.$.Signal.setSrc("assets/wifi/signal-icon-" + bars + ".png");
 		}
     },
-    setupKnownNetworkRow: function (inSender, inEvent) {
-    	var ssid = "";	
-	if(enyo.Panels.isScreenNarrow()){
-	    // if the SSID is longer shorten it for the narrow page only
-    	    if(this.foundNetworks[inEvent.index].name.length >= 18){
-    		ssid = this.foundNetworks[inEvent.index].name.slice(0,18) + "..";
-    	    }else{
-    		ssid = this.foundNetworks[inEvent.index].name;
-    	    }
-    	}else{
-    	    ssid = this.foundNetworks[inEvent.index].name;
-    	}
-        inEvent.item.$.wiFiListItem.$.SSID.setContent( ssid );
-        inEvent.item.$.wiFiListItem.$.Security.setContent(this.knownNetworks[inEvent.index].security);
-        inEvent.item.$.wiFiListItem.$.Signal.setShowing(false);
-    },
+//    setupKnownNetworkRow: function (inSender, inEvent) {
+//    	var ssid = "";
+//	if(enyo.Panels.isScreenNarrow()){
+//	    // if the SSID is longer shorten it for the narrow page only
+//    	    if(this.foundNetworks[inEvent.index].name.length >= 18){
+//    		ssid = this.foundNetworks[inEvent.index].name.slice(0,18) + "..";
+//    	    }else{
+//    		ssid = this.foundNetworks[inEvent.index].name;
+//    	    }
+//    	}else{
+//    	    ssid = this.foundNetworks[inEvent.index].name;
+//    	}
+//        inEvent.item.$.wiFiListItem.$.SSID.setContent( ssid );
+//        inEvent.item.$.wiFiListItem.$.Security.setContent(this.knownNetworks[inEvent.index].security);
+//        inEvent.item.$.wiFiListItem.$.Signal.setShowing(false);
+//    },
     onNetworkConnect: function (inSender, inEvent) {
 	var password = this.$.PasswordInput.getValue();
 	var passwordPlausible = this.validatePassword(password);
@@ -760,7 +760,7 @@ enyo.kind({
         if (!passwordPlausible) {
 	    this.showError("Entered password is invalid");
         } else {
-            this.connectNetwork(this, {
+            this.connectNetwork({
                 path: this.currentNetwork.path,
                 password: password
             });
@@ -773,11 +773,11 @@ enyo.kind({
     },
     onNetworkConnectAborted: function (inSender, inEvent) {
         // switch back to network list view
-        this.showNetworksList(inSender, inEvent);
+        this.showNetworksList();
 
         this.$.PasswordInput.setValue("");
     },
-    onOtherJoinConnectTapped: function() {
+    onOtherJoinConnectTapped: function(inSender, inEvent) {
 	if (this.$.ssidInput.getValue() !== "") {
             this.currentNetwork = {
 		ssid: this.$.ssidInput.getValue(),
@@ -797,7 +797,7 @@ enyo.kind({
 		this.showNetworkConnect();
             } else {
 		this.log("Connect to open network");
-		this.connectNetwork(this, {
+		this.connectNetwork({
                     path: this.currentNetwork.path,
                     password: ""
 		});
@@ -806,13 +806,13 @@ enyo.kind({
     },
     onOtherJoinCancelled: function (inSender, inEvent) {
         // switch back to network list view
-        this.showNetworksList(inSender, inEvent);
+        this.showNetworksList();
 
         this.$.ssidInput.setValue("");
         this.$.SecurityTypePicker.setSelected(this.$.OpenSecurityItem);
     },
     //Action Functions
-    showWiFiDisabled: function (inSender, inEvent) {
+    showWiFiDisabled: function () {
         this.stopAutoscan();
         this.$.WiFiPanels.setIndex(0);
     },
@@ -824,14 +824,15 @@ enyo.kind({
         this.$.WiFiPanels.setIndex(2);
         this.stopAutoscan();
     },
-    showJoinNetwork: function(inSender, inEvent) {
+    showJoinNetwork: function() {
         this.$.WiFiPanels.setIndex(3);
         this.stopAutoscan();
     },
-    showNetworkConfiguration: function (inSender, inEvent) {
+    showNetworkConfiguration: function () {
         this.$.WiFiPanels.setIndex(4);
         this.stopAutoscan();
     },
+    // Called by our parent.
     setToggleValue: function (value) {
         this.$.WiFiToggle.setValue(value);
     },
@@ -853,24 +854,26 @@ enyo.kind({
             return;
         navigator.WiFiManager.enabled = false;
     },
-    handleNetworkConnectSucceeded: function() {
-	},
-    handleNetworkConnectFailed: function() {
-	},
-    connectNetwork: function (inSender, inEvent) {
-        this.log("connectNetwork", inEvent);
+    handleNetworkConnectSucceeded: function(inSender, inEvent) {
+	this.log();
+    },
+    handleNetworkConnectFailed: function(inSender, inEvent) {
+	this.log();
+    },
+    connectNetwork: function (network) {
+        this.log(network);
 
         if (!this.palm)
             return;
 
         var networkToConnect = {
-            path: inEvent.path,
+            path: network.path,
             hidden: false,
             security: "",
             password: ""
         };
 
-        if (inEvent.password != "") {
+        if (network.password != "") {
             this.log("Connecting to PSK network");
             networkToConnect.security = "psk";
             networkToConnect.password = inEvent.password;
@@ -893,28 +896,22 @@ enyo.kind({
         this.showNetworksList();
     },
     updateSpinnerState: function(action) {
-		this.log("action:", action);
-		
-		if (action === "start" ){
-			this.$.networkSearch.show();
-		}else{
-			this.$.networkSearch.hide();
-		}
+	if (action === "start"){
+	    this.$.networkSearch.show();
+	}else{
+	    this.$.networkSearch.hide();
+	}
     },
-
-    handleBackGesture: function(inSender, inEvent) {
-		this.log("sender:", inSender, ", event:", inEvent);	
-		
-		if(this.$.WiFiPanels.getIndex() > 1){
-			this.$.WiFiPanels.setIndex(1);
-			this.updateSpinnerState();					// stop the spinner
-		}else{
-			if( this.$.WiFiPanels.getIndex() === 1 || this.$.WiFiPanels.getIndex() === 0){
-				this.doBackbutton();
-				this.updateSpinnerState();				// stop the spinner
-			}
-		}
-	},
+    handleBackGesture: function() {
+	if(this.$.WiFiPanels.getIndex() > 1){
+	    this.$.WiFiPanels.setIndex(1);
+	    this.updateSpinnerState();				// stop the spinner
+	}else if( this.$.WiFiPanels.getIndex() === 1 ||
+		  this.$.WiFiPanels.getIndex() === 0){
+	    this.doBackbutton();
+	    this.updateSpinnerState();				// stop the spinner
+	}
+    },
 
     //Utility Functions
     clearFoundNetworks: function () {
@@ -940,9 +937,9 @@ enyo.kind({
             }
         }
     },
-    triggerAutoscan: function() {
-		this.updateSpinnerState("start");
-		if (!navigator.WiFiManager)
+    triggerAutoscan: function(inSender, inEvent) {
+	this.updateSpinnerState("start");
+	if (!navigator.WiFiManager)
             return;
         navigator.WiFiManager.retrieveNetworks(enyo.bind(this, "handleRetrieveNetworksResponse"),
                                                enyo.bind(this, "handleRetrieveNetworksFailed"));
@@ -967,6 +964,7 @@ enyo.kind({
         }
     },
     handleRetrieveNetworksFailed: function() {
+	log.this(); // Worth a mention. Surely?
         this.clearFoundNetworks();
     },
     // Not convinced this happens if the WiFi status is changed
