@@ -25,7 +25,7 @@ enyo.kind({
 			  showing: "true",
 			  style: "height: 31px;"}
 		 ]},
-		{name: "tonePicker", kind: "FilePicker", fileType:["audio"], onPickFile: "tonePicked", autoDismiss: true},
+		{name: "tonePicker", kind: "FilePicker", fileType:["ringtone"], onPickFile: "tonePicked", autoDismiss: true},
 		{kind: "Scroller", touch: true,	horizontal: "hidden", fit: true, components:[
 			{name: "div", tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
 				{kind: "enyo.FittableRows", components: [
