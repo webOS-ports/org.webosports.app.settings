@@ -5,10 +5,6 @@ enyo.kind({
 	events: {
 		onMuteChanged: ""
 	},
-	handlers: {
-		onClose: "closePopup",
-		onTone: "tonepicked"
-	},
 	palm: false,
 	mute: false,
 	keys: false,
@@ -29,6 +25,7 @@ enyo.kind({
 			  showing: "true",
 			  style: "height: 31px;"}
 		 ]},
+		{name: "tonePicker", kind: "FilePicker", fileType:["ringtone"], onPickFile: "tonePicked", autoDismiss: true},
 		{kind: "Scroller", touch: true,	horizontal: "hidden", fit: true, components:[
 			{name: "div", tag: "div", style: "padding: 35px 10% 35px 10%;", fit: true, components: [
 				{kind: "enyo.FittableRows", components: [
@@ -83,7 +80,7 @@ enyo.kind({
 						]},
 						{kind: "enyo.FittableColumns", classes: "group-item", style: "padding: 0px;", components: [
 							{name: "ringerPicker", kind: "onyx.Button", fit: true,
-							 content: "Ringtone Picker", ontap: "ringerPopup"},
+							 content: "Ringtone Picker", ontap: "pickATone"},
 						]}
 					]}
 				]}
@@ -96,9 +93,6 @@ enyo.kind({
 		{name: "ErrorPopup", kind: "onyx.Popup", classes: "error-popup", modal: true, style: "padding: 10px;", components: [
 			{name: "ErrorMessage", content: "", style: "display: inline;"}
 		]},
-		{name: "ringPickerPopup", kind: "onyx.Popup", classes: "popup", centered: true, floating: true,	components: [
-			{kind: "pickRingTones", style: "height: 100%; width: 100%;"},
-		]},
 		{name: "GetAudioStatus", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
 		 subscribe: true,
 		 method: "getStatus", onComplete: "handleGetAudioStatusResponse"},
@@ -109,7 +103,8 @@ enyo.kind({
 		{name: "SetMicMute", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
 		 method: "setMicMute"},
 		{name: "GetSystemPreferences", kind: "SystemService", method: "getPreferences",
-		 onComplete: "handleGetPreferencesResponse"}
+		 onComplete: "handleGetPreferencesResponse", subscribe: true},
+		{name: "SetSystemPreferences", kind: "SystemService", method: "setPreferences"}
 	],
 	//Handlers
 	create: function() {
@@ -128,7 +123,7 @@ enyo.kind({
 		}
 		this.palm = true;
 		this.$.GetAudioStatus.send({});
-		this.$.GetSystemPreferences.send({keys: ["ringtone"]});
+		this.$.GetSystemPreferences.send({"keys": ["ringtone"]});
 	},
 	reflow: function (inSender) {
 		this.inherited(arguments);
@@ -159,15 +154,13 @@ enyo.kind({
 		}
 		this.doMuteChanged({mute: this.mute});
 	},
-	ringerPopup: function(inSender, inEvent) {
-		this.$.ringPickerPopup.show();
-		this.$.ringPickerPopup.setShowing(true);
+	pickATone: function(inSender, inEvent) {
+		this.$.tonePicker.pickFile();
 	},
-	closePopup: function(inSender, inEvent) {
-		this.$.ringPickerPopup.hide();
-	},
-	tonepicked: function(inSender, inEvent) {
-		this.$.ringerPicker.setContent("Ringtone -- " + inEvent);
+	tonePicked: function(inSender, inEvent) {
+		if(!inEvent || inEvent.length === 0)
+			return;
+		this.$.SetSystemPreferences.send({"ringtone": inEvent[0]});
 	},
 	keyClicks: function(inSender, inEvent) {
 		this.keys = inEvent.value;
