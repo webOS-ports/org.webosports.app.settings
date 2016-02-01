@@ -685,6 +685,8 @@ enyo.kind({
         navigator.BluetoothManager.onrequestpasskey = enyo.bind(this, "handleBluetoothRequestPasskey");
         navigator.BluetoothManager.onconfirmpasskey = enyo.bind(this, "handleBluetoothConfirmPasskey");
 
+	navigator.BluetoothManager.resetDevicesList();
+
 //        if (navigator.BluetoothManager.enabled) {
 //            this.handleBluetoothEnabled();
 //        }
@@ -914,6 +916,7 @@ enyo.kind({
     },
     deactivateBluetooth: function() {
         this.showBluetoothDisabled();
+	this.clearFoundDevices();
         if (!navigator.BluetoothManager)
             return;
         navigator.BluetoothManager.enabled = false;
