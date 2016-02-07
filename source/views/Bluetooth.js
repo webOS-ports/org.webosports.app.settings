@@ -1,15 +1,5 @@
 /*jslint sloppy: true, stupid: true */
 
-Array.prototype.contains = function(obj) {
-    var i = this.length;
-    while (i--) {
-        if (this[i] === obj) {
-            return true;
-        }
-    }
-    return false;
-};
-
 enyo.kind({
     name: "BluetoothListItem",
     //classes: "group-item-wrapper",
@@ -195,12 +185,10 @@ var mockDevices = [
     }
 ];
 
-var foundDevices = [];
-
 enyo.kind({
     name: "Bluetooth",
     layoutKind: "FittableRowsLayout",
-    foundDevices: null,
+    foundDevices: [],
     searchResults: null,
     events: {
         onActiveChanged: "",
@@ -694,11 +682,6 @@ enyo.kind({
         this.doActiveChanged({value: navigator.BluetoothManager.enabled});//@@
     },
     destroy: function () {
-	// @@@My earphones.
-//	if (navigator.BluetoothManager) {
-//            navigator.BluetoothManager.removeDevice("00:18:91:3F:7A:50");
-//	}
-
         this.inherited(arguments);
     },
     reflow: function (inSender) {
@@ -748,7 +731,8 @@ enyo.kind({
 						     enyo.bind(this, "handleDeviceConnectFailed"));
         }
 
-        this.$.DeviceRepeater.build();
+        this.$.DeviceRepeater.setCount(this.foundDevices.length);
+//        this.$.DeviceRepeater.build();
     },
     foundDeviceTapped: function(inSender, inEvent) {
         var selectedDevice = this.searchResults[inEvent.index];
@@ -769,7 +753,8 @@ enyo.kind({
             //IE navigator.BluetoothManager.connectDevice(selectedDevice, enyo.bind(this, "handleDeviceConnectSucceeded"), enyo.bind(this, "handleDeviceConnectFailed"));
         }
 
-        this.$.FoundDeviceRepeater.build();
+        this.$.DeviceRepeater.setCount(this.foundDevices.length);
+//        this.$.FoundDeviceRepeater.build();
     },
     handleInfoButtonTapped: function(inSender, inEvent)
     {
@@ -944,7 +929,7 @@ enyo.kind({
         this.foundDevices.splice(inEvent.index, 1);
 
         this.$.DeviceRepeater.setCount(this.foundDevices.length);
-        this.$.DeviceRepeater.build();
+//        this.$.DeviceRepeater.build();
     },
     handleDeviceNameChanged: function(inSender, inEvent)
     {
@@ -955,7 +940,8 @@ enyo.kind({
 //	if (navigator.BluetoothManager) {
 //            navigator.BluetoothManager.updateDevice(selectedDevice);
 //	}
-        this.$.DeviceRepeater.build();
+        this.$.DeviceRepeater.setCount(this.foundDevices.length);
+//        this.$.DeviceRepeater.build();
     },
     handleDeviceSearchResults: function(inSender, inEvent)
     {
@@ -969,7 +955,7 @@ enyo.kind({
             return value.type === searchDeviceType;
         };
 
-        this.searchResults = foundDevices.filter(filterFunction);
+        this.searchResults = this.foundDevices.filter(filterFunction);
 
         if (this.searchResults.length > 0) {
             this.$.FoundDeviceList.show();
@@ -1059,11 +1045,8 @@ enyo.kind({
     },
     // BluetoothManager Callbacks
     handleDeviceFound: function(deviceInfo) {
-//	this.log(deviceInfo.name);
-//	this.log(deviceInfo.address);
-//	this.log(deviceInfo.type);
-	for (x in deviceInfo) {
-	    this.log(x + ": " + deviceInfo[x]);
+	for (key in deviceInfo) {
+	    this.log(key + ": " + deviceInfo[key]);
 	}
 	//if (deviceInfo.address === "00:1D:FE:7F:E5:F0") {
 	//    this.log("will pair");
@@ -1072,12 +1055,27 @@ enyo.kind({
 	deviceInfo.enabled = true;
 	this.foundDevices.push(deviceInfo);
 	this.$.DeviceRepeater.setCount(this.foundDevices.length);
-	this.$.DeviceRepeater.build();
+//	this.$.DeviceRepeater.render();
+//	this.$.DeviceRepeater.build();
     },
     handleDeviceChanged: function(deviceInfo) {
-	for (x in deviceInfo) {
-	    this.log(x + ": " + deviceInfo[x]);
+	for (var key in deviceInfo) {
+	    this.log(key + ": " + deviceInfo[key]);
 	}
+	if (deviceInfo.address === undefined) {
+	    this.log("Error: Device address not defined.");
+	    return;
+	}
+	for (var i = 0; i < this.foundDevices.length; ++i) {
+	    if (deviceInfo.address === this.foundDevices[i].address) {
+		for (key in deviceInfo) {
+		    this.foundDevices[i][key] = deviceInfo[key];
+		}
+		this.$.DeviceRepeater.setCount(this.foundDevices.length);
+		return;
+	    }
+	}
+	this.log("Error: A device we did not know about was changed.");
     },
     handleDeviceRemoved: function(address) {
 	this.log(address);
@@ -1108,23 +1106,35 @@ enyo.kind({
 		    this.$.DiscoveringStatus.setShowing(false);
 		}
 		break;
+	    case "Devices":
+		if (value === null) {
+//		    this.clearFoundDevices();
+		    this.log("We were sent a null Devices list! (Ignored.)");
+		} else {
+		    this.log("Ought to do something with this Devices list!");
+		}
+		break;
 	    }
 	}
     },
     handleBluetoothRequestPinCode: function(deviceInfo) {
-	//this.log(deviceInfo.alias);
-	this.log(deviceInfo.address);
-	this.log(deviceInfo.tag);
+	for (key in deviceInfo) {
+	    this.log(key + ": " + deviceInfo[key]);
+	}
 	navigator.BluetoothManager.providePinCode(deviceInfo.tag,true,"0000");
     },
     handleBluetoothRequestPasskey: function(deviceInfo) {
-	this.log(deviceInfo.address);
-	this.log(deviceInfo.tag);
+	// tag?
+	for (key in deviceInfo) {
+	    this.log(key + ": " + deviceInfo[key]);
+	}
 	navigator.BluetoothManager.providePasskey(deviceInfo.tag,true,0);
     },
     handleBluetoothConfirmPasskey: function(deviceInfo) {
-	this.log(deviceInfo.address);
-	this.log(deviceInfo.tag);
+	// tag?
+	for (key in deviceInfo) {
+	    this.log(key + ": " + deviceInfo[key]);
+	}
 	navigator.BluetoothManager.confirmPasskey(deviceInfo.tag,true);
     },
     handleBluetoothEnabled: function() {
