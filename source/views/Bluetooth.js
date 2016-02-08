@@ -958,19 +958,6 @@ enyo.kind({
             return;
         navigator.BluetoothManager.enabled = false;
     },
-    handleDeviceConnectSucceeded: function() {
-	this.log();
-        //TODO: Update device connection to 4, rebuild repeater.
-	},
-    handleDeviceConnectFailed: function() {
-        //TODO: Display appropriate error
-	},
-    handleDeviceDisconnectSucceeded: function() {
-        //TODO: Any necessary logic
-    },
-    handleDeviceDisconnectFailed: function() {
-        //TODO: Display appropriate error
-    },
     handleDeviceDeleted: function(inSender, inEvent) {
         var selectedDevice = this.foundDevices[inEvent.index];
 
@@ -1200,6 +1187,19 @@ enyo.kind({
 	this.$.IndicatedPasskey.setContent(deviceInfo.passkey);
 	this.stashedTag = deviceInfo.tag;
 	this.showConfirmPasskeyPanel();
+    },
+    handleDeviceConnectSucceeded: function() {
+	this.log();
+        //TODO: Update device connection to 4, rebuild repeater.
+	},
+    handleDeviceConnectFailed: function() {
+        //TODO: Display appropriate error
+	},
+    handleDeviceDisconnectSucceeded: function() {
+        //TODO: Any necessary logic
+    },
+    handleDeviceDisconnectFailed: function() {
+        //TODO: Display appropriate error
     },
     handleBluetoothEnabled: function() {
         this.$.BluetoothToggle.setValue(true);
