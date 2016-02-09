@@ -1,15 +1,5 @@
 /*jslint sloppy: true, stupid: true */
 
-Array.prototype.contains = function(obj) {
-    var i = this.length;
-    while (i--) {
-        if (this[i] === obj) {
-            return true;
-        }
-    }
-    return false;
-};
-
 enyo.kind({
     name: "BluetoothListItem",
     //classes: "group-item-wrapper",
@@ -195,12 +185,12 @@ var mockDevices = [
     }
 ];
 
-var foundDevices = [];
-
 enyo.kind({
     name: "Bluetooth",
     layoutKind: "FittableRowsLayout",
-    foundDevices: null,
+    foundDevices: [],
+    discoverable: undefined, // A note of what we were last told.
+    stashedTag: null,
     searchResults: null,
     events: {
         onActiveChanged: "",
@@ -210,7 +200,6 @@ enyo.kind({
     autoscan: null,
     debug: false,
     components: [
-	
         /* Error popup */
         {
             name: "ErrorPopup",
@@ -264,8 +253,8 @@ enyo.kind({
                     components: [{
                             style: "padding-bottom: 10px;",
                             components: [{
-                                    content: "Bluetooth is disabled",
-                                    style: "display: inline;"
+                                content: "Bluetooth is disabled",
+                                style: "display: inline;"
                             }]
                         }
                     ]
@@ -276,47 +265,28 @@ enyo.kind({
                     kind: "enyo.FittableRows",
                     components: [
                         {
-                            name: "DiscoverableStatus",
+                            name: "ThisDeviceStatus",
                             kind: "enyo.FittableColumns",
                             style: "padding: 35px 10% 0 10%; height: 67px",
                             components: [
                                 {
-                                    name: "DiscoverableSpinner",
+                                    name: "ThisDeviceStatusSpinner",
                                     kind: "onyx.Spinner",
 				    classes: "onyx-light",
-                                    style: "width: 54px; height: 55px; margin-right: 10px;"
+                                    style: "width: 54px; height: 55px; margin-right: 10px"
                                 },
                                 {
-                                    name: "DiscoverableStatusMessage",
-                                    content: "Making your device visible and discoverable to others.", //"Your device is now discoverable."
-                                    style: "line-height: 55px; font-size: 14px"
+                                    name: "ThisDeviceStatusMessage",
+                                    content: "Waiting for status...",
+                                    style: "line-height: 55px"
                                 }
                             ]
                         },
-                        {
-                            name: "DiscoveringStatus",
-			    showing: false,
-                            kind: "enyo.FittableColumns",
-                            style: "padding: 35px 10% 0 10%; height: 67px",
-                            components: [
-                                {
-                                    name: "DiscoveringSpinner",
-                                    kind: "onyx.Spinner",
-				    classes: "onyx-light",
-                                    style: "width: 54px; height: 55px; margin-right: 10px;"
-                                },
-                                {
-                                    name: "DiscoveringStatusMessage",
-                                    content: "Searching for devices...",
-                                    style: "line-height: 55px; font-size: 14px"
-                                }
-                            ]
-                        },
-                        {
+			{
                             name: "DeviceList",
                             kind: "onyx.Groupbox",
                             layoutKind: "FittableRowsLayout",
-                            style: "padding: 35px 10% 35px 10%;",
+                            style: "padding: 6px 10% 35px 10%;",
                             fit: true,
                             components: [
                                 {
@@ -346,7 +316,7 @@ enyo.kind({
                                                 }
                                             ]
                                     }]
-                                },
+                                }/*,
                                 {
                                     name: "AddDeviceButton",
                                     kind: "enyo.FittableColumns",
@@ -374,10 +344,10 @@ enyo.kind({
                                     released: function () {
                                         this.removeClass("onyx-selected");
                                     }
-                                },
-                               
+                                }*/
                             ]
-						}]
+			}
+		    ]
                 },
                 /* Device Info panel */
                 {
@@ -630,7 +600,53 @@ enyo.kind({
                         },
                     ]
                 },
-                
+                 /* Confirm passkey panel */
+                {
+                    name: "ConfirmPasskeyPanel",
+                    layoutKind: "FittableRowsLayout",
+                    classes: "content-wrapper",
+                    components: [
+			{
+                            classes: "content-aligner",
+                            components: [
+				{
+				    name: "ConfirmPasskeyIntro",
+				    content: "Confirm Passkey",
+				    classes: "content-heading"
+				},
+				{
+				    kind: "onyx.Groupbox",
+                                    components: [
+					{
+                                            kind: "onyx.GroupboxHeader",
+                                            content: "Passkey"
+					},
+					{
+                                            components: [
+						{
+                                                    name: "IndicatedPasskey",
+						    content: "xxxx"
+						}
+                                            ]
+					}
+                                    ]
+				},
+				{
+                                    kind: "onyx.Button",
+                                    classes: "onyx-affirmative",
+                                    content: "Confirm",
+                                    ontap: "confirmPasskey"
+				},
+				{
+                                    kind: "onyx.Button",
+                                    content: "Reject",
+                                    ontap: "rejectPasskey"
+				}
+                            ]
+			}
+		    ]
+                },
+               
                 { /* Workaround for HFlipArranger incorrectly displaying with 2 panels*/ },
             ]
             
@@ -657,9 +673,9 @@ enyo.kind({
         this.log("Bluetooth: created");
 
         if (!window.PalmSystem) {
-            // Bluetooth is enabled by default
+            // Bluetooth is enabled by default.
             this.handleBluetoothEnabled();
-            // if we're outside the webOS system add some entries for easier testing
+            // If we're outside the webOS system add some entries for easier testing.
             this.foundDevices = mockDevices;
             this.$.DeviceRepeater.setCount(this.foundDevices.length);
             return;
@@ -685,6 +701,8 @@ enyo.kind({
         navigator.BluetoothManager.onrequestpasskey = enyo.bind(this, "handleBluetoothRequestPasskey");
         navigator.BluetoothManager.onconfirmpasskey = enyo.bind(this, "handleBluetoothConfirmPasskey");
 
+	navigator.BluetoothManager.resetDevicesList();
+
 //        if (navigator.BluetoothManager.enabled) {
 //            this.handleBluetoothEnabled();
 //        }
@@ -692,18 +710,13 @@ enyo.kind({
         this.doActiveChanged({value: navigator.BluetoothManager.enabled});//@@
     },
     destroy: function () {
-	// @@@My earphones.
-//	if (navigator.BluetoothManager) {
-//            navigator.BluetoothManager.removeDevice("00:18:91:3F:7A:50");
-//	}
-
         this.inherited(arguments);
     },
     reflow: function (inSender) {
         this.inherited(arguments);
         if (enyo.Panels.isScreenNarrow()) {
-            this.$.DeviceList.setStyle("padding: 35px 5% 35px 5%;");
-            this.$.DiscoverableStatus.setStyle("padding: 35px 5% 35px 5%;");
+            this.$.DeviceList.setStyle("padding: 35px 5% 0px 5%;");
+            this.$.ThisDeviceStatus.setStyle("padding: 6px 5% 35px 5%;");
             this.$.Grabber.applyStyle("visibility", "hidden");
         } else {
             this.$.Grabber.applyStyle("visibility", "visible");
@@ -746,13 +759,14 @@ enyo.kind({
 						     enyo.bind(this, "handleDeviceConnectFailed"));
         }
 
-        this.$.DeviceRepeater.build();
+        this.$.DeviceRepeater.setCount(this.foundDevices.length);
+//        this.$.DeviceRepeater.build();
     },
     foundDeviceTapped: function(inSender, inEvent) {
         var selectedDevice = this.searchResults[inEvent.index];
 
-        // if we are connecting, set the status to disconnected
-        // if we are not connected, set the status to connecting (2)
+        // If we are connecting, set the status to disconnected
+        // If we are not connected, set the status to connecting (2)
         if (selectedDevice.connection === 2) {
             selectedDevice.connection = 1;
             this.$.SearchStatusMessage.setContent("Searching for " + this.$.DeviceSearchPicker.selected.content.toLowerCase() + " devices...");
@@ -767,7 +781,8 @@ enyo.kind({
             //IE navigator.BluetoothManager.connectDevice(selectedDevice, enyo.bind(this, "handleDeviceConnectSucceeded"), enyo.bind(this, "handleDeviceConnectFailed"));
         }
 
-        this.$.FoundDeviceRepeater.build();
+        this.$.DeviceRepeater.setCount(this.foundDevices.length);
+//        this.$.FoundDeviceRepeater.build();
     },
     handleInfoButtonTapped: function(inSender, inEvent)
     {
@@ -792,7 +807,8 @@ enyo.kind({
     },
     setupDeviceRow: function(inSender, inEvent) {
         var deviceName = "";
-        if (enyo.Panels.isScreenNarrow() && this.foundDevices[inEvent.index].name.length >= 18) { // if the name is longer shorten it for the narrow page only
+	// For the narrow page only, if the name is longer shorten it.
+        if (enyo.Panels.isScreenNarrow() && this.foundDevices[inEvent.index].name.length >= 18) {
             deviceName = this.foundDevices[inEvent.index].name.slice(0,18) + "..";
         } else {
             deviceName = this.foundDevices[inEvent.index].name;
@@ -847,7 +863,8 @@ enyo.kind({
     },
     setupFoundDeviceRow: function(inSender, inEvent) {
         var deviceName = "";
-        if (enyo.Panels.isScreenNarrow() && this.foundDevices[inEvent.index].name.length >= 18) { // if the name is longer shorten it for the narrow page only
+	// For the narrow page only, if the name is longer shorten it.
+        if (enyo.Panels.isScreenNarrow() && this.foundDevices[inEvent.index].name.length >= 18) {
             deviceName = this.searchResults[inEvent.index].name.slice(0,18) + "..";
         } else {
             deviceName = this.searchResults[inEvent.index].name;
@@ -874,30 +891,33 @@ enyo.kind({
         }
     },
     //Action Functions
-    showBluetoothDisabled: function(inSender, inEvent) {
+    showBluetoothDisabled: function() {
         this.stopAutoscan();
         this.$.BluetoothPanels.setIndex(0);
     },
-    showDevicesList: function(inSender, inEvent) {
+    showDevicesList: function() {
         return this.$.BluetoothPanels.setIndex(1);
     },
-    showDeviceInfo: function(inSender, inEvent) {
+    showDeviceInfo: function() {
         //TODO: Set device options based on the selected device
         this.$.BluetoothPanels.setIndex(2);
         this.stopAutoscan();
     },
-    showDeviceOptions: function(inSender, inEvent) {
+    showDeviceOptions: function() {
         //TODO: Set device options based on the selected device
         this.$.BluetoothPanels.setIndex(3);
         this.stopAutoscan();
     },
-    showAddDevice: function(inSender, inEvent) {
+    showAddDevice: function() {
         this.$.BluetoothPanels.setIndex(4);
         this.stopAutoscan();
 	if (navigator.BluetoothManager)
             navigator.BluetoothManager.discover(true);
 
 //        this.handleDeviceSearchResults();
+    },
+    showConfirmPasskeyPanel: function() {
+        this.$.BluetoothPanels.setIndex(5);
     },
     setToggleValue: function(value) {
         this.$.BluetoothToggle.setValue(value);
@@ -914,22 +934,10 @@ enyo.kind({
     },
     deactivateBluetooth: function() {
         this.showBluetoothDisabled();
+	this.clearFoundDevices();
         if (!navigator.BluetoothManager)
             return;
         navigator.BluetoothManager.enabled = false;
-    },
-    handleDeviceConnectSucceeded: function() {
-	this.log();
-        //TODO: Update device connection to 4, rebuild repeater.
-	},
-    handleDeviceConnectFailed: function() {
-        //TODO: Display appropriate error
-	},
-    handleDeviceDisconnectSucceeded: function() {
-        //TODO: Any necessary logic
-    },
-    handleDeviceDisconnectFailed: function() {
-        //TODO: Display appropriate error
     },
     handleDeviceDeleted: function(inSender, inEvent) {
         var selectedDevice = this.foundDevices[inEvent.index];
@@ -941,7 +949,7 @@ enyo.kind({
         this.foundDevices.splice(inEvent.index, 1);
 
         this.$.DeviceRepeater.setCount(this.foundDevices.length);
-        this.$.DeviceRepeater.build();
+//        this.$.DeviceRepeater.build();
     },
     handleDeviceNameChanged: function(inSender, inEvent)
     {
@@ -952,7 +960,8 @@ enyo.kind({
 //	if (navigator.BluetoothManager) {
 //            navigator.BluetoothManager.updateDevice(selectedDevice);
 //	}
-        this.$.DeviceRepeater.build();
+        this.$.DeviceRepeater.setCount(this.foundDevices.length);
+//        this.$.DeviceRepeater.build();
     },
     handleDeviceSearchResults: function(inSender, inEvent)
     {
@@ -966,7 +975,7 @@ enyo.kind({
             return value.type === searchDeviceType;
         };
 
-        this.searchResults = foundDevices.filter(filterFunction);
+        this.searchResults = this.foundDevices.filter(filterFunction);
 
         if (this.searchResults.length > 0) {
             this.$.FoundDeviceList.show();
@@ -1043,7 +1052,6 @@ enyo.kind({
     triggerAutoscan: function() {
 	if (!navigator.BluetoothManager)
             return;
-        this.log("Discovering devices...");
         navigator.BluetoothManager.discover(true);
         this.log("discover was called.");
     },
@@ -1054,27 +1062,65 @@ enyo.kind({
             this.autoscan = null;
         }
     },
+    confirmPasskey: function() {
+	var tag = this.stashedTag;
+	this.stashedTag = null;
+	navigator.BluetoothManager.confirmPasskey(tag, true);
+	// Better to "go back", really.
+	this.showDevicesList();
+    },
+    rejectPasskey: function() {
+	var tag = this.stashedTag;
+	this.stashedTag = null;
+	navigator.BluetoothManager.confirmPasskey(tag, false);
+	// Better to "go back", really.
+	this.showDevicesList();
+    },
     // BluetoothManager Callbacks
     handleDeviceFound: function(deviceInfo) {
-//	this.log(deviceInfo.name);
-//	this.log(deviceInfo.address);
-//	this.log(deviceInfo.type);
-	for (x in deviceInfo) {
-	    this.log(x + ": " + deviceInfo[x]);
+	for (key in deviceInfo) {
+	    this.log(key + ": " + deviceInfo[key]);
 	}
-	//if (deviceInfo.address === "00:1D:FE:7F:E5:F0") {
-	//    this.log("will pair");
-	//    navigator.BluetoothManager.connectDevice(deviceInfo.address);
-	//}
 	deviceInfo.enabled = true;
+	// We track devices by address so they must have one.
+	if (deviceInfo.address === undefined) {
+	    this.log("Error: Device address not defined.");
+	    return;
+	}
+	// Watch out for the device being in the list already.
+	// If we find it, just do what we do in DeviceChanged.
+	for (var i = 0; i < this.foundDevices.length; ++i) {
+	    if (deviceInfo.address === this.foundDevices[i].address) {
+		for (key in deviceInfo) {
+		    this.foundDevices[i][key] = deviceInfo[key];
+		}
+		this.$.DeviceRepeater.setCount(this.foundDevices.length);
+		return;
+	    }
+	}
 	this.foundDevices.push(deviceInfo);
 	this.$.DeviceRepeater.setCount(this.foundDevices.length);
-	this.$.DeviceRepeater.build();
+//	this.$.DeviceRepeater.render();
+//	this.$.DeviceRepeater.build();
     },
     handleDeviceChanged: function(deviceInfo) {
-	for (x in deviceInfo) {
-	    this.log(x + ": " + deviceInfo[x]);
+	for (var key in deviceInfo) {
+	    this.log(key + ": " + deviceInfo[key]);
 	}
+	if (deviceInfo.address === undefined) {
+	    this.log("Error: Device address not defined.");
+	    return;
+	}
+	for (var i = 0; i < this.foundDevices.length; ++i) {
+	    if (deviceInfo.address === this.foundDevices[i].address) {
+		for (key in deviceInfo) {
+		    this.foundDevices[i][key] = deviceInfo[key];
+		}
+		this.$.DeviceRepeater.setCount(this.foundDevices.length);
+		return;
+	    }
+	}
+	this.log("Error: A device we did not know about was changed.");
     },
     handleDeviceRemoved: function(address) {
 	this.log(address);
@@ -1089,49 +1135,94 @@ enyo.kind({
 	    switch (key) {
 	    case "Discoverable":
 		if (value === true) {
-		    this.$.DiscoverableSpinner.setShowing(false);
-		    this.$.DiscoverableStatusMessage.setContent(
-			"Your device is now discoverable.");
+		    this.discoverable = true;
+		    this.$.ThisDeviceStatusSpinner.setShowing(false);
+		    this.$.ThisDeviceStatusMessage.setContent(
+			"Your device is discoverable.");
 		} else {
-		    this.$.DiscoverableSpinner.setShowing(true);
-		    this.$.DiscoverableStatusMessage.setContent(
-			"Making your device visible and discoverable to others.");
+		    this.discoverable = false;
+		    this.$.ThisDeviceStatusSpinner.setShowing(true);
+		    this.$.ThisDeviceStatusMessage.setContent(
+			"Making your device discoverable..."); // Probably
 		}
 		break;
 	    case "Discovering":
+		// Discovering trumps Discoverable
 		if (value === true) {
-		    this.$.DiscoveringStatus.setShowing(true);
+		    this.$.ThisDeviceStatusSpinner.setShowing(true);
+		    this.$.ThisDeviceStatusMessage.setContent(
+			"Searching for devices...");
 		} else {
-		    this.$.DiscoveringStatus.setShowing(false);
+		    if (this.discoverable === true) {
+			this.$.ThisDeviceStatusSpinner.setShowing(false);
+			this.$.ThisDeviceStatusMessage.setContent(
+			    "Your device is discoverable.");
+		    } else {
+			this.$.ThisDeviceStatusSpinner.setShowing(true);
+			this.$.ThisDeviceStatusMessage.setContent(
+			    "Making your device discoverable..."); // Probably
+		    }
+		}
+		break;
+	    case "Devices":
+		if (value === null) {
+//		    this.clearFoundDevices();
+		    this.log("We were sent a null Devices list! (Ignored.)");
+		} else {
+		    this.log("Ought to do something with this Devices list!");
 		}
 		break;
 	    }
 	}
     },
     handleBluetoothRequestPinCode: function(deviceInfo) {
-	//this.log(deviceInfo.alias);
-	this.log(deviceInfo.address);
-	this.log(deviceInfo.tag);
-	navigator.BluetoothManager.providePinCode(deviceInfo.tag,true,"0000");
+	for (var key in deviceInfo) {
+	    this.log(key + ": " + deviceInfo[key]);
+	}
+//	navigator.BluetoothManager.providePinCode(deviceInfo.tag,true,"0000");
     },
     handleBluetoothRequestPasskey: function(deviceInfo) {
-	this.log(deviceInfo.address);
-	this.log(deviceInfo.tag);
-	navigator.BluetoothManager.providePasskey(deviceInfo.tag,true,0);
+	// tag?
+	for (var key in deviceInfo) {
+	    this.log(key + ": " + deviceInfo[key]);
+	}
+//	navigator.BluetoothManager.providePasskey(deviceInfo.tag,true,0);
     },
     handleBluetoothConfirmPasskey: function(deviceInfo) {
-	this.log(deviceInfo.address);
-	this.log(deviceInfo.tag);
-	navigator.BluetoothManager.confirmPasskey(deviceInfo.tag,true);
+	for (var key in deviceInfo) {
+	    this.log(key + ": " + deviceInfo[key]);
+	}
+	this.$.ConfirmPasskeyIntro.setContent("Does the passkey match with \"" + deviceInfo.name + "\"?");
+	this.$.IndicatedPasskey.setContent(deviceInfo.passkey);
+	// This won't work for multiple connections happening at once.
+	// That's probably quite rare though, eh?
+	this.stashedTag = deviceInfo.tag;
+	this.showConfirmPasskeyPanel();
+    },
+    handleDeviceConnectSucceeded: function() {
+	this.log();
+    },
+    handleDeviceConnectFailed: function() {
+	this.log();
+    },
+    handleDeviceDisconnectSucceeded: function() {
+	this.log();
+    },
+    handleDeviceDisconnectFailed: function() {
+	this.log();
     },
     handleBluetoothEnabled: function() {
         this.$.BluetoothToggle.setValue(true);
+        if (navigator.BluetoothManager) {
+	    this.clearFoundDevices();
+	    navigator.BluetoothManager.resetDevicesList();
+	}
         this.$.BluetoothPanels.setIndex(1);
         this.startAutoscan();
     },
     handleBluetoothDisabled: function() {
+        this.stopAutoscan();
         this.$.BluetoothPanels.setIndex(0);
         this.$.BluetoothToggle.setValue(false);
-        this.stopAutoscan();
     }
 });
