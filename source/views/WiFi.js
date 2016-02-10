@@ -344,10 +344,6 @@ enyo.kind({
                                     classes: "content-heading"
                                 },
                                 {
-                                    content: "Not Implemented!",
-                                    classes: "content-heading"
-                                },
-                                {
                                     kind: "onyx.Groupbox",
                                     components: [
                                         {
@@ -580,7 +576,7 @@ enyo.kind({
         if (!window.PalmSystem) {
             // WiFi is enabled by default
             this.handleWiFiEnabled();
-            // if we're outside the webOS system add some entries for easier testing
+            // If we're outside the webOS system add some entries for easier testing.
             this.foundNetworks = phonyFoundNetworks;
             this.$.SearchRepeater.setCount(this.foundNetworks.length);
             return;
@@ -626,7 +622,7 @@ enyo.kind({
     listItemTapped: function (inSender, inEvent) {
         var selectedNetwork = this.foundNetworks[inEvent.index];
 
-        // don't try to connect to already connected or connecting network
+        // Don't try to connect to already connected or connecting network.
         if (selectedNetwork.state != "idle" && selectedNetwork.state != "failure") {
             this.$.NetworkConfiguration.currentNetwork = {
                 path: selectedNetwork.path
@@ -642,7 +638,7 @@ enyo.kind({
         };
 
         // When the network does not have any security configured it will always
-        // have the "none" security type set
+        // have the "none" security type set.
         if (!this.currentNetwork.security.contains("none")) {
             this.log("Connecting to secured network");
             this.$.PopupSSID.setContent(this.currentNetwork.ssid);
@@ -660,6 +656,7 @@ enyo.kind({
         for (i = 0; i < this.foundNetworks.length; i++) {
             if (this.foundNetworks[i].name === this.wifiTarget.ssid) {
                 path = this.foundNetworks[i].path;
+		break;
             }
         }
         this.currentNetwork = {
@@ -685,14 +682,15 @@ enyo.kind({
     },
     setupSearchRow: function (inSender, inEvent) {
     	var ssid = "";
+	// For the narrow page only, shorten a long SSID.
     	if(enyo.Panels.isScreenNarrow()){
-    		if(this.foundNetworks[inEvent.index].name.length >= 18){					// if the SSID is longer shorten it for the narrow page only
-    			ssid = this.foundNetworks[inEvent.index].name.slice(0,18) + "..";
-    		}else{
-    			ssid = this.foundNetworks[inEvent.index].name;
-    		}
-    	}else{
+    	    if(this.foundNetworks[inEvent.index].name.length >= 18){
+    		ssid = this.foundNetworks[inEvent.index].name.slice(0,18) + "...";
+    	    }else{
     		ssid = this.foundNetworks[inEvent.index].name;
+    	    }
+    	}else{
+    	    ssid = this.foundNetworks[inEvent.index].name;
     	}
     	
         inEvent.item.$.wiFiListItem.$.SSID.setContent( ssid );
@@ -702,7 +700,7 @@ enyo.kind({
         case "configuration":
             inEvent.item.$.wiFiListItem.$.Active.setShowing(false);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(true);
-            inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("Connecting ...");
+            inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("Connecting...");
             inEvent.item.$.wiFiListItem.$.spin.setShowing(true);
             break;
         case "ready":
@@ -735,7 +733,7 @@ enyo.kind({
         if (this.foundNetworks[inEvent.index].strength) {
             var bars = this.signalStrengthToBars(this.foundNetworks[inEvent.index].strength);
             inEvent.item.$.wiFiListItem.$.Signal.setSrc("assets/wifi/signal-icon-" + bars + ".png");
-		}
+	}
     },
 //    setupKnownNetworkRow: function (inSender, inEvent) {
 //    	var ssid = "";
@@ -809,12 +807,21 @@ enyo.kind({
 			     this.foundNetworks[i].security);
 	            this.log("Searching for hidden network security[0]:",
 			     this.currentNetwork.security[0]);
+		    // If we have found a hidden network with the right
+		    // kind of security, chances are this is the one
+		    // we mean. (Hmmm.)
 	            if (this.foundNetworks[i].security.contains(
 			this.currentNetwork.security[0])) {
 	                this.currentNetwork.path = path;
 			break;
 	            }
 	        }
+	    }
+
+	    // Cannot connect to a network without a path.
+	    if (this.currentNetwork.path === "") {
+		this.log("We did not find the hidden network.");
+		return;
 	    }
 
             if (!this.currentNetwork.security.contains("none")) {
@@ -912,6 +919,8 @@ enyo.kind({
         if (network.name != "") {
             this.log("Connecting to hidden network");
             networkToConnect.name = network.name;
+	    // Need to look up its path.
+	    // I believe it should be in the list.
         }
 
         navigator.WiFiManager.connectNetwork(networkToConnect,
