@@ -129,15 +129,13 @@ var phonyFoundNetworks = [
 enyo.kind({
     name: "WiFi",
     layoutKind: "FittableRowsLayout",
-    foundNetworks: null,
+    foundNetworks: [],
     events: {
         onActiveChanged: "",
         onBackbutton: ""
     },
-    currentSSID: "",
     palm: false,
-    findNetworksRequest: null,
-    autoscan: null,
+//    autoscan: null,
     debug: false,
     components: [
 	
@@ -541,7 +539,7 @@ enyo.kind({
                                 {
                                     kind: "onyx.Button",
                                     content: "Done",
-                                    ontap: "showNetworksList"
+                                    ontap: "showNetworksListPanel"
                                 },
                             ]
                         },
@@ -575,7 +573,7 @@ enyo.kind({
         // If we're outside the webOS system add some entries for easier testing.
         if (!window.PalmSystem) {
             // More interesting to pretend that WiFi is enabled.
-            this.handleWiFiEnabled();
+            this.showThatWiFiIsEnabled();
             this.foundNetworks = phonyFoundNetworks;
             this.$.SearchRepeater.setCount(this.foundNetworks.length);
             return;
@@ -585,14 +583,18 @@ enyo.kind({
         if (!navigator.WiFiManager)
             return;
 
-	// Not convinced these events are ever fired.
-        // Nothing happens if the WiFi status is changed
-        // outside of the Settings app.
+        // Not convinced these enabled/disabled events are ever fired.
+        // Nothing happens here if the WiFi status is changed in the System Menu.
         navigator.WiFiManager.onenabled = enyo.bind(this, "handleWiFiEnabled");
         navigator.WiFiManager.ondisabled = enyo.bind(this, "handleWiFiDisabled");
         navigator.WiFiManager.onnetworkschange = enyo.bind(this, "handleWiFiNetworksChanged");
 
-        this.doActiveChanged({value: navigator.WiFiManager.enabled});
+	if (navigator.WiFiManager.enabled) {
+	    this.updateSpinnerState("start");
+	    this.showThatWiFiIsEnabled();
+	} else {
+	    this.showThatWiFiIsDisabled();
+	}
     },
     reflow: function (inSender) {
         this.inherited(arguments);
@@ -603,24 +605,52 @@ enyo.kind({
             this.$.Grabber.applyStyle("visibility", "visible");
         }
     },
+    showThatWiFiIsEnabled: function() {
+        this.$.WiFiToggle.silence();
+        this.$.WiFiToggle.setValue(true);
+        this.$.WiFiToggle.unsilence();
+        this.showNetworksListPanel();
+        this.doActiveChanged({value: true});
+    },
+    showThatWiFiIsDisabled: function() {
+        this.$.WiFiToggle.silence();
+        this.$.WiFiToggle.setValue(false);
+        this.$.WiFiToggle.unsilence();
+        this.showWiFiDisabledPanel();
+        this.doActiveChanged({value: false});
+    },
     //Action Handlers
     toggleButtonChanged: function (inSender, inEvent) {
-        if (inEvent.value == true){
-            this.activateWiFi();
-        } else{
-            this.deactivateWiFi();
+        if (inEvent.value === true) {
+	    if (navigator.WiFiManager)
+		navigator.WiFiManager.enabled = true;
+	    this.updateSpinnerState("start");
+	    // Handled by navigator.onenabled on device.
+	    if (!this.palm)
+		this.showNetworksListPanel();
+        } else {
+	    if (navigator.WiFiManager)
+		navigator.WiFiManager.enabled = false;
+	    // Handled by navigator.ondisabled on device.
+	    if (!this.palm)
+		this.showWiFiDisabledPanel();
 	}
-        this.doActiveChanged(inEvent);
+	// Handled by navigator.onenabled/disabled on device.
+	if (!this.palm)
+            this.doActiveChanged(inEvent);
     },
     listItemTapped: function (inSender, inEvent) {
         var selectedNetwork = this.foundNetworks[inEvent.index];
 
-        // Don't try to connect to already connected or connecting network.
-        if (selectedNetwork.state != "idle" && selectedNetwork.state != "failure") {
+        // Show the configuration for a connected network.
+        // Otherwise, try to connect.
+
+        if (selectedNetwork.state !== "idle" &&
+            selectedNetwork.state !== "failure") {
             this.$.NetworkConfiguration.currentNetwork = {
                 path: selectedNetwork.path
             };
-            this.showNetworkConfiguration();
+            this.showNetworkConfigurationPanel();
             return;
         }
 
@@ -635,7 +665,7 @@ enyo.kind({
         if (!this.currentNetwork.security.contains("none")) {
             this.log("Connecting to secured network");
             this.$.PopupSSID.setContent(this.currentNetwork.ssid);
-            this.showNetworkConnect();
+            this.showNetworkConnectPanel();
         } else {
             this.log("Connect to open network");
             this.connectNetwork({
@@ -644,25 +674,25 @@ enyo.kind({
             });
         }
     },
-    triggerWifiConnect: function () {
-        var i, path = "";
-        for (i = 0; i < this.foundNetworks.length; i++) {
-            if (this.foundNetworks[i].name === this.wifiTarget.ssid) {
-                path = this.foundNetworks[i].path;
-		break;
-            }
-        }
-        this.currentNetwork = {
-            ssid: this.wifiTarget.ssid,
-            path: path,
-            security: this.wifiTarget.securityType
-        };
-        this.connecting = true;
-        this.$.PopupSSID.setContent(this.currentNetwork.ssid);
-        this.showNetworkConnect();
-    },
+//    triggerWifiConnect: function () {
+//        var i, path = "";
+//        for (i = 0; i < this.foundNetworks.length; i++) {
+//            if (this.foundNetworks[i].name === this.wifiTarget.ssid) {
+//                path = this.foundNetworks[i].path;
+//		break;
+//            }
+//        }
+//        this.currentNetwork = {
+//            ssid: this.wifiTarget.ssid,
+//            path: path,
+//            security: this.wifiTarget.securityType
+//        };
+//        this.connecting = true;
+//        this.$.PopupSSID.setContent(this.currentNetwork.ssid);
+//        this.showNetworkConnectPanel();
+//    },
     onJoinButtonTapped: function (inSender, inEvent) {
-	this.showJoinNetwork();
+	this.showJoinNetworkPanel();
     },
     signalStrengthToBars: function(strength) {
         if(strength > 0 && strength < 34)
@@ -702,7 +732,7 @@ enyo.kind({
             inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(false);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("");
             inEvent.item.$.wiFiListItem.$.spin.setShowing(false);
-        	break;
+            break;
         case "failure":
             inEvent.item.$.wiFiListItem.$.Active.setShowing(false);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(true);
@@ -745,16 +775,14 @@ enyo.kind({
 		name: name
             });
 
-            // Switch back to network list view
-            this.showNetworksList();
+            this.showNetworksListPanel();
 	    delete password;
             this.$.PasswordInput.setValue("");
 	    delete name;
 	}
     },
     onNetworkConnectAborted: function (inSender, inEvent) {
-        // switch back to network list view
-        this.showNetworksList();
+        this.showNetworksListPanel();
 
         this.$.PasswordInput.setValue("");
     },
@@ -803,7 +831,7 @@ enyo.kind({
             if (!this.currentNetwork.security.contains("none")) {
 		this.log("Connecting to secured network");
 		this.$.PopupSSID.setContent(this.$.ssidInput.getValue());
-		this.showNetworkConnect();
+		this.showNetworkConnectPanel();
             } else {
 		this.log("Connect to open network");
 		this.connectNetwork({
@@ -815,53 +843,41 @@ enyo.kind({
 	}
     },
     onOtherJoinCancelled: function (inSender, inEvent) {
-        // switch back to network list view
-        this.showNetworksList();
+        this.showNetworksListPanel();
 
         this.$.ssidInput.setValue("");
         this.$.SecurityTypePicker.setSelected(this.$.OpenSecurityItem);
     },
     //Action Functions
-    showWiFiDisabled: function () {
-        this.stopAutoscan();
+    showWiFiDisabledPanel: function () {
+//        this.stopAutoscan();
         this.$.WiFiPanels.setIndex(0);
     },
-    showNetworksList: function (inSender, inEvent) {
-	this.updateSpinnerState("start");
-        return this.$.WiFiPanels.setIndex(1);
+    showNetworksListPanel: function (inSender, inEvent) {
+//	this.updateSpinnerState("start");
+        this.$.WiFiPanels.setIndex(1);
     },
-    showNetworkConnect: function () {
+    showNetworkConnectPanel: function () {
         this.$.WiFiPanels.setIndex(2);
-        this.stopAutoscan();
+//        this.stopAutoscan();
     },
-    showJoinNetwork: function() {
+    // Apparently Joining and Connecting are different things.
+    showJoinNetworkPanel: function() {
         this.$.WiFiPanels.setIndex(3);
-        this.stopAutoscan();
+//        this.stopAutoscan();
     },
-    showNetworkConfiguration: function () {
+    showNetworkConfigurationPanel: function () {
         this.$.WiFiPanels.setIndex(4);
-        this.stopAutoscan();
+//        this.stopAutoscan();
     },
-    // Called by our parent.
+    // Called by our parent in response to user action.
     setToggleValue: function (value) {
         this.$.WiFiToggle.setValue(value);
     },
     showError: function (message) {
-	this.updateSpinnerState();
+	this.updateSpinnerState("stop");
         this.$.ErrorMessage.setContent(message);
         this.$.ErrorPopup.show();
-    },
-    activateWiFi: function () {
-        this.showNetworksList();
-	if (!navigator.WiFiManager)
-            return;
-        navigator.WiFiManager.enabled = true;
-    },
-    deactivateWiFi: function () {
-        this.showWiFiDisabled();
-        if (!navigator.WiFiManager)
-            return;
-        navigator.WiFiManager.enabled = false;
     },
     handleNetworkConnectSucceeded: function(inSender, inEvent) {
 	this.log();
@@ -902,14 +918,15 @@ enyo.kind({
                                              enyo.bind(this, "handleNetworkConnectSucceeded"),
                                              enyo.bind(this, "handleNetworkConnectFailed"));
 
-        this.triggerAutoscan();
+//        this.triggerAutoscan();
     },
     forgetNetwork: function(inSender, inEvent) {
         var network = this.$.NetworkConfiguration.currentNetwork;
 
         navigator.WiFiManager.removeNetwork(network.path);
 
-        this.showNetworksList();
+	this.updateSpinnerState("start");
+        this.showNetworksListPanel();
     },
     updateSpinnerState: function(action) {
 	if (action === "start"){
@@ -942,60 +959,59 @@ enyo.kind({
 
         return pass;
     },
-    startAutoscan: function() {
-	if (null === this.autoscan) {
-            this.log("Starting autoscan ...");
-            this.autoscan = window.setInterval(enyo.bind(this, "triggerAutoscan"), 15000);
-            if (!this.foundNetworks) {
-                this.triggerAutoscan();
-                this.log("this.triggerAutoscan();");
-            }
-        }
-    },
-    triggerAutoscan: function(inSender, inEvent) {
-	this.updateSpinnerState("start");
-	if (!navigator.WiFiManager)
-            return;
-        navigator.WiFiManager.retrieveNetworks(enyo.bind(this, "handleRetrieveNetworksResponse"),
-                                               enyo.bind(this, "handleRetrieveNetworksFailed"));
-    },
-    stopAutoscan: function() {
-        if (null !== this.autoscan) {
-            this.log("Stopping autoscan ...");
-            window.clearInterval(this.autoscan);
-            this.autoscan = null;
-        }
-        this.updateSpinnerState();
-    },
+//    startAutoscan: function() {
+//	if (null === this.autoscan) {
+//            this.log("Starting autoscan ...");
+//            this.autoscan = window.setInterval(enyo.bind(this, "triggerAutoscan"), 15000);
+//            if (!this.foundNetworks) {
+//                this.triggerAutoscan();
+//                this.log("this.triggerAutoscan();");
+//            }
+//        }
+//    },
+//    triggerAutoscan: function(inSender, inEvent) {
+//	this.updateSpinnerState("start");
+//	if (!navigator.WiFiManager)
+//            return;
+//        navigator.WiFiManager.retrieveNetworks(enyo.bind(this, "handleRetrieveNetworksResponse"),
+//                                               enyo.bind(this, "handleRetrieveNetworksFailed"));
+//    },
+//    stopAutoscan: function() {
+//        if (null !== this.autoscan) {
+//            this.log("Stopping autoscan ...");
+//            window.clearInterval(this.autoscan);
+//            this.autoscan = null;
+//        }
+//        this.updateSpinnerState();
+//    },
     // WiFiManager Callbacks
+    handleWiFiNetworksChanged: function(networks) {
+        this.handleRetrieveNetworksResponse(networks);
+//        this.stopAutoscan();
+    },
     handleRetrieveNetworksResponse: function (networks) {
         this.clearFoundNetworks();
         if (networks) {
+            this.updateSpinnerState("stop");
             this.foundNetworks = networks;
             this.$.SearchRepeater.setCount(this.foundNetworks.length);
-            if (this.wifiTarget && this.connecting != true) {
-                this.triggerWifiConnect();
-            }
+//            if (this.wifiTarget && this.connecting != true) {
+//                this.triggerWifiConnect();
+//            }
         }
     },
-    handleRetrieveNetworksFailed: function() {
-	log.this(); // Worth a mention. Surely?
-        this.clearFoundNetworks();
-    },
+//    handleRetrieveNetworksFailed: function() {
+//	this.log(); // Worth a mention. Surely?
+//        this.clearFoundNetworks();
+//    },
     handleWiFiEnabled: function() {
 	this.log();
-        this.$.WiFiToggle.setValue(true);
-        this.$.WiFiPanels.setIndex(1);
-        this.startAutoscan();
+        this.showThatWiFiIsEnabled();
+//        this.startAutoscan();
     },
     handleWiFiDisabled: function() {
 	this.log();
-        this.$.WiFiPanels.setIndex(0);
-        this.$.WiFiToggle.setValue(false);
-        this.stopAutoscan();
-    },
-    handleWiFiNetworksChanged: function(networks) {
-        this.handleRetrieveNetworksResponse(networks);
-        this.stopAutoscan();
+        this.showThatWiFiIsDisabled();
+//        this.stopAutoscan();
     }
 });

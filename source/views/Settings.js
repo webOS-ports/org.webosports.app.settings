@@ -147,17 +147,21 @@ enyo.kind({
 	},
 	//Action Functions
 	wifiActiveChanged: function(inSender, inEvent) {
+		this.$.WiFiToggle.silence();
 		this.$.WiFiToggle.setValue(inEvent.value);
+		this.$.WiFiToggle.unsilence();
 	},
-	wifiToggleChanged: function(inSender) {
-		this.$.WiFiPanel.setToggleValue(inSender.value);
+	wifiToggleChanged: function(inObj) {
+		this.$.WiFiPanel.setToggleValue(inObj.value);
 		return true;
 	},
 	bluetoothActiveChanged: function(inSender, inEvent) {
+		this.$.BluetoothToggle.silence();
 		this.$.BluetoothToggle.setValue(inEvent.value);
+		this.$.BluetoothToggle.unsilence();
 	},
-	bluetoothToggleChanged: function(inSender) {
-		this.$.BluetoothPanel.setToggleValue(inSender.value);
+	bluetoothToggleChanged: function(inObj) {
+		this.$.BluetoothPanel.setToggleValue(inObj.value);
 		return true;
 	},
 	muteChanged: function(inSender, inEvent) {
@@ -165,8 +169,8 @@ enyo.kind({
 		this.$.muteToggle.setValue(inEvent.mute);
 		this.$.muteToggle.unsilence();
 	},
-	muteToggleChanged: function(inSender) {
-		this.$.AudioPanel.setMuteToggleValue(inSender.value);
+	muteToggleChanged: function(inObj) {
+		this.$.AudioPanel.setMuteToggleValue(inObj.value);
 		return true;
 	},
 	onDevModeGetStatusResponse: function(inSender, inResponse) {
