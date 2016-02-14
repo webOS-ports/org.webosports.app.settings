@@ -147,7 +147,7 @@ enyo.kind({
 	},
 	//Action Functions
 	wifiActiveChanged: function(inSender, inEvent) {
-		this.$.WiFiToggle.setValue(inEvent.value);//@@
+		this.$.WiFiToggle.setValue(inEvent.value);
 	},
 	wifiToggleChanged: function(inSender) {
 		this.$.WiFiPanel.setToggleValue(inSender.value);

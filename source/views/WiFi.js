@@ -567,38 +567,32 @@ enyo.kind({
             ]
         },
     ],
-    //Handlers
     create: function () {
         this.inherited(arguments);
 
-        this.log("WiFi: created");
+        this.log();
 
+        // If we're outside the webOS system add some entries for easier testing.
         if (!window.PalmSystem) {
-            // WiFi is enabled by default
+            // More interesting to pretend that WiFi is enabled.
             this.handleWiFiEnabled();
-            // If we're outside the webOS system add some entries for easier testing.
             this.foundNetworks = phonyFoundNetworks;
             this.$.SearchRepeater.setCount(this.foundNetworks.length);
             return;
         }
 
         this.palm = true;
-
         if (!navigator.WiFiManager)
             return;
 
-        // Not much seems to happen if the WiFi status is changed
+	// Not convinced these events are ever fired.
+        // Nothing happens if the WiFi status is changed
         // outside of the Settings app.
         navigator.WiFiManager.onenabled = enyo.bind(this, "handleWiFiEnabled");
         navigator.WiFiManager.ondisabled = enyo.bind(this, "handleWiFiDisabled");
         navigator.WiFiManager.onnetworkschange = enyo.bind(this, "handleWiFiNetworksChanged");
 
-//        if (navigator.WiFiManager.enabled) {
-//            this.handleWiFiEnabled();
-//        }
-
         this.doActiveChanged({value: navigator.WiFiManager.enabled});
-        this.updateSpinnerState("start");
     },
     reflow: function (inSender) {
         this.inherited(arguments);
@@ -615,8 +609,7 @@ enyo.kind({
             this.activateWiFi();
         } else{
             this.deactivateWiFi();
-            this.managepopup = false;
-       }
+	}
         this.doActiveChanged(inEvent);
     },
     listItemTapped: function (inSender, inEvent) {
@@ -704,7 +697,6 @@ enyo.kind({
             inEvent.item.$.wiFiListItem.$.spin.setShowing(true);
             break;
         case "ready":
-
         case "online":
             inEvent.item.$.wiFiListItem.$.Active.setShowing(true);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(false);
@@ -735,22 +727,6 @@ enyo.kind({
             inEvent.item.$.wiFiListItem.$.Signal.setSrc("assets/wifi/signal-icon-" + bars + ".png");
 	}
     },
-//    setupKnownNetworkRow: function (inSender, inEvent) {
-//    	var ssid = "";
-//	if(enyo.Panels.isScreenNarrow()){
-//	    // if the SSID is longer shorten it for the narrow page only
-//    	    if(this.foundNetworks[inEvent.index].name.length >= 18){
-//    		ssid = this.foundNetworks[inEvent.index].name.slice(0,18) + "..";
-//    	    }else{
-//    		ssid = this.foundNetworks[inEvent.index].name;
-//    	    }
-//    	}else{
-//    	    ssid = this.foundNetworks[inEvent.index].name;
-//    	}
-//        inEvent.item.$.wiFiListItem.$.SSID.setContent( ssid );
-//        inEvent.item.$.wiFiListItem.$.Security.setContent(this.knownNetworks[inEvent.index].security);
-//        inEvent.item.$.wiFiListItem.$.Signal.setShowing(false);
-//    },
     onNetworkConnect: function (inSender, inEvent) {
 	var name = "";
 	if (this.currentNetwork.name !== "") {
@@ -876,7 +852,6 @@ enyo.kind({
         this.$.ErrorPopup.show();
     },
     activateWiFi: function () {
-	this.updateSpinnerState("start");
         this.showNetworksList();
 	if (!navigator.WiFiManager)
             return;
@@ -946,11 +921,11 @@ enyo.kind({
     handleBackGesture: function() {
 	if(this.$.WiFiPanels.getIndex() > 1){
 	    this.$.WiFiPanels.setIndex(1);
-	    this.updateSpinnerState();				// stop the spinner
-	}else if( this.$.WiFiPanels.getIndex() === 1 ||
-		  this.$.WiFiPanels.getIndex() === 0){
+	    this.updateSpinnerState("stop");
+	}else if(this.$.WiFiPanels.getIndex() === 1 ||
+		 this.$.WiFiPanels.getIndex() === 0){
 	    this.doBackbutton();
-	    this.updateSpinnerState();				// stop the spinner
+	    this.updateSpinnerState("stop");
 	}
     },
 
@@ -961,7 +936,6 @@ enyo.kind({
     },
     validatePassword: function (key) {
         var pass = false;
-
         if (8 <= key.length && 63 >= key.length) {
             pass = true;
         }
@@ -993,7 +967,7 @@ enyo.kind({
         }
         this.updateSpinnerState();
     },
-    //Service Callbacks
+    // WiFiManager Callbacks
     handleRetrieveNetworksResponse: function (networks) {
         this.clearFoundNetworks();
         if (networks) {
@@ -1008,14 +982,14 @@ enyo.kind({
 	log.this(); // Worth a mention. Surely?
         this.clearFoundNetworks();
     },
-    // Not convinced this happens if the WiFi status is changed
-    // outside of the Settings app.
     handleWiFiEnabled: function() {
+	this.log();
         this.$.WiFiToggle.setValue(true);
         this.$.WiFiPanels.setIndex(1);
         this.startAutoscan();
     },
     handleWiFiDisabled: function() {
+	this.log();
         this.$.WiFiPanels.setIndex(0);
         this.$.WiFiToggle.setValue(false);
         this.stopAutoscan();
@@ -1023,6 +997,5 @@ enyo.kind({
     handleWiFiNetworksChanged: function(networks) {
         this.handleRetrieveNetworksResponse(networks);
         this.stopAutoscan();
-    },
-    
+    }
 });
