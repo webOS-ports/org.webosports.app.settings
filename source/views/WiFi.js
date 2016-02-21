@@ -227,7 +227,7 @@ enyo.kind({
                                             components: [
                                                 {
                                                     kind: "WiFiListItem",
-                                                    ontap: "listItemTapped"
+                                                    ontap: "networkListItemTapped"
                                                 }
                                             ]
                                     }]
@@ -317,12 +317,12 @@ enyo.kind({
                                     kind: "onyx.Button",
                                     classes: "onyx-affirmative",
                                     content: "Connect",
-                                    ontap: "onNetworkConnect"
+                                    ontap: "onConnectTapped"
                                 },
                                 {
                                     kind: "onyx.Button",
                                     content: "Cancel",
-                                    ontap: "onNetworkConnectAborted"
+                                    ontap: "onConnectCancelTapped"
                                 }
                             ]
                         }
@@ -409,7 +409,7 @@ enyo.kind({
                                 {
                                     kind: "onyx.Button",
                                     content: "Cancel",
-                                    ontap: "onOtherJoinCancelled"
+                                    ontap: "onOtherJoinCancelTapped"
                                 },
                             ]
                         },
@@ -639,7 +639,7 @@ enyo.kind({
 	if (!this.palm)
             this.doActiveChanged(inEvent);
     },
-    listItemTapped: function (inSender, inEvent) {
+    networkListItemTapped: function (inSender, inEvent) {
         var selectedNetwork = this.foundNetworks[inEvent.index];
 
         // Show the configuration for a connected network.
@@ -654,22 +654,19 @@ enyo.kind({
             return;
         }
 
-        this.currentNetwork = {
-            ssid: selectedNetwork.name,
-            path: selectedNetwork.path,
-            security: selectedNetwork.security
-        };
-
-        // When the network does not have any security configured it will always
+        // An open network will always
         // have the "none" security type set.
-        if (!this.currentNetwork.security.contains("none")) {
-            this.log("Connecting to secured network");
-            this.$.PopupSSID.setContent(this.currentNetwork.ssid);
+        if (!selectedNetwork.security.contains("none")) {
+            this.log("Connecting to secured network...");
+            this.$.PopupSSID.setContent(selectedNetwork.name);
+            this.targetNetwork = {
+		path: selectedNetwork.path
+            };
             this.showNetworkConnectPanel();
         } else {
-            this.log("Connect to open network");
+            this.log("Connecting to open network...");
             this.connectNetwork({
-                path: this.currentNetwork.path,
+                path: selectedNetwork.path,
                 password: ""
             });
         }
@@ -757,11 +754,11 @@ enyo.kind({
             inEvent.item.$.wiFiListItem.$.Signal.setSrc("assets/wifi/signal-icon-" + bars + ".png");
 	}
     },
-    onNetworkConnect: function (inSender, inEvent) {
-	var name = "";
-	if (this.currentNetwork.name !== "") {
-	    name = this.currentNetwork.name;
-	}
+    onConnectTapped: function (inSender, inEvent) {
+//	var name = "";
+//	if (this.currentNetwork.name !== "") {
+//	    name = this.currentNetwork.name;
+//	}
 
 	var password = this.$.PasswordInput.getValue();
 	var passwordPlausible = this.validatePassword(password);
@@ -770,20 +767,19 @@ enyo.kind({
 	    this.showError("Entered password is invalid");
         } else {
             this.connectNetwork({
-                path: this.currentNetwork.path,
-                password: password,
-		name: name
+                path: this.targetNetwork.path,
+                password: password //,
+//		name: name
             });
 
             this.showNetworksListPanel();
 	    delete password;
             this.$.PasswordInput.setValue("");
-	    delete name;
+//	    delete name;
 	}
     },
-    onNetworkConnectAborted: function (inSender, inEvent) {
+    onConnectCancelTapped: function (inSender, inEvent) {
         this.showNetworksListPanel();
-
         this.$.PasswordInput.setValue("");
     },
     onOtherJoinConnectTapped: function(inSender, inEvent) {
@@ -842,7 +838,7 @@ enyo.kind({
             }
 	}
     },
-    onOtherJoinCancelled: function (inSender, inEvent) {
+    onOtherJoinCancelTapped: function (inSender, inEvent) {
         this.showNetworksListPanel();
 
         this.$.ssidInput.setValue("");
@@ -900,19 +896,16 @@ enyo.kind({
         };
 
         if (network.password != "") {
-            this.log("Connecting to PSK network");
-            networkToConnect.security = "psk";
+            networkToConnect.security = "psk"; // Assumption!
             networkToConnect.password = network.password;
-        } else {
-            this.log("Connecting to unsecured network");
         }
 
-        if (network.name != "") {
-            this.log("Connecting to hidden network");
-            networkToConnect.name = network.name;
+//        if (network.name != "") {
+//            this.log("Connecting to hidden network");
+//            networkToConnect.name = network.name;
 	    // Need to look up its path.
 	    // I believe it should be in the list.
-        }
+//        }
 
         navigator.WiFiManager.connectNetwork(networkToConnect,
                                              enyo.bind(this, "handleNetworkConnectSucceeded"),
