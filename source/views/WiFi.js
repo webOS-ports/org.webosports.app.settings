@@ -129,15 +129,16 @@ var phonyFoundNetworks = [
 enyo.kind({
     name: "WiFi",
     layoutKind: "FittableRowsLayout",
-    foundNetworks: null,
+    // Hidden networks are found (as it were!)
+    // but should be hidden from the user
+    foundNetworks: [],
+    foundHiddenNetworks: [],
     events: {
         onActiveChanged: "",
         onBackbutton: ""
     },
-    currentSSID: "",
     palm: false,
-    findNetworksRequest: null,
-    autoscan: null,
+//    autoscan: null,
     debug: false,
     components: [
 	
@@ -229,7 +230,7 @@ enyo.kind({
                                             components: [
                                                 {
                                                     kind: "WiFiListItem",
-                                                    ontap: "listItemTapped"
+                                                    ontap: "networkListItemTapped"
                                                 }
                                             ]
                                     }]
@@ -272,7 +273,6 @@ enyo.kind({
                 },
                 /* Network connect panel */
                 {
-                    name: "NetworkConnect",
                     layoutKind: "FittableRowsLayout",
                     classes: "content-wrapper",
                     components: [
@@ -307,7 +307,7 @@ enyo.kind({
                                             components: [
                                                 {
                                                     name: "PasswordInput",
-                                                    placeholder: "Type here ..",
+                                                    placeholder: "Type here...",
                                                     kind: "onyx.Input",
                                                     type: "password"
                                                 }
@@ -319,20 +319,19 @@ enyo.kind({
                                     kind: "onyx.Button",
                                     classes: "onyx-affirmative",
                                     content: "Connect",
-                                    ontap: "onNetworkConnect"
+                                    ontap: "onConnectTapped"
                                 },
                                 {
                                     kind: "onyx.Button",
                                     content: "Cancel",
-                                    ontap: "onNetworkConnectAborted"
+                                    ontap: "onConnectCancelTapped"
                                 }
                             ]
                         }
                     ]
                 },
-                /* Join network panel */
+                /* Join other [hidden] network panel */
                 {
-                    name: "NewNetworkJoin",
                     layoutKind: "FittableRowsLayout",
                     classes: "content-wrapper",
                     components: [
@@ -341,10 +340,6 @@ enyo.kind({
                             components: [
                                 {
                                     content: "Join Other Network",
-                                    classes: "content-heading"
-                                },
-                                {
-                                    content: "Not Implemented!",
                                     classes: "content-heading"
                                 },
                                 {
@@ -385,14 +380,14 @@ enyo.kind({
                                                     style: "max-width:170px; margin-top:41px; left:auto !important; right:0 !important;",
                                                     kind: "onyx.Picker",
                                                     components: [
-                                                        //TODO: load dynamically
                                                         {
                                                             name: "OpenSecurityItem",
-                                                            content: "Open",
-                                                            active: true
+                                                            content: "Open"
                                                         },
                                                         {
-                                                            content: "WPA-Personal"
+                                                            name: "WPAPerSecurityItem",
+                                                            content: "WPA-Personal",
+                                                            active: true
                                                         },
                                                         {
                                                             content: "WEP"
@@ -415,7 +410,7 @@ enyo.kind({
                                 {
                                     kind: "onyx.Button",
                                     content: "Cancel",
-                                    ontap: "onOtherJoinCancelled"
+                                    ontap: "onOtherJoinCancelTapped"
                                 },
                             ]
                         },
@@ -545,7 +540,7 @@ enyo.kind({
                                 {
                                     kind: "onyx.Button",
                                     content: "Done",
-                                    ontap: "showNetworksList"
+                                    ontap: "showNetworksListPanel"
                                 },
                             ]
                         },
@@ -571,38 +566,38 @@ enyo.kind({
             ]
         },
     ],
-    //Handlers
     create: function () {
         this.inherited(arguments);
 
-        this.log("WiFi: created");
+        this.log();
 
+        // If we're outside the webOS system add some entries for easier testing.
         if (!window.PalmSystem) {
-            // WiFi is enabled by default
-            this.handleWiFiEnabled();
-            // if we're outside the webOS system add some entries for easier testing
+            // More interesting to pretend that WiFi is enabled.
+            this.showThatWiFiIsEnabled();
             this.foundNetworks = phonyFoundNetworks;
             this.$.SearchRepeater.setCount(this.foundNetworks.length);
             return;
         }
 
         this.palm = true;
-
         if (!navigator.WiFiManager)
             return;
 
-        // Not much seems to happen if the WiFi status is changed
-        // outside of the Settings app.
+        // Not convinced these enabled/disabled events are ever fired.
+        // Nothing happens here if the WiFi status is changed in the System Menu.
         navigator.WiFiManager.onenabled = enyo.bind(this, "handleWiFiEnabled");
         navigator.WiFiManager.ondisabled = enyo.bind(this, "handleWiFiDisabled");
         navigator.WiFiManager.onnetworkschange = enyo.bind(this, "handleWiFiNetworksChanged");
 
-//        if (navigator.WiFiManager.enabled) {
-//            this.handleWiFiEnabled();
-//        }
-
-        this.doActiveChanged({value: navigator.WiFiManager.enabled});
-        this.updateSpinnerState("start");
+	if (navigator.WiFiManager.enabled) {
+	    this.updateSpinnerState("start");
+	    this.showThatWiFiIsEnabled();
+            navigator.WiFiManager.retrieveNetworks(enyo.bind(this, "handleRetrieveNetworksResponse"),
+						   enyo.bind(this, "handleRetrieveNetworksFailed"));
+	} else {
+	    this.showThatWiFiIsDisabled();
+	}
     },
     reflow: function (inSender) {
         this.inherited(arguments);
@@ -613,66 +608,74 @@ enyo.kind({
             this.$.Grabber.applyStyle("visibility", "visible");
         }
     },
+    showThatWiFiIsEnabled: function() {
+        this.$.WiFiToggle.silence();
+        this.$.WiFiToggle.setValue(true);
+        this.$.WiFiToggle.unsilence();
+        this.showNetworksListPanel();
+        this.doActiveChanged({value: true});
+    },
+    showThatWiFiIsDisabled: function() {
+        this.$.WiFiToggle.silence();
+        this.$.WiFiToggle.setValue(false);
+        this.$.WiFiToggle.unsilence();
+        this.showWiFiDisabledPanel();
+        this.doActiveChanged({value: false});
+    },
     //Action Handlers
     toggleButtonChanged: function (inSender, inEvent) {
-        if (inEvent.value == true){
-            this.activateWiFi();
-        } else{
-            this.deactivateWiFi();
-            this.managepopup = false;
-       }
-        this.doActiveChanged(inEvent);
+        if (inEvent.value === true) {
+	    if (navigator.WiFiManager)
+		navigator.WiFiManager.enabled = true;
+	    this.updateSpinnerState("start");
+	    // Handled by navigator.onenabled on device.
+	    if (!this.palm)
+		this.showNetworksListPanel();
+        } else {
+	    if (navigator.WiFiManager)
+		navigator.WiFiManager.enabled = false;
+	    // Handled by navigator.ondisabled on device.
+	    if (!this.palm)
+		this.showWiFiDisabledPanel();
+	}
+	// Handled by navigator.onenabled/disabled on device.
+	if (!this.palm)
+            this.doActiveChanged(inEvent);
     },
-    listItemTapped: function (inSender, inEvent) {
+    networkListItemTapped: function (inSender, inEvent) {
         var selectedNetwork = this.foundNetworks[inEvent.index];
 
-        // don't try to connect to already connected or connecting network
-        if (selectedNetwork.state != "idle" && selectedNetwork.state != "failure") {
+        // Show the configuration for a connected network.
+        // Otherwise, try to connect.
+
+        if (selectedNetwork.state !== "idle" &&
+            selectedNetwork.state !== "failure") {
             this.$.NetworkConfiguration.currentNetwork = {
                 path: selectedNetwork.path
             };
-            this.showNetworkConfiguration();
+            this.showNetworkConfigurationPanel();
             return;
         }
 
-        this.currentNetwork = {
-            ssid: selectedNetwork.name,
-            path: selectedNetwork.path,
-            security: selectedNetwork.security
-        };
-
-        // When the network does not have any security configured it will always
-        // have the "none" security type set
-        if (!this.currentNetwork.security.contains("none")) {
-            this.log("Connecting to secured network");
-            this.$.PopupSSID.setContent(this.currentNetwork.ssid);
-            this.showNetworkConnect();
+        // An open network will always
+        // have the "none" security type set.
+        if (!selectedNetwork.security.contains("none")) {
+            this.log("Connecting to secured network...");
+            this.$.PopupSSID.setContent(selectedNetwork.name);
+            this.targetNetwork = {
+		path: selectedNetwork.path
+            };
+            this.showNetworkConnectPanel();
         } else {
-            this.log("Connect to open network");
+            this.log("Connecting to open network...");
             this.connectNetwork({
-                path: this.currentNetwork.path,
+                path: selectedNetwork.path,
                 password: ""
             });
         }
     },
-    triggerWifiConnect: function () {
-        var i, path = "";
-        for (i = 0; i < this.foundNetworks.length; i++) {
-            if (this.foundNetworks[i].name === this.wifiTarget.ssid) {
-                path = this.foundNetworks[i].path;
-            }
-        }
-        this.currentNetwork = {
-            ssid: this.wifiTarget.ssid,
-            path: path,
-            security: this.wifiTarget.securityType
-        };
-        this.connecting = true;
-        this.$.PopupSSID.setContent(this.currentNetwork.ssid);
-        this.showNetworkConnect();
-    },
     onJoinButtonTapped: function (inSender, inEvent) {
-	this.showJoinNetwork();
+	this.showJoinNetworkPanel();
     },
     signalStrengthToBars: function(strength) {
         if(strength > 0 && strength < 34)
@@ -685,14 +688,15 @@ enyo.kind({
     },
     setupSearchRow: function (inSender, inEvent) {
     	var ssid = "";
+	// For the narrow page only, shorten a long SSID.
     	if(enyo.Panels.isScreenNarrow()){
-    		if(this.foundNetworks[inEvent.index].name.length >= 18){					// if the SSID is longer shorten it for the narrow page only
-    			ssid = this.foundNetworks[inEvent.index].name.slice(0,18) + "..";
-    		}else{
-    			ssid = this.foundNetworks[inEvent.index].name;
-    		}
-    	}else{
+    	    if(this.foundNetworks[inEvent.index].name.length >= 18){
+    		ssid = this.foundNetworks[inEvent.index].name.slice(0,18) + "...";
+    	    }else{
     		ssid = this.foundNetworks[inEvent.index].name;
+    	    }
+    	}else{
+    	    ssid = this.foundNetworks[inEvent.index].name;
     	}
     	
         inEvent.item.$.wiFiListItem.$.SSID.setContent( ssid );
@@ -702,17 +706,16 @@ enyo.kind({
         case "configuration":
             inEvent.item.$.wiFiListItem.$.Active.setShowing(false);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(true);
-            inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("Connecting ...");
+            inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("Connecting...");
             inEvent.item.$.wiFiListItem.$.spin.setShowing(true);
             break;
         case "ready":
-
         case "online":
             inEvent.item.$.wiFiListItem.$.Active.setShowing(true);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(false);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setContent("");
             inEvent.item.$.wiFiListItem.$.spin.setShowing(false);
-        	break;
+            break;
         case "failure":
             inEvent.item.$.wiFiListItem.$.Active.setShowing(false);
             inEvent.item.$.wiFiListItem.$.StatusMessage.setShowing(true);
@@ -735,124 +738,98 @@ enyo.kind({
         if (this.foundNetworks[inEvent.index].strength) {
             var bars = this.signalStrengthToBars(this.foundNetworks[inEvent.index].strength);
             inEvent.item.$.wiFiListItem.$.Signal.setSrc("assets/wifi/signal-icon-" + bars + ".png");
-		}
+	}
     },
-//    setupKnownNetworkRow: function (inSender, inEvent) {
-//    	var ssid = "";
-//	if(enyo.Panels.isScreenNarrow()){
-//	    // if the SSID is longer shorten it for the narrow page only
-//    	    if(this.foundNetworks[inEvent.index].name.length >= 18){
-//    		ssid = this.foundNetworks[inEvent.index].name.slice(0,18) + "..";
-//    	    }else{
-//    		ssid = this.foundNetworks[inEvent.index].name;
-//    	    }
-//    	}else{
-//    	    ssid = this.foundNetworks[inEvent.index].name;
-//    	}
-//        inEvent.item.$.wiFiListItem.$.SSID.setContent( ssid );
-//        inEvent.item.$.wiFiListItem.$.Security.setContent(this.knownNetworks[inEvent.index].security);
-//        inEvent.item.$.wiFiListItem.$.Signal.setShowing(false);
-//    },
-    onNetworkConnect: function (inSender, inEvent) {
+    onConnectTapped: function (inSender, inEvent) {
 	var password = this.$.PasswordInput.getValue();
 	var passwordPlausible = this.validatePassword(password);
 
         if (!passwordPlausible) {
 	    this.showError("Entered password is invalid");
         } else {
-            this.connectNetwork({
-                path: this.currentNetwork.path,
-                password: password
-            });
+	    this.targetNetwork.password = password;
+            this.connectNetwork(this.targetNetwork);
 
-            // switch back to network list view
-            this.showNetworksList();
+            this.showNetworksListPanel();
 	    delete password;
+	    delete this.targetNetwork.password;
             this.$.PasswordInput.setValue("");
 	}
     },
-    onNetworkConnectAborted: function (inSender, inEvent) {
-        // switch back to network list view
-        this.showNetworksList();
-
+    onConnectCancelTapped: function (inSender, inEvent) {
+        this.showNetworksListPanel();
         this.$.PasswordInput.setValue("");
     },
     onOtherJoinConnectTapped: function(inSender, inEvent) {
 	if (this.$.ssidInput.getValue() !== "") {
-            this.currentNetwork = {
-		ssid: this.$.ssidInput.getValue(),
-		path: "", // How do we get this from the ssid?
-		// hidden: true; // In fact, you could type a known ssid.
+            this.targetNetwork = {
+		name: this.$.ssidInput.getValue(),
 		security: ["none"]
             };
+	    // FIX ME: Simplify security to keep us on the rails.
 	    var requiredSec = this.$.SecurityTypePicker.getSelected().getContent();
 	    if (requiredSec === "WPA-Personal" ||
 		requiredSec === "WEP") {
-		this.currentNetwork.security = ["psk"];
+		this.targetNetwork.security = ["psk"];
 	    }
 
-            if (!this.currentNetwork.security.contains("none")) {
-		this.log("Connecting to secured network");
-		this.$.PopupSSID.setContent(this.$.ssidInput.getValue());
-		this.showNetworkConnect();
+	    var i;
+	    for (i = 0; i < this.foundHiddenNetworks.length; ++i) {
+		// If we have found a hidden network with the right
+		// kind of security, chances are this is the one
+		// we mean. (Hmmm.)
+	        if (this.foundHiddenNetworks[i].security.contains(
+		    this.targetNetwork.security[0])) {
+	            this.targetNetwork.path = this.foundHiddenNetworks[i].path;
+		    break;
+	        }
+	    }
+
+	    if (this.targetNetwork.path === undefined) {
+		this.log("We do not know the hidden network " + this.targetNetwork.name);
+		return;
+	    }
+
+            if (!this.targetNetwork.security.contains("none")) {
+		this.$.PopupSSID.setContent(this.targetNetwork.name);
+		this.showNetworkConnectPanel();
             } else {
-		this.log("Connect to open network");
-		this.connectNetwork({
-                    path: this.currentNetwork.path,
-                    password: ""
-		});
+		this.log("Connecting to open network " + this.targetNetwork.name);
+		this.connectNetwork(this.targetNetwork);
             }
 	}
     },
-    onOtherJoinCancelled: function (inSender, inEvent) {
-        // switch back to network list view
-        this.showNetworksList();
+    onOtherJoinCancelTapped: function (inSender, inEvent) {
+        this.showNetworksListPanel();
 
         this.$.ssidInput.setValue("");
-        this.$.SecurityTypePicker.setSelected(this.$.OpenSecurityItem);
+        this.$.SecurityTypePicker.setSelected(this.$.WPAPerSecurityItem);
     },
     //Action Functions
-    showWiFiDisabled: function () {
-        this.stopAutoscan();
+    showWiFiDisabledPanel: function () {
         this.$.WiFiPanels.setIndex(0);
     },
-    showNetworksList: function (inSender, inEvent) {
-	this.updateSpinnerState("start");
-        return this.$.WiFiPanels.setIndex(1);
+    showNetworksListPanel: function (inSender, inEvent) {
+        this.$.WiFiPanels.setIndex(1);
     },
-    showNetworkConnect: function () {
+    showNetworkConnectPanel: function () {
         this.$.WiFiPanels.setIndex(2);
-        this.stopAutoscan();
     },
-    showJoinNetwork: function() {
+    // Our jargon: We Connect to known networks and Join hidden ones.
+    showJoinNetworkPanel: function() {
         this.$.WiFiPanels.setIndex(3);
-        this.stopAutoscan();
     },
-    showNetworkConfiguration: function () {
+    showNetworkConfigurationPanel: function () {
         this.$.WiFiPanels.setIndex(4);
-        this.stopAutoscan();
     },
-    // Called by our parent.
+    // Called by our parent in response to user action.
     setToggleValue: function (value) {
         this.$.WiFiToggle.setValue(value);
     },
     showError: function (message) {
-	this.updateSpinnerState();
+	this.updateSpinnerState("stop");
         this.$.ErrorMessage.setContent(message);
         this.$.ErrorPopup.show();
-    },
-    activateWiFi: function () {
-	this.updateSpinnerState("start");
-        this.showNetworksList();
-	if (!navigator.WiFiManager)
-            return;
-        navigator.WiFiManager.enabled = true;
-    },
-    deactivateWiFi: function () {
-        this.showWiFiDisabled();
-        if (!navigator.WiFiManager)
-            return;
-        navigator.WiFiManager.enabled = false;
     },
     handleNetworkConnectSucceeded: function(inSender, inEvent) {
 	this.log();
@@ -861,39 +838,20 @@ enyo.kind({
 	this.log();
     },
     connectNetwork: function (network) {
-        this.log(network);
-
         if (!this.palm)
             return;
 
-        var networkToConnect = {
-            path: network.path,
-            hidden: false,
-            security: "",
-            password: ""
-        };
-
-        if (network.password != "") {
-            this.log("Connecting to PSK network");
-            networkToConnect.security = "psk";
-            networkToConnect.password = inEvent.password;
-        }
-        else {
-            this.log("Connecting to unsecured network");
-        }
-
-        navigator.WiFiManager.connectNetwork(networkToConnect,
+        navigator.WiFiManager.connectNetwork(network,
                                              enyo.bind(this, "handleNetworkConnectSucceeded"),
                                              enyo.bind(this, "handleNetworkConnectFailed"));
-
-        this.triggerAutoscan();
     },
     forgetNetwork: function(inSender, inEvent) {
         var network = this.$.NetworkConfiguration.currentNetwork;
 
         navigator.WiFiManager.removeNetwork(network.path);
 
-        this.showNetworksList();
+	this.updateSpinnerState("start");
+        this.showNetworksListPanel();
     },
     updateSpinnerState: function(action) {
 	if (action === "start"){
@@ -905,83 +863,59 @@ enyo.kind({
     handleBackGesture: function() {
 	if(this.$.WiFiPanels.getIndex() > 1){
 	    this.$.WiFiPanels.setIndex(1);
-	    this.updateSpinnerState();				// stop the spinner
-	}else if( this.$.WiFiPanels.getIndex() === 1 ||
-		  this.$.WiFiPanels.getIndex() === 0){
+	    this.updateSpinnerState("stop");
+	}else if(this.$.WiFiPanels.getIndex() === 1 ||
+		 this.$.WiFiPanels.getIndex() === 0){
 	    this.doBackbutton();
-	    this.updateSpinnerState();				// stop the spinner
+	    this.updateSpinnerState("stop");
 	}
     },
 
     //Utility Functions
     clearFoundNetworks: function () {
         this.foundNetworks = [];
+        this.foundHiddenNetworks = [];
         this.$.SearchRepeater.setCount(this.foundNetworks.length);
     },
     validatePassword: function (key) {
         var pass = false;
-
         if (8 <= key.length && 63 >= key.length) {
             pass = true;
         }
 
         return pass;
     },
-    startAutoscan: function() {
-	if (null === this.autoscan) {
-            this.log("Starting autoscan ...");
-            this.autoscan = window.setInterval(enyo.bind(this, "triggerAutoscan"), 15000);
-            if (!this.foundNetworks) {
-                this.triggerAutoscan();
-                this.log("this.triggerAutoscan();");
-            }
-        }
+    // WiFiManager Callbacks
+    handleWiFiNetworksChanged: function(networks) {
+        this.handleRetrieveNetworksResponse(networks);
     },
-    triggerAutoscan: function(inSender, inEvent) {
-	this.updateSpinnerState("start");
-	if (!navigator.WiFiManager)
-            return;
-        navigator.WiFiManager.retrieveNetworks(enyo.bind(this, "handleRetrieveNetworksResponse"),
-                                               enyo.bind(this, "handleRetrieveNetworksFailed"));
-    },
-    stopAutoscan: function() {
-        if (null !== this.autoscan) {
-            this.log("Stopping autoscan ...");
-            window.clearInterval(this.autoscan);
-            this.autoscan = null;
-        }
-        this.updateSpinnerState();
-    },
-    //Service Callbacks
-    handleRetrieveNetworksResponse: function (networks) {
+    handleRetrieveNetworksResponse: function(networks) {
         this.clearFoundNetworks();
         if (networks) {
-            this.foundNetworks = networks;
+            this.updateSpinnerState("stop");
+	    var i;
+	    for (i = 0; i < networks.length; ++i) {
+		if (networks[i].name === undefined ||
+		    networks[i].name === null ||
+		    networks[i].name === "") {
+		    this.foundHiddenNetworks.push(networks[i]);
+		} else {
+		    this.foundNetworks.push(networks[i]);
+		}
+	    }
             this.$.SearchRepeater.setCount(this.foundNetworks.length);
-            if (this.wifiTarget && this.connecting != true) {
-                this.triggerWifiConnect();
-            }
         }
     },
     handleRetrieveNetworksFailed: function() {
-	log.this(); // Worth a mention. Surely?
+	this.log();
         this.clearFoundNetworks();
     },
-    // Not convinced this happens if the WiFi status is changed
-    // outside of the Settings app.
     handleWiFiEnabled: function() {
-        this.$.WiFiToggle.setValue(true);
-        this.$.WiFiPanels.setIndex(1);
-        this.startAutoscan();
+	this.log();
+        this.showThatWiFiIsEnabled();
     },
     handleWiFiDisabled: function() {
-        this.$.WiFiPanels.setIndex(0);
-        this.$.WiFiToggle.setValue(false);
-        this.stopAutoscan();
-    },
-    handleWiFiNetworksChanged: function(networks) {
-        this.handleRetrieveNetworksResponse(networks);
-        this.stopAutoscan();
-    },
-    
+	this.log();
+        this.showThatWiFiIsDisabled();
+    }
 });
