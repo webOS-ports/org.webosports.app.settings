@@ -270,7 +270,6 @@ enyo.kind({
                 },
                 /* Network connect panel */
                 {
-                    name: "NetworkConnect",
                     layoutKind: "FittableRowsLayout",
                     classes: "content-wrapper",
                     components: [
@@ -328,9 +327,8 @@ enyo.kind({
                         }
                     ]
                 },
-                /* Join network panel */
+                /* Join other [hidden] network panel */
                 {
-                    name: "NewNetworkJoin",
                     layoutKind: "FittableRowsLayout",
                     classes: "content-wrapper",
                     components: [
@@ -660,7 +658,8 @@ enyo.kind({
             this.log("Connecting to secured network...");
             this.$.PopupSSID.setContent(selectedNetwork.name);
             this.targetNetwork = {
-		path: selectedNetwork.path
+		path: selectedNetwork.path//,
+//		name: selectedNetwork.name
             };
             this.showNetworkConnectPanel();
         } else {
@@ -766,14 +765,13 @@ enyo.kind({
         if (!passwordPlausible) {
 	    this.showError("Entered password is invalid");
         } else {
-            this.connectNetwork({
-                path: this.targetNetwork.path,
-                password: password //,
-//		name: name
-            });
+	    this.targetNetwork.password = password;
+            this.connectNetwork(this.targetNetwork);
 
             this.showNetworksListPanel();
 	    delete password;
+//	    delete this.targetNetwork.password;
+	    this.targetNetwork.password = "";
             this.$.PasswordInput.setValue("");
 //	    delete name;
 	}
@@ -784,56 +782,53 @@ enyo.kind({
     },
     onOtherJoinConnectTapped: function(inSender, inEvent) {
 	if (this.$.ssidInput.getValue() !== "") {
-            this.currentNetwork = {
-		ssid: this.$.ssidInput.getValue(),
-		path: "", // How do we get this from the ssid?
-		// hidden: true; // In fact, you could type a known ssid.
-		security: ["none"],
-		name: this.$.ssidInput.getValue()
+            this.targetNetwork = {
+		name: this.$.ssidInput.getValue(),
+		security: ["none"]
             };
 	    var requiredSec = this.$.SecurityTypePicker.getSelected().getContent();
 	    if (requiredSec === "WPA-Personal" ||
 		requiredSec === "WEP") {
-		this.currentNetwork.security = ["psk"];
+		this.targetNetwork.security = ["psk"];
 	    }
 
-	    var path = "";
 	    var i;
 	    for (i = 0; i < this.foundNetworks.length; ++i) {
-	        if (this.foundNetworks[i].name === "") {
-	            path = this.foundNetworks[i].path;
-	            this.log("Found hidden network:", path);
-	            this.log("Found hidden network security:",
+	        if (this.foundNetworks[i].name === undefined ||
+		    this.foundNetworks[i].name === null ||
+		    this.foundNetworks[i].name === "") {
+	            this.log("Found hidden network: ", this.foundNetworks[i].path);
+	            this.log("Found hidden network security: ",
 			     this.foundNetworks[i].security);
-	            this.log("Searching for hidden network security[0]:",
-			     this.currentNetwork.security[0]);
+	            this.log("Searching for hidden network security[0]: ",
+			     this.targetNetwork.security[0]);
 		    // If we have found a hidden network with the right
 		    // kind of security, chances are this is the one
 		    // we mean. (Hmmm.)
 	            if (this.foundNetworks[i].security.contains(
-			this.currentNetwork.security[0])) {
-	                this.currentNetwork.path = path;
+			this.targetNetwork.security[0])) {
+	                this.targetNetwork.path = this.foundNetworks[i].path;
 			break;
 	            }
 	        }
 	    }
 
 	    // Cannot connect to a network without a path.
-	    if (this.currentNetwork.path === "") {
-		this.log("We did not find the hidden network.");
+	    if (this.targetNetwork.path === undefined) {
+		this.log("We do not know the hidden network.");
 		return;
 	    }
 
-            if (!this.currentNetwork.security.contains("none")) {
+            if (!this.targetNetwork.security.contains("none")) {
 		this.log("Connecting to secured network");
-		this.$.PopupSSID.setContent(this.$.ssidInput.getValue());
+		this.$.PopupSSID.setContent(this.targetNetwork.name);
 		this.showNetworkConnectPanel();
             } else {
-		this.log("Connect to open network");
+		this.log("Connecting to open network");
 		this.connectNetwork({
-                    path: this.currentNetwork.path,
+                    path: this.targetNetwork.path,
                     password: "",
-		    name: this.currentNetwork.name
+		    name: this.targetNetwork.name
 		});
             }
 	}
@@ -882,32 +877,20 @@ enyo.kind({
 	this.log();
     },
     connectNetwork: function (network) {
-        this.log(network);
+        this.log();
 
         if (!this.palm)
             return;
 
-        var networkToConnect = {
-            path: network.path,
-            hidden: false,
-            security: "",
-            password: "",
-	    name: ""
-        };
-
-        if (network.password != "") {
-            networkToConnect.security = "psk"; // Assumption!
-            networkToConnect.password = network.password;
-        }
-
-//        if (network.name != "") {
-//            this.log("Connecting to hidden network");
-//            networkToConnect.name = network.name;
-	    // Need to look up its path.
-	    // I believe it should be in the list.
+//        if (network.password !== "") {
+//            network.security = "psk"; // Assumption!
 //        }
 
-        navigator.WiFiManager.connectNetwork(networkToConnect,
+//        if (network.name !== "") {
+//            networkToConnect.name = network.name;
+//        }
+
+        navigator.WiFiManager.connectNetwork(network,
                                              enyo.bind(this, "handleNetworkConnectSucceeded"),
                                              enyo.bind(this, "handleNetworkConnectFailed"));
 
