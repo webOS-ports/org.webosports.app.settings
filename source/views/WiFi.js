@@ -138,7 +138,6 @@ enyo.kind({
         onBackbutton: ""
     },
     palm: false,
-//    autoscan: null,
     debug: false,
     components: [
 	
@@ -786,7 +785,7 @@ enyo.kind({
 	    }
 
 	    if (this.targetNetwork.path === undefined) {
-		this.log("We do not know the hidden network " + this.targetNetwork.name);
+		this.showError("No such network is present");
 		return;
 	    }
 
