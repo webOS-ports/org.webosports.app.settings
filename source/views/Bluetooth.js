@@ -1128,9 +1128,7 @@ enyo.kind({
     handleDeviceDisappeared: function(address) {
 	this.log(address);
     },
-    handleBluetoothPropertyChanged: function(obj) {
-	for (key in obj) {
-	    var value = obj[key];
+    handleBluetoothPropertyChanged: function(key, value) {
 	    this.log(key + ": " + value);
 	    switch (key) {
 	    case "Discoverable":
@@ -1173,7 +1171,6 @@ enyo.kind({
 		}
 		break;
 	    }
-	}
     },
     handleBluetoothRequestPinCode: function(deviceInfo) {
 	for (var key in deviceInfo) {
