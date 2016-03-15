@@ -765,11 +765,12 @@ enyo.kind({
 		name: this.$.ssidInput.getValue(),
 		security: ["none"]
             };
-	    // FIX ME: Simplify security to keep us on the rails.
+
 	    var requiredSec = this.$.SecurityTypePicker.getSelected().getContent();
-	    if (requiredSec === "WPA-Personal" ||
-		requiredSec === "WEP") {
+	    if (requiredSec === "WPA-Personal") {
 		this.targetNetwork.security = ["psk"];
+	    } else if (requiredSec === "WEP") {
+		this.targetNetwork.security = ["wep"];
 	    }
 
 	    var i;
