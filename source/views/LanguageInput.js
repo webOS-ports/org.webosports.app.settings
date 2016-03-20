@@ -91,11 +91,14 @@ enyo.kind({
         if (!this.palm)
             return;
         this.$.SetPreferences.send({keyboard: {
+            activeLanguage: this.keyboardState.activeLanguage,
+            enabledLanguages: this.keyboardState.enabledLanguages,
             autoCompletion: this.$.AutoCompletion.getValue(),
             autoCapitalization: this.$.AutoCapitalization.getValue(),
             predictiveText: this.$.PredictiveText.getValue(),
             spellChecking: this.$.SpellChecking.getValue(),
-            keyPressFeedback: this.$.KeyPressFeedback.getValue()
+            keyPressFeedback: this.$.KeyPressFeedback.getValue(),
+            keyboardSize: this.keyboardState.keyboardSize
         }});
     },
     // Service Handlers
