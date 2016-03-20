@@ -90,18 +90,18 @@ enyo.kind({
         this.log();
         if (!this.palm)
             return;
-	this.keyboardState.autoCompletion = this.$.AutoCompletion.getValue();
-	this.keyboardState.autoCapitalization = this.$.AutoCapitalization.getValue();
-	this.keyboardState.predictiveText = this.$.AutoCapitalization.getValue();
-	this.keyboardState.spellChecking = this.$.SpellChecking.getValue();
-	this.keyboardState.keyPressFeedback: this.$.KeyPressFeedback.getValue();
+        this.keyboardState.autoCompletion = this.$.AutoCompletion.getValue();
+        this.keyboardState.autoCapitalization = this.$.AutoCapitalization.getValue();
+        this.keyboardState.predictiveText = this.$.AutoCapitalization.getValue();
+        this.keyboardState.spellChecking = this.$.SpellChecking.getValue();
+        this.keyboardState.keyPressFeedback: this.$.KeyPressFeedback.getValue();
         this.$.SetPreferences.send({keyboard: this.keyboardState});
     },
     // Service Handlers
     onGetPreferencesCompleted: function(inSender, inEvent) {
-//	for (var x in inEvent) {
-//	    this.log(x + ": " + inEvent[x]);
-//	}
+//        for (var x in inEvent) {
+//            this.log(x + ": " + inEvent[x]);
+//        }
 
         if (inEvent.keyboard && inEvent.keyboard !== this.keyboardState) {
             this.$.AutoCapitalization.value = inEvent.keyboard.autoCapitalization;
