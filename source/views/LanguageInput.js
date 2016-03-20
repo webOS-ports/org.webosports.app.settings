@@ -63,7 +63,7 @@ enyo.kind({
         this.inherited(arguments);
 
         if (!window.PalmSystem) {
-            enyo.log("Non-palm platform, service requests disabled.");
+            this.log("Non-palm platform, service requests disabled.");
             this.palm = false;
 
             this.$.KeyPressFeedback.value = true;
@@ -87,23 +87,21 @@ enyo.kind({
     
     // Control Action Handlers
     onInputPreferenceChanged: function(inSender, inEvent) {
-        enyo.log("Input preferences changed");
+        this.log();
         if (!this.palm)
             return;
-        this.$.SetPreferences.send({keyboard: {
-            activeLanguage: this.keyboardState.activeLanguage,
-            enabledLanguages: this.keyboardState.enabledLanguages,
-            autoCompletion: this.$.AutoCompletion.getValue(),
-            autoCapitalization: this.$.AutoCapitalization.getValue(),
-            predictiveText: this.$.PredictiveText.getValue(),
-            spellChecking: this.$.SpellChecking.getValue(),
-            keyPressFeedback: this.$.KeyPressFeedback.getValue(),
-            keyboardSize: this.keyboardState.keyboardSize
-        }});
+	this.keyboardState.autoCompletion = this.$.AutoCompletion.getValue();
+	this.keyboardState.autoCapitalization = this.$.AutoCapitalization.getValue();
+	this.keyboardState.predictiveText = this.$.AutoCapitalization.getValue();
+	this.keyboardState.spellChecking = this.$.SpellChecking.getValue();
+	this.keyboardState.keyPressFeedback: this.$.KeyPressFeedback.getValue();
+        this.$.SetPreferences.send({keyboard: this.keyboardState});
     },
     // Service Handlers
     onGetPreferencesCompleted: function(inSender, inEvent) {
-        this.log("Got response from system service: ", inEvent);
+//	for (var x in inEvent) {
+//	    this.log(x + ": " + inEvent[x]);
+//	}
 
         if (inEvent.keyboard && inEvent.keyboard !== this.keyboardState) {
             this.$.AutoCapitalization.value = inEvent.keyboard.autoCapitalization;
