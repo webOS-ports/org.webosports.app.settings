@@ -94,7 +94,7 @@ enyo.kind({
         this.keyboardState.autoCapitalization = this.$.AutoCapitalization.getValue();
         this.keyboardState.predictiveText = this.$.AutoCapitalization.getValue();
         this.keyboardState.spellChecking = this.$.SpellChecking.getValue();
-        this.keyboardState.keyPressFeedback: this.$.KeyPressFeedback.getValue();
+        this.keyboardState.keyPressFeedback = this.$.KeyPressFeedback.getValue();
         this.$.SetPreferences.send({keyboard: this.keyboardState});
     },
     // Service Handlers
