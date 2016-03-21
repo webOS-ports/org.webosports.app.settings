@@ -92,7 +92,7 @@ enyo.kind({
             return;
         this.keyboardState.autoCompletion = this.$.AutoCompletion.getValue();
         this.keyboardState.autoCapitalization = this.$.AutoCapitalization.getValue();
-        this.keyboardState.predictiveText = this.$.AutoCapitalization.getValue();
+        this.keyboardState.predictiveText = this.$.PredictiveText.getValue();
         this.keyboardState.spellChecking = this.$.SpellChecking.getValue();
         this.keyboardState.keyPressFeedback = this.$.KeyPressFeedback.getValue();
         this.$.SetPreferences.send({keyboard: this.keyboardState});
