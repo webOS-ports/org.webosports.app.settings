@@ -604,8 +604,6 @@ enyo.kind({
         if (!navigator.WiFiManager)
             return;
 
-        // Not convinced these enabled/disabled events are ever fired.
-        // Nothing happens here if the WiFi status is changed in the System Menu.
         navigator.WiFiManager.onenabled = enyo.bind(this, "handleWiFiEnabled");
         navigator.WiFiManager.ondisabled = enyo.bind(this, "handleWiFiDisabled");
         navigator.WiFiManager.onnetworkschange = enyo.bind(this, "handleWiFiNetworksChanged");
@@ -950,11 +948,9 @@ enyo.kind({
         this.clearFoundNetworks();
     },
     handleWiFiEnabled: function() {
-	this.log();
         this.showThatWiFiIsEnabled();
     },
     handleWiFiDisabled: function() {
-	this.log();
         this.showThatWiFiIsDisabled();
     }
 });
