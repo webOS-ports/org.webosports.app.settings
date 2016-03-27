@@ -295,7 +295,7 @@ enyo.kind({
                                 },
                                 {
                                     kind: "onyx.Groupbox",
-				    name: "UsernameGroupbox",
+                                    name: "UsernameGroupbox",
                                     components: [
                                         {
                                             kind: "onyx.GroupboxHeader",
