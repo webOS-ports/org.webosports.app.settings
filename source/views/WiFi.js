@@ -103,7 +103,7 @@ var phonyFoundNetworks = [
     {
             "name": "NONAME",
             "state": "idle",
-            "security": [ "psk" ],
+            "security": [ "psk", "wps" ],
             "strength": 86
     },
     {
@@ -290,6 +290,27 @@ enyo.kind({
                                             tag: "span",
                                             content: "SSID",
                                             style: "font-weight: bold;"
+                                        }
+                                    ]
+                                },
+                                {
+                                    kind: "onyx.Groupbox",
+                                    name: "UsernameGroupbox",
+                                    components: [
+                                        {
+                                            kind: "onyx.GroupboxHeader",
+                                            content: "Username"
+                                        },
+                                        {
+                                            kind: "onyx.InputDecorator",
+                                            alwaysLooksFocused: true,
+                                            components: [
+                                                {
+                                                    name: "UsernameInput",
+                                                    placeholder: "Type here...",
+                                                    kind: "onyx.Input"
+                                                }
+                                            ]
                                         }
                                     ]
                                 },
@@ -583,8 +604,6 @@ enyo.kind({
         if (!navigator.WiFiManager)
             return;
 
-        // Not convinced these enabled/disabled events are ever fired.
-        // Nothing happens here if the WiFi status is changed in the System Menu.
         navigator.WiFiManager.onenabled = enyo.bind(this, "handleWiFiEnabled");
         navigator.WiFiManager.ondisabled = enyo.bind(this, "handleWiFiDisabled");
         navigator.WiFiManager.onnetworkschange = enyo.bind(this, "handleWiFiNetworksChanged");
@@ -644,6 +663,10 @@ enyo.kind({
     networkListItemTapped: function (inSender, inEvent) {
         var selectedNetwork = this.foundNetworks[inEvent.index];
 
+	for (var i in selectedNetwork) {
+	    this.log(i + ": " + selectedNetwork[i]);
+	}
+
         // Show the configuration for a connected network.
         // Otherwise, try to connect.
 
@@ -656,21 +679,26 @@ enyo.kind({
             return;
         }
 
-        // An open network will always
-        // have the "none" security type set.
-        if (!selectedNetwork.security.contains("none")) {
-            this.log("Connecting to secured network...");
-            this.$.PopupSSID.setContent(selectedNetwork.name);
-            this.targetNetwork = {
-		path: selectedNetwork.path
-            };
-            this.showNetworkConnectPanel();
-        } else {
+        if (selectedNetwork.security.contains("none")) {
             this.log("Connecting to open network...");
             this.connectNetwork({
                 path: selectedNetwork.path,
                 password: ""
             });
+        } else {
+            this.log("Connecting to secured network...");
+            this.targetNetwork = {
+		path: selectedNetwork.path
+            };
+	    // Only show the username field if we need it.
+	    if (selectedNetwork.security.contains("ieee8021x")) {
+		this.$.UsernameGroupbox.show();
+		this.targetNetwork.security = ["ieee8021x"];
+	    } else {
+		this.$.UsernameGroupbox.hide();
+	    }
+            this.$.PopupSSID.setContent(selectedNetwork.name);
+            this.showNetworkConnectPanel(); // Where PopupSSID is.
         }
     },
     onJoinButtonTapped: function (inSender, inEvent) {
@@ -742,11 +770,15 @@ enyo.kind({
     onConnectTapped: function (inSender, inEvent) {
 	var password = this.$.PasswordInput.getValue();
 	var passwordPlausible = this.validatePassword(password);
-
         if (!passwordPlausible) {
 	    this.showError("Entered password is invalid");
         } else {
 	    this.targetNetwork.password = password;
+	    if (this.targetNetwork.security !== undefined &&
+		this.targetNetwork.security.contains("ieee8021x")) {
+		var username = this.$.UsernameInput.getValue();
+		this.targetNetwork.user = username;
+	    }
             this.connectNetwork(this.targetNetwork);
 
             this.showNetworksListPanel();
@@ -768,9 +800,14 @@ enyo.kind({
 
 	    var requiredSec = this.$.SecurityTypePicker.getSelected().getContent();
 	    if (requiredSec === "WPA-Personal") {
+		this.$.UsernameGroupbox.hide();
 		this.targetNetwork.security = ["psk"];
 	    } else if (requiredSec === "WEP") {
+		this.$.UsernameGroupbox.hide();
 		this.targetNetwork.security = ["wep"];
+	    } else if (requiredSec === "Enterprise") {
+		this.$.UsernameGroupbox.show();
+		this.targetNetwork.security = ["ieee8021x"];
 	    }
 
 	    var i;
@@ -911,11 +948,9 @@ enyo.kind({
         this.clearFoundNetworks();
     },
     handleWiFiEnabled: function() {
-	this.log();
         this.showThatWiFiIsEnabled();
     },
     handleWiFiDisabled: function() {
-	this.log();
         this.showThatWiFiIsDisabled();
     }
 });

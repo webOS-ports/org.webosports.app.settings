@@ -707,7 +707,7 @@ enyo.kind({
 //            this.handleBluetoothEnabled();
 //        }
 
-        this.doActiveChanged({value: navigator.BluetoothManager.enabled});//@@
+        this.doActiveChanged({value: navigator.BluetoothManager.enabled});
     },
     destroy: function () {
         this.inherited(arguments);
@@ -1141,7 +1141,7 @@ enyo.kind({
 		    this.discoverable = false;
 		    this.$.ThisDeviceStatusSpinner.setShowing(true);
 		    this.$.ThisDeviceStatusMessage.setContent(
-			"Making your device discoverable..."); // Probably
+			"Making your device discoverable..."); // A reasonable assertion.
 		}
 		break;
 	    case "Discovering":
@@ -1158,7 +1158,7 @@ enyo.kind({
 		    } else {
 			this.$.ThisDeviceStatusSpinner.setShowing(true);
 			this.$.ThisDeviceStatusMessage.setContent(
-			    "Making your device discoverable..."); // Probably
+			    "Making your device discoverable..."); // A reasonable assertion.
 		    }
 		}
 		break;
