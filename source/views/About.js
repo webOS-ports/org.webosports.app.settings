@@ -16,11 +16,15 @@ enyo.kind({
                     {kind: "onyx.GroupboxHeader", content: "Device"},
                     { kind: "enyo.FittableColumns", classes: "group-item", components:[
                         {kind: "Control", content: "Name", style: "padding-top: 10px;"},
-                        {kind: "Control", name: "DeviceName", style: "float: right; padding-top: 10px;", content: "Unknown"},
+                        {kind: "Control", name: "DeviceName", style: "float: right; padding-top: 10px;", content: "Unknown"}
                     ]},
                     { kind: "enyo.FittableColumns", classes: "group-item", components:[
                         {kind: "Control", content: "Serial number", style: "padding-top: 10px;"},
-                        {kind: "Control", name: "DeviceSerialNumber", style: "float: right; padding-top: 10px;", content: "Unknown"},
+                        {kind: "Control", name: "DeviceSerialNumber", style: "float: right; padding-top: 10px;", content: "Unknown"}
+                    ]},
+                    { kind: "enyo.FittableColumns", classes: "group-item", components:[
+                        {kind: "Control", content: "Wi-Fi MAC address", style: "padding-top: 10px;"},
+                        {kind: "Control", name: "WiFiMACAddress", style: "float: right; padding-top: 10px;", content: "Unknown"}
                     ]},
                 ]},
                 {kind: "onyx.Groupbox", components: [
@@ -56,6 +60,8 @@ enyo.kind({
             method: "retrieveVersion", onComplete: "onVersionResponse" },
         { kind: "enyo.LunaService", name: "GetAndroidProperty", service: "palm://com.android.properties",
             method: "getProperty", onComplete: "onGetAndroidPropertyResponse"},
+        { kind: "enyo.LunaService", name: "ConnectionManagerInfo", service: "luna://com.palm.connectionmanager",
+            method: "getinfo", onComplete: "onConnectionManagerResponse" }
     ],
     // Handlers
     create: function(inSender, inEvent) {
@@ -84,6 +90,7 @@ enyo.kind({
             "ro.product.model",
             "ro.product.manufacturer",
             "ro.build.version.release"]});
+        this.$.ConnectionManagerInfo.send({});
     },
     // Action Handlers
     onShowSoftwareLicenses: function(inSender, inEvent) {
@@ -127,6 +134,16 @@ enyo.kind({
         }
 
         this.$.DeviceName.setContent(manufacturer + " " + model);
+    },
+    onConnectionManagerResponse: function(inSender, inResponse) {
+        for (key in inResponse) {
+            this.log(key + ": " + inResponse[key]);
+        }
+        if (!inResponse || !inResponse.returnValue)
+            return;
+
+        if (inResponse.wifiInfo && inResponse.wifiInfo.macAddress)
+            this.$.WiFiMACAddress.setContent("" + inResponse.wifiInfo.macAddress);
     }
 });
 
