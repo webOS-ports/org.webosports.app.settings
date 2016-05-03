@@ -60,14 +60,6 @@ enyo.kind({
 			},
 			{
 				kind: "onyx.Button",
-				name: "btnDownloadSkipFeeds",
-				classes: "center",
-				content: "Download anyway",
-				ontap: "doDownloadSkipFeeds",
-				showing: false
-			},
-			{
-				kind: "onyx.Button",
 				name: "btnInitiateUpdate",
 				classes: "onyx-affirmative center",
 				content: "Install System Update",
@@ -120,10 +112,6 @@ enyo.kind({
 		this.currentRequest = this.$.downloadService.send({});
 		this.startActivity("Starting to download system update...");
 	},
-	doDownloadSkipFeeds: function (inSender, inEvent) {
-		this.currentRequest = this.$.downloadService.send({skipFeedsUpdate: true});
-		this.startActivity("Starting to download system update...");
-	},
 	doInstall: function (inSender, inEvent) {
 		this.currentRequest = this.$.initiateService.send({});
 		this.startActivity("Initiating reboot into system update state.");
@@ -159,7 +147,6 @@ enyo.kind({
 	//service callbacks:
 	updateChecked: function (inSender, inEvent) {
 		this.stopActivity();
-		
 		this.setUpdateResults(inEvent);
 	},
 
@@ -171,21 +158,23 @@ enyo.kind({
 			errorMsg = inEvent.msg.replace(/\n/g, "<br>");
 			this.updateStatus(errorMsg);
 
-			this.$.btnDownloadSkipFeeds.hide();
-			if (inEvent.errorStage === "feedsUpdate") {
+			if(inEvent.needCheck) {
+				this.$.btnDownload.hide();
+				this.$.btnCheck.show();
+			} else {
 				console.log("Allow retry...");
 				this.$.btnDownload.setContent("Retry");
-				this.$.btnDownloadSkipFeeds.show();
 			}
 			this.stopActivity();
 		} else if (inEvent.finished) { //finished downloading
 			this.updateStatus("Downloading finished");
 			this.$.btnInitiateUpdate.show();
 			this.$.btnDownload.hide();
-			this.$.btnDownloadSkipFeeds.hide();
 			this.stopActivity();
 		} else { //only some status from service:
-			this.updateStatus("Downloaded " + inEvent.numDownloaded + " of " + inEvent.toDownload + " packages.");
+			if (inEvent.percentage) {
+				this.updateStatus("Downloaded " + inEvent.percentage + "% of update image.");
+			}
 		}
 	},
 
