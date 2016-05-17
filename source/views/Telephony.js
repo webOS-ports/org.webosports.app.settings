@@ -72,9 +72,9 @@ enyo.kind({
 	},
 	/* service response handlers */
 	handleWanStatus: function(inSender, inResponse) {
-		this.log("roamGuard: " + inResponse.roamGuard);
-		if (inResponse.roamGuard != undefined) {
-			var roamingAllowed = (inResponse.roamGuard === "disable");
+		this.log("roamguard: " + inResponse.roamguard);
+		if (inResponse.roamguard != undefined) {
+			var roamingAllowed = (inResponse.roamguard === "disable");
 			this.log("Setting RoamingAllowed " + roamingAllowed);
 			this.$.RoamingAllowed.silence();
 			this.$.RoamingAllowed.setValue(roamingAllowed);
