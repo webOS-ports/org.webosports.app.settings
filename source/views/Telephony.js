@@ -72,9 +72,9 @@ enyo.kind({
 	},
 	/* service response handlers */
 	handleWanStatus: function(inSender, inResponse) {
-		this.log("roamGuard: " + inResponse.roamGuard);
-		if (inResponse.roamGuard != undefined) {
-			roamingAllowed = (inResponse.roamGuard === "enable");
+		this.log("roamguard: " + inResponse.roamguard);
+		if (inResponse.roamguard != undefined) {
+			var roamingAllowed = (inResponse.roamguard === "disable");
 			this.log("Setting RoamingAllowed " + roamingAllowed);
 			this.$.RoamingAllowed.silence();
 			this.$.RoamingAllowed.setValue(roamingAllowed);
@@ -83,7 +83,7 @@ enyo.kind({
 
 		this.log("disablewan: " + inResponse.disablewan);
 		if (inResponse.disablewan != undefined) {
-			dataUsage = (inResponse.disablewan === "off");
+			var dataUsage = (inResponse.disablewan === "off");
 			this.log("Setting DataUsage " + dataUsage);
 			this.$.DataUsage.silence();
 			this.$.DataUsage.setValue(dataUsage);
@@ -93,12 +93,12 @@ enyo.kind({
 	/* component event handlers */
 	roamingAllowedChanged: function(inSender, inEvent) {
 		this.log(inSender.value);
-		var newSetting = inSender.value ? "enable" : "disable";
+		var newSetting = inSender.value ? "disable" : "enable";
 		if (this.palm) {
-			this.$.SetWanProperty.send({"roamGuard": newSetting});
-			this.log("Set roamGuard " + newSetting + " sent");
+			this.$.SetWanProperty.send({"roamguard": newSetting});
+			this.log("Set roamguard " + newSetting + " sent");
 		} else {
-			this.log("Set roamGuard " + newSetting + " suppressed");
+			this.log("Set roamguard " + newSetting + " suppressed");
 		}
 	},
 	dataUsageChanged: function(inSender, inEvent) {
