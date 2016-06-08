@@ -267,7 +267,7 @@ enyo.kind({
 	handleRelaunch: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
 		this.log("launchParams: ", PalmSystem.launchParams);
-		var params = JSON.parse(PalmSystem.launchParams);
+		var params = JSON.parse(PalmSystem.launchParams || "{}") || {};
 
 		if (typeof(params.page) !== 'undefined') {
 			var targetPanelName = params.page + "Panel";
