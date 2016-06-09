@@ -3,7 +3,7 @@ org.webosports.app.settings
 
 Summary
 -------
-The settings application for the webOS ports project.
+The Settings application for the WebOS Ports LuneOS project.
 
 Description
 -----------
