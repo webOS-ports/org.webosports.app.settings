@@ -22,8 +22,8 @@ enyo.kind({
 					{kind: "enyo.FittableColumns", classes: "group-item", components: [
 						{kind: "Control", content: "Auto completion", style: "padding-top: 10px; "},
 						{kind: "onyx.TooltipDecorator", fit: true, style:  "padding-top: 10px;", components: [
-							{name: "AutoCompletion", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"},
-							{kind: "onyx.Tooltip", content: "Auto Completion"}
+							{name: "AutoCorrection", kind: "onyx.ToggleButton", style: "float: right;", onChange: "onInputPreferenceChanged"},
+							{kind: "onyx.Tooltip", content: "Auto Correction"}
 						]}
 					]},
 					{kind: "enyo.FittableColumns", classes: "group-item", components: [
@@ -90,7 +90,7 @@ enyo.kind({
         this.log();
         if (!this.palm)
             return;
-        this.keyboardState.autoCompletion = this.$.AutoCompletion.getValue();
+        this.keyboardState.autoCorrection = this.$.AutoCorrection.getValue();
         this.keyboardState.autoCapitalization = this.$.AutoCapitalization.getValue();
         this.keyboardState.predictiveText = this.$.PredictiveText.getValue();
         this.keyboardState.spellChecking = this.$.SpellChecking.getValue();
@@ -106,8 +106,8 @@ enyo.kind({
         if (inEvent.keyboard && inEvent.keyboard !== this.keyboardState) {
             this.$.AutoCapitalization.value = inEvent.keyboard.autoCapitalization;
             this.$.AutoCapitalization.updateVisualState();
-            this.$.AutoCompletion.value = inEvent.keyboard.autoCompletion;
-            this.$.AutoCompletion.updateVisualState();
+            this.$.AutoCorrection.value = inEvent.keyboard.autoCorrection;
+            this.$.AutoCorrection.updateVisualState();
             this.$.PredictiveText.value = inEvent.keyboard.predictiveText;
             this.$.PredictiveText.updateVisualState();
             this.$.SpellChecking.value = inEvent.keyboard.spellChecking;
