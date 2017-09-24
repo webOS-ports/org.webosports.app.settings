@@ -4,8 +4,9 @@
 	"version": "0.3.1",
 	"vendor": "WebOS Ports",
 	"vendor_url": "https://github.com/webOS-ports/org.webosports.app.settings",
-	"type": "qt",
-	"main": "org.webosports.app.settings",
+    "type": "qml",
+    "useLuneOSStyle": true,
+    "main": "org.webosports.app.settings",
 	"icon": "qml/images/icon.png",
 	"uiRevision": "2"
 }

@@ -1,5 +1,5 @@
 /*
- * (c) 2013 Simon Busch <morphis@gravedo.de>
+ * (c) 2017 Christophe Chapuis <chris.chapuis@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3, as published
@@ -17,14 +17,8 @@
 import QtQuick 2.9
 import QtQuick.Controls 2.2
 
-Pane {
-    id: basePage
+import "../Common"
 
-    background: Image {
-        id: backgroundImage
-        anchors.fill: parent
-        source: Qt.resolvedUrl("images/bg.png")
-        z: -1
-        fillMode: Image.Tile
-    }
+BasePage {
+
 }
