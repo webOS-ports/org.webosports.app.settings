@@ -8,6 +8,17 @@ QML based system settings application for the webOS ports project.
 Description
 -----------
 
+Usage
+-----
+
+Using QtCreator, you can start testing the application by opening "settingsapp.qmlproject".
+If you have checked-out "luneos-components" in the folder besides org.webosports.app.settings,
+then you can apply the LuneOS style by adding the passing the following argument to qmlscene:
+
+```
+-style ../luneos-components/modules/QtQuick/Controls.2/LuneOS
+```
+
 ## Contributing
 
 If you want to contribute you can just start with cloning the repository and make your

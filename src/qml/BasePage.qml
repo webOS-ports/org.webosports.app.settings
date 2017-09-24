@@ -14,15 +14,16 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick 2.0
+import QtQuick 2.9
+import QtQuick.Controls 2.2
 
-Item {
+Pane {
     id: basePage
 
-    Image {
+    background: Image {
         id: backgroundImage
         anchors.fill: parent
-        source: "images/bg.png"
+        source: Qt.resolvedUrl("images/bg.png")
         z: -1
         fillMode: Image.Tile
     }

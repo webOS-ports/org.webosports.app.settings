@@ -14,7 +14,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick 2.0
+import QtQuick 2.9
 
 Rectangle {
     id: root
@@ -42,6 +42,7 @@ Rectangle {
             anchors.left: parent.left
             anchors.right: titleText.let
             height: parent.height
+            width: height
             source: root.icon
         }
 
