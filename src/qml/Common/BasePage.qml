@@ -17,11 +17,28 @@
 import QtQuick 2.9
 import QtQuick.Controls 2.2
 
+// LS2 access
+import LuneOS.Service 1.0
+
 Page {
     background: Rectangle {
         gradient: Gradient {
             GradientStop { position: 0.0; color: "#D8D8D8" }
             GradientStop { position: 1.0; color: "#888" }
         }
+    }
+
+    // Convenience LS2 services & functions
+    property LunaService luna: LunaService {
+        name: "org.webosports.app.settings"
+    }
+
+    function _handleGetError(message) {
+        console.warn("ERROR: Failed to get setting: " + message);
+    }
+    function _handleSetSuccess(message) {
+    }
+    function _handleSetError(message) {
+        console.warn("ERROR: Failed to set setting: " + message);
     }
 }

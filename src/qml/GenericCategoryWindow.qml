@@ -47,8 +47,8 @@ ApplicationWindow {
 
     Component.onCompleted: {
         var lparams = JSON.parse(application.launchParameters);
-        settingsCategoryAppWindow.categoryFile = lparams.category;
-        settingsCategoryAppWindow.icon = lparams.icon;
-        settingsCategoryAppWindow.title = lparams.title;
+        settingsCategoryAppWindow.categoryFile = lparams.category + "Page.qml";
+        settingsCategoryAppWindow.categoryIcon = lparams.icon;
+        settingsCategoryAppWindow.categoryTitle = lparams.title;
     }
 }
