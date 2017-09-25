@@ -25,6 +25,13 @@ GenericCategoryWindow {
     height: 800
     visible: true
 
+    property QtObject application: QtObject {
+        property string launchParameters: JSON.stringify(
+                          { category: "Testing/Example",
+                            icon: "images/icon.png",
+                            title: "Generic Setttings Example" });
+    }
+
     categoryIcon: Qt.resolvedUrl("images/icon.png");
     categoryTitle: "Choose a category from the drawer"
 
@@ -41,44 +48,50 @@ GenericCategoryWindow {
            section */
 
         ListElement {
+            title: "Example"
+            categorySection: "Testing"
+            componentName: "ExamplePage"
+        }
+
+        ListElement {
             title: "WiFi"
-            category: "Connectivity"
+            categorySection: "Connectivity"
             componentName: "WiFiPage"
         }
 
         ListElement {
             title: "Bluetooth"
-            category: "Connectivity"
+            categorySection: "Connectivity"
             componentName: "BluetoothPage"
         }
 
         ListElement {
             title: "Cellular"
-            category: "Connectivity"
+            categorySection: "Connectivity"
             componentName: "CellularPage"
         }
 
         ListElement {
             title: "About"
-            category: "General"
+            categorySection: "General"
             componentName: "AboutPage"
         }
 
         ListElement {
             title: "Screen & Lock"
-            category: "General"
+            categorySection: "General"
             componentName: "ScreenAndLockPage"
         }
 
         ListElement {
             title: "Date & Time"
-            category: "General"
+            categorySection: "General"
             componentName: "DateAndTimePage"
         }
 
         ListElement {
             title: "Developer Options"
-            category: "General"
+            categorySection: "General"
             componentName: "DeveloperOptionsPage"
         }
     }
@@ -120,14 +133,14 @@ GenericCategoryWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        console.log("Switching to page " + model.category + "/" + model.componentName);
+                        console.log("Switching to page " + model.categorySection + "/" + model.componentName);
                         testingApp.categoryTitle = model.title;
-                        testingApp.categoryFile = Qt.resolvedUrl(model.category + "/" + model.componentName + ".qml");
+                        testingApp.categoryFile = Qt.resolvedUrl(model.categorySection + "/" + model.componentName + ".qml");
                     }
                 }
             }
 
-            section.property: "category"
+            section.property: "categorySection"
             section.criteria: ViewSection.FullString
             section.delegate: Rectangle {
                 width: settingsList.width
