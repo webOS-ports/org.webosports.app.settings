@@ -19,8 +19,32 @@ import QtQuick.Controls 2.2
 
 import "../Common"
 
-BasePage {
-    Column {
+import MeeGo.Connman 0.2
 
+BasePage {
+    TechnologyModel {
+        id: wifiModel
+        name: "wifi"
+    }
+
+    Column {
+        width: parent.width
+
+        ListView {
+            width: parent.width
+            height: 100
+            model: wifiModel
+
+            delegate: Item {
+                property NetworkService delegateService: modelData
+
+                width: parent.width
+                height: 50
+                CheckDelegate {
+                    anchors.fill: parent
+                    text: delegateService.name
+                }
+            }
+        }
     }
 }
