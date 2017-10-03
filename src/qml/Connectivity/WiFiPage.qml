@@ -16,35 +16,96 @@
 
 import QtQuick 2.9
 import QtQuick.Controls 2.2
+import QtQuick.Layouts 1.3
+
+// Theme specific properties
+import QtQuick.Controls.LuneOS 2.0
 
 import "../Common"
 
 import MeeGo.Connman 0.2
 
 BasePage {
+    id: wifiPageId
+
     TechnologyModel {
         id: wifiModel
         name: "wifi"
     }
 
-    Column {
+    property bool wifiPowered //: wifiPowerSwitch.checked
+
+    Component.onCompleted: {
+        retrieveProperties();
+    }
+
+    pageActionHeaderComponent: Component {
+        Switch {
+            id: wifiPowerSwitch
+            LuneOSSwitch.labelOn: "On"
+            LuneOSSwitch.labelOff: "Off"
+
+            onCheckedChanged: wifiPowered=checked;
+        }
+    }
+
+    ColumnLayout {
         width: parent.width
+        height: parent.height
 
-        ListView {
+        /* GroupBoxes look good! */
+        GroupBox {
             width: parent.width
-            height: 100
-            model: wifiModel
+            Layout.fillHeight: true
 
-            delegate: Item {
-                property NetworkService delegateService: modelData
-
+            title: "Choose a network"
+            ColumnLayout {
                 width: parent.width
-                height: 50
-                CheckDelegate {
-                    anchors.fill: parent
-                    text: delegateService.name
+                height: parent.height
+
+                ListView {
+                    width: parent.width
+                    Layout.fillHeight: true
+
+                    model: wifiModel
+
+                    delegate: Item {
+                        property NetworkService delegateService: modelData
+
+                        width: parent.width
+                        height: 50
+                        CheckDelegate {
+                            anchors.fill: parent
+                            text: delegateService.name
+                        }
+                    }
+                }
+
+                RowLayout {
+                    width: parent.width
+                    height: 50
+                    Image {
+                        source: ""
+                        height: parent.height
+                        width: height
+                    }
+                    Text {
+                        height: parent.height
+                        Layout.fillWidth: true
+                        text: "Join Network"
+                    }
                 }
             }
         }
+
+        Text {
+            font.italic: true
+            text: "Your device automatically connects to known networks."
+        }
     }
+
+    function retrieveProperties() {
+        wifiPageId.wifiPowered = wifiModel.powered;
+    }
+    onWifiPoweredChanged: wifiModel.powered = wifiPageId.wifiPowered;
 }
