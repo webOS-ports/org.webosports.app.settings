@@ -42,8 +42,19 @@ BasePage {
     property alias wikiSearch: wikiSearchSwitch.checked
     property alias publicName: publicNameTextField.text
     property alias aggressivity: aggressivityCombo.currentIndex
+//    property alias exampleEnabled: mainExampleSwitch.checked
 
-    Component.onCompleted: retrieveProperties();
+    pageActionHeaderComponent: Component {
+        Switch {
+            id: mainExampleSwitch
+            LuneOSSwitch.labelOn: "On"
+            LuneOSSwitch.labelOff: "Off"
+        }
+    }
+
+    Component.onCompleted: {
+        retrieveProperties();
+    }
 
     /*
      * Need some models for combos or lists ? Let's declare it before the UI.

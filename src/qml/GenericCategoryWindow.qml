@@ -26,7 +26,7 @@ ApplicationWindow {
     property alias categoryIcon: categoryHeader.icon
     property alias categoryTitle: categoryHeader.title
 
-    property Loader _categoryLoader: categoryLoader
+    property Loader _categoryLoader: categoryLoader  // useful for the tests
 
     header: CategoryHeader {
         id: categoryHeader
@@ -34,6 +34,7 @@ ApplicationWindow {
         icon: "images/icon.png"
 
         height: Units.gu(10.0)
+
     }
 
     background: Rectangle {
@@ -43,6 +44,9 @@ ApplicationWindow {
     Loader {
         id: categoryLoader
         anchors.fill: parent
+
+        property alias actionHeaderComponent: categoryHeader.actionHeaderComponent
+        onActionHeaderComponentChanged: console.log("actionHeaderComponent="+actionHeaderComponent);
     }
 
     Component.onCompleted: {

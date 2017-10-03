@@ -26,6 +26,8 @@ Pane {
     property string title: "Unknown"
     property string icon: ""
 
+    property alias actionHeaderComponent: actionComponentLoader.sourceComponent
+
     background: Image {
         source: "images/toolbar-light.png"
         fillMode: Image.Stretch
@@ -54,5 +56,13 @@ Pane {
             font.bold: true
             verticalAlignment: Text.AlignVCenter
         }
+    }
+
+    Loader {
+        id: actionComponentLoader
+        sourceComponent: actionHeaderComponent
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
     }
 }
