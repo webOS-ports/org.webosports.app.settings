@@ -23,6 +23,9 @@ import QtQuick.Controls.LuneOS 2.0
 
 import "../Common"
 
+// Units & font sizes
+import LunaNext.Common 0.1
+// Connman
 import MeeGo.Connman 0.2
 
 BasePage {
@@ -73,21 +76,54 @@ BasePage {
                         property NetworkService delegateService: modelData
 
                         width: parent.width
-                        height: 50
-                        CheckDelegate {
+                        height: Units.gu(3.2)
+
+                        RowLayout {
                             anchors.fill: parent
-                            text: delegateService.name
+
+                            Text {
+                                height: parent.height
+                                Layout.fillWidth: true
+                                text: delegateService.name
+                            }
+                            Image {
+                                source: "../images/wifi/checkmark.png"
+                                visible: delegateService.connected
+
+                                fillMode: Image.PreserveAspectFit
+                                Layout.preferredHeight: parent.height
+                            }
+                            Image {
+                                source: "../images/secure-icon.png"
+                                visible: delegateService.securityType !== SecurityType.SecurityNone
+
+                                fillMode: Image.PreserveAspectFit
+                                Layout.preferredHeight: parent.height
+                            }
+                            Image {
+                                source: "../images/wifi/signal-icon-" + Math.floor(delegateService.strength/25) + ".png"
+
+                                fillMode: Image.PreserveAspectFit
+                                Layout.preferredHeight: parent.height
+                            }
+                        }
+                        MouseArea {
+                            anchors.fill: parent
                         }
                     }
                 }
 
                 RowLayout {
                     width: parent.width
-                    height: 50
+                    height: Units.gu(3.2)
                     Image {
-                        source: ""
-                        height: parent.height
-                        width: height
+                        source: "../images/icon-new.png"
+
+                        Layout.preferredHeight: parent.height
+                        Layout.preferredWidth: height
+
+                        fillMode: Image.PreserveAspectCrop
+                        verticalAlignment: Image.AlignTop
                     }
                     Text {
                         height: parent.height
