@@ -21,6 +21,12 @@ import QtQuick.Controls 2.2
 import LuneOS.Service 1.0
 
 Page {
+    id: basePage
+
+    // this is exposed by the page loader
+    Component.onCompleted: actionHeaderComponent=pageActionHeaderComponent;
+    property Component pageActionHeaderComponent
+
     background: Rectangle {
         gradient: Gradient {
             GradientStop { position: 0.0; color: "#D8D8D8" }
