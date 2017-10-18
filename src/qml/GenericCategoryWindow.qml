@@ -30,12 +30,12 @@ ApplicationWindow {
         },
         "org.webosports.app.settings.wifi": {
             "source": "Connectivity/WiFiPage.qml",
-            "icon": "images/wifi/wifi-category.png",
+            "icon": "images/icons/icon-wifi.png",
             "title": "WiFi"
         },
        "org.webosports.app.settings.bluetooth": {
            "source": "Connectivity/BluetoothPage.qml",
-           "icon": "images/wifi/wifi-category.png",
+           "icon": "images/icons/icon-bluetooth.png",
            "title": "Bluetooth"
        },
        "org.webosports.app.settings.about": {
