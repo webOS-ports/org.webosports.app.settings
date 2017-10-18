@@ -26,10 +26,8 @@ GenericCategoryWindow {
     visible: true
 
     property QtObject application: QtObject {
-        property string launchParameters: JSON.stringify(
-                          { category: "Testing/Example",
-                            icon: "images/icon.png",
-                            title: "Generic Setttings Example" });
+        property string appId: "org.webosports.app.settings.example"
+        property string launchParameters: "{}";
     }
 
     categoryIcon: Qt.resolvedUrl("images/icon.png");
@@ -50,49 +48,49 @@ GenericCategoryWindow {
         ListElement {
             title: "Example"
             categorySection: "Testing"
-            componentName: "ExamplePage"
+            appId: "org.webosports.app.settings.example"
         }
 
         ListElement {
             title: "WiFi"
             categorySection: "Connectivity"
-            componentName: "WiFiPage"
+            appId: "org.webosports.app.settings.wifi"
         }
 
         ListElement {
             title: "Bluetooth"
             categorySection: "Connectivity"
-            componentName: "BluetoothPage"
+            appId: "org.webosports.app.settings.bluetooth"
         }
 
         ListElement {
             title: "Cellular"
             categorySection: "Connectivity"
-            componentName: "CellularPage"
+            appId: "org.webosports.app.settings.phone"
         }
 
         ListElement {
             title: "About"
             categorySection: "General"
-            componentName: "AboutPage"
+            appId: "org.webosports.app.settings.about"
         }
 
         ListElement {
             title: "Screen & Lock"
             categorySection: "General"
-            componentName: "ScreenAndLockPage"
+            appId: "org.webosports.app.settings.screenlock"
         }
 
         ListElement {
             title: "Date & Time"
             categorySection: "General"
-            componentName: "DateAndTimePage"
+            appId: "org.webosports.app.settings.datetime"
         }
 
         ListElement {
             title: "Developer Options"
             categorySection: "General"
-            componentName: "DeveloperOptionsPage"
+            appId: "org.webosports.app.settings.developper"
         }
     }
 
@@ -133,9 +131,11 @@ GenericCategoryWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        console.log("Switching to page " + model.categorySection + "/" + model.componentName);
-                        testingApp.categoryTitle = model.title;
-                        testingApp.categoryFile = Qt.resolvedUrl(model.categorySection + "/" + model.componentName + ".qml");
+                        console.log("Switching to app " + model.appId);
+                        application.appId = model.appId;
+                        testingApp.categoryFile = categories[application.appId].source;
+                        testingApp.categoryIcon = categories[application.appId].icon;
+                        testingApp.categoryTitle = categories[application.appId].title;
                     }
                 }
             }

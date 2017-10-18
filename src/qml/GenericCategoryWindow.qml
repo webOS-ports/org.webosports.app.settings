@@ -22,6 +22,29 @@ import LunaNext.Common 0.1
 ApplicationWindow {
     id: settingsCategoryAppWindow
 
+    readonly property var categories: ({
+        "org.webosports.app.settings.example": {
+            "source": "Testing/ExamplePage.qml",
+            "icon": "Testing/test-category.png",
+            "title": "Generic Setttings Example"
+        },
+        "org.webosports.app.settings.wifi": {
+            "source": "Connectivity/WiFiPage.qml",
+            "icon": "images/wifi/wifi-category.png",
+            "title": "WiFi"
+        },
+       "org.webosports.app.settings.bluetooth": {
+           "source": "Connectivity/BluetoothPage.qml",
+           "icon": "images/wifi/wifi-category.png",
+           "title": "Bluetooth"
+       },
+       "org.webosports.app.settings.about": {
+           "source": "General/AboutPage.qml",
+           "icon": "images/General/about-category.png",
+           "title": "About"
+       }
+    })
+
     property alias categoryFile: categoryLoader.source
     property alias categoryIcon: categoryHeader.icon
     property alias categoryTitle: categoryHeader.title
@@ -50,9 +73,8 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        var lparams = JSON.parse(application.launchParameters);
-        settingsCategoryAppWindow.categoryFile = lparams.category + "Page.qml";
-        settingsCategoryAppWindow.categoryIcon = lparams.icon;
-        settingsCategoryAppWindow.categoryTitle = lparams.title;
+        settingsCategoryAppWindow.categoryFile = categories[application.appId].source;
+        settingsCategoryAppWindow.categoryIcon = categories[application.appId].icon;
+        settingsCategoryAppWindow.categoryTitle = categories[application.appId].title;
     }
 }
