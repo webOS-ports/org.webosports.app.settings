@@ -26,7 +26,7 @@ import "../Common"
 // Units & font sizes
 import LunaNext.Common 0.1
 // Connman
-import MeeGo.Connman 0.2
+import Connman 0.2
 
 BasePage {
     id: wifiPageId
@@ -35,8 +35,6 @@ BasePage {
         id: wifiModel
         name: "wifi"
     }
-
-    property bool wifiPowered //: wifiPowerSwitch.checked
 
     Component.onCompleted: {
         retrieveProperties();
@@ -48,7 +46,12 @@ BasePage {
             LuneOSSwitch.labelOn: "On"
             LuneOSSwitch.labelOff: "Off"
 
-            onCheckedChanged: wifiPowered=checked;
+            Connections {
+                target: wifiModel
+                onPoweredChanged: wifiPowerSwitch.checked=wifiModel.powered;
+            }
+            checked: wifiModel.powered
+            onCheckedChanged: wifiModel.powered=checked;
         }
     }
 
@@ -141,7 +144,6 @@ BasePage {
     }
 
     function retrieveProperties() {
-        wifiPageId.wifiPowered = wifiModel.powered;
+        // nothing special to retrieve here
     }
-    onWifiPoweredChanged: wifiModel.powered = wifiPageId.wifiPowered;
 }
