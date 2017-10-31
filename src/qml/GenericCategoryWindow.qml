@@ -45,16 +45,16 @@ ApplicationWindow {
        }
     })
 
-    property alias categoryFile: categoryLoader.source
-    property alias categoryIcon: categoryHeader.icon
-    property alias categoryTitle: categoryHeader.title
+    property string categoryFile: categories[application.appId].source
+    property string categoryIcon: categories[application.appId].icon
+    property string categoryTitle: categories[application.appId].title
 
     property Loader _categoryLoader: categoryLoader  // useful for the tests
 
     header: CategoryHeader {
         id: categoryHeader
-        title: "System Settings"
-        icon: "images/icon.png"
+        title: settingsCategoryAppWindow.categoryTitle
+        icon: settingsCategoryAppWindow.categoryIcon
 
         height: Units.gu(10.0)
 
@@ -67,14 +67,9 @@ ApplicationWindow {
     Loader {
         id: categoryLoader
         anchors.fill: parent
+        source: settingsCategoryAppWindow.categoryFile
 
         property alias actionHeaderComponent: categoryHeader.actionHeaderComponent
         onActionHeaderComponentChanged: console.log("actionHeaderComponent="+actionHeaderComponent);
-    }
-
-    Component.onCompleted: {
-        settingsCategoryAppWindow.categoryFile = categories[application.appId].source;
-        settingsCategoryAppWindow.categoryIcon = categories[application.appId].icon;
-        settingsCategoryAppWindow.categoryTitle = categories[application.appId].title;
     }
 }

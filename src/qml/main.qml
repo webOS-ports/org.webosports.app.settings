@@ -30,9 +30,6 @@ GenericCategoryWindow {
         property string launchParameters: "{}";
     }
 
-    categoryIcon: Qt.resolvedUrl("images/icon.png");
-    categoryTitle: "Choose a category from the drawer"
-
     Connections {
         target: _categoryLoader
         onLoaded: categoryChooserDrawer.close();
@@ -133,9 +130,6 @@ GenericCategoryWindow {
                     onClicked: {
                         console.log("Switching to app " + model.appId);
                         application.appId = model.appId;
-                        testingApp.categoryFile = categories[application.appId].source;
-                        testingApp.categoryIcon = categories[application.appId].icon;
-                        testingApp.categoryTitle = categories[application.appId].title;
                     }
                 }
             }
