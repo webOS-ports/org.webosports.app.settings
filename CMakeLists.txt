@@ -17,7 +17,9 @@ find_package(Qt5Quick REQUIRED)
 
 find_package(PkgConfig "0.22" REQUIRED)
 
-set(APP_DIR ${WEBOS_INSTALL_WEBOS_APPLICATIONSDIR}/org.webosports.app.settings)
+set(APP_DIR ${WEBOS_INSTALL_WEBOS_APPLICATIONSDIR}/org.webosports.app.settings-common)
 
 add_subdirectory(data)
 add_subdirectory(src)
+
+

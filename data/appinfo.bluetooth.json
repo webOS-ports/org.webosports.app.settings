@@ -1,13 +1,13 @@
 {
-    "title": "WiFi Settings",
-    "id": "org.webosports.app.settings.wifi",
+    "title": "Bluetooth Settings",
+    "id": "org.webosports.app.settings.bluetooth",
     "version": "0.4.0",
 	"vendor": "WebOS Ports",
 	"vendor_url": "https://github.com/webOS-ports/org.webosports.app.settings",
     "type": "qml",
     "useLuneOSStyle": true,
     "main": "qml/GenericCategoryWindow.qml",
-    "icon": "qml/images/icons/icon-wifi.png",
+    "icon": "qml/images/icons/icon-bluetooth.png",
 	"uiRevision": "2"
 }
 
