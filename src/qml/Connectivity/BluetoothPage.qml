@@ -25,51 +25,49 @@ import "../Common"
 
 // Units & font sizes
 import LunaNext.Common 0.1
-// Connman
-import MeeGo.Connman 0.2
-import QtBluetooth 5.9
+// LuneOS Bluetooth wrapper
+import LuneOS.Bluetooth 0.1
 
 BasePage {
     id: bluetoothPageId
 
-    // use connman to power on/off bluetooth
-    TechnologyModel {
-        id: bluetoothTechnologyModel
-        name: "bluetooth"
-    }
-    BluetoothDiscoveryModel {
-        id: bluetoothModel
-        running: bluetoothPowered
-        onServiceDiscovered: console.log("Found new service " + service.deviceAddress + " " + service.deviceName + " " + service.serviceName);
-        onDeviceDiscovered: console.log("New device: " + device)
-        onErrorChanged: {
-                switch (bluetoothModel.error) {
-                case BluetoothDiscoveryModel.PoweredOffError:
-                    console.log("Error: Bluetooth device not turned on"); break;
-                case BluetoothDiscoveryModel.InputOutputError:
-                    console.log("Error: Bluetooth I/O Error"); break;
-                case BluetoothDiscoveryModel.InvalidBluetoothAdapterError:
-                    console.log("Error: Invalid Bluetooth Adapter Error"); break;
-                case BluetoothDiscoveryModel.NoError:
-                    break;
-                default:
-                    console.log("Error: Unknown Error"); break;
-                }
-        }
-   }
-
-    property bool bluetoothPowered
-
     Component.onCompleted: {
         retrieveProperties();
+    }
+    Component.onDestruction: {
+        console.log("Stopping bluetooth discovery.");
+        BluetoothService.stopDiscovery();
+    }
+
+    Connections {
+        target: BluetoothService
+        onReady: {
+            if(BluetoothService.powered) {
+                BluetoothService.startDiscovery();
+            }
+        }
     }
 
     pageActionHeaderComponent: Component {
         Switch {
+            id: bluetoothPowerSwitch
             LuneOSSwitch.labelOn: "On"
             LuneOSSwitch.labelOff: "Off"
 
-            onCheckedChanged: bluetoothPowered=checked;
+            Connections {
+                target: BluetoothService
+                onPoweredChanged: {
+                    bluetoothPowerSwitch.checked=BluetoothService.powered;
+                    if(BluetoothService.powered) {
+                        BluetoothService.startDiscovery();
+                    }
+                    else {
+                        BluetoothService.stopDiscovery();
+                    }
+                }
+            }
+            checked: BluetoothService.powered
+            onCheckedChanged: BluetoothService.setPowered(checked);
         }
     }
 
@@ -91,10 +89,10 @@ BasePage {
                     width: parent.width
                     Layout.fillHeight: true
 
-                    model: bluetoothModel
+                    model: BluetoothService.deviceModel
 
                     delegate: Item {
-                        property BluetoothService delegateService: service
+                        property BluetoothDevice delegateDevice: device
 
                         width: parent.width
                         height: Units.gu(3.2)
@@ -105,11 +103,11 @@ BasePage {
                             Text {
                                 height: parent.height
                                 Layout.fillWidth: true
-                                text: delegateService.deviceName
+                                text: delegateDevice.name
                             }
                             Image {
                                 source: "../images/wifi/checkmark.png"
-                                visible: true
+                                visible: delegateDevice.connected
 
                                 fillMode: Image.PreserveAspectFit
                                 Layout.preferredHeight: parent.height
@@ -125,7 +123,5 @@ BasePage {
     }
 
     function retrieveProperties() {
-        bluetoothPageId.bluetoothPowered = bluetoothTechnologyModel.powered;
     }
-    onBluetoothPoweredChanged: bluetoothTechnologyModel.powered = bluetoothPageId.bluetoothPowered;
 }
