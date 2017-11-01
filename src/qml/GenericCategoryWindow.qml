@@ -22,6 +22,8 @@ import LunaNext.Common 0.1
 ApplicationWindow {
     id: settingsCategoryAppWindow
 
+    Component.onCompleted: settingsCategoryAppWindow.show();
+
     readonly property var categories: ({
         "org.webosports.app.settings.example": {
             "source": "Testing/ExamplePage.qml",
@@ -45,9 +47,9 @@ ApplicationWindow {
        }
     })
 
-    property string categoryFile: categories[application.appId].source
-    property string categoryIcon: categories[application.appId].icon
-    property string categoryTitle: categories[application.appId].title
+    property string categoryFile: categories[application.appInfo.id].source
+    property string categoryIcon: categories[application.appInfo.id].icon
+    property string categoryTitle: categories[application.appInfo.id].title
 
     property Loader _categoryLoader: categoryLoader  // useful for the tests
 

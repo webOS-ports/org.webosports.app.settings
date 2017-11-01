@@ -26,7 +26,7 @@ GenericCategoryWindow {
     visible: true
 
     property QtObject application: QtObject {
-        property string appId: "org.webosports.app.settings.example"
+        property variant appInfo: ({"id": "org.webosports.app.settings.example"})
         property string launchParameters: "{}";
     }
 
@@ -129,7 +129,7 @@ GenericCategoryWindow {
                     anchors.fill: parent
                     onClicked: {
                         console.log("Switching to app " + model.appId);
-                        application.appId = model.appId;
+                        application.appInfo = { "id": model.appId };
                     }
                 }
             }
