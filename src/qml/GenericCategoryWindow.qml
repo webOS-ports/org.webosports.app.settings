@@ -22,16 +22,41 @@ import LunaNext.Common 0.1
 ApplicationWindow {
     id: settingsCategoryAppWindow
 
-    property alias categoryFile: categoryLoader.source
-    property alias categoryIcon: categoryHeader.icon
-    property alias categoryTitle: categoryHeader.title
+    Component.onCompleted: settingsCategoryAppWindow.show();
+
+    readonly property var categories: ({
+        "org.webosports.app.settings.example": {
+            "source": "Testing/ExamplePage.qml",
+            "icon": "Testing/test-category.png",
+            "title": "Generic Setttings Example"
+        },
+        "org.webosports.app.settings.wifi": {
+            "source": "Connectivity/WiFiPage.qml",
+            "icon": "images/icons/icon-wifi.png",
+            "title": "WiFi"
+        },
+       "org.webosports.app.settings.bluetooth": {
+           "source": "Connectivity/BluetoothPage.qml",
+           "icon": "images/icons/icon-bluetooth.png",
+           "title": "Bluetooth"
+       },
+       "org.webosports.app.settings.about": {
+           "source": "General/AboutPage.qml",
+           "icon": "images/General/about-category.png",
+           "title": "About"
+       }
+    })
+
+    property string categoryFile: categories[application.appInfo.id].source
+    property string categoryIcon: categories[application.appInfo.id].icon
+    property string categoryTitle: categories[application.appInfo.id].title
 
     property Loader _categoryLoader: categoryLoader  // useful for the tests
 
     header: CategoryHeader {
         id: categoryHeader
-        title: "System Settings"
-        icon: "images/icon.png"
+        title: settingsCategoryAppWindow.categoryTitle
+        icon: settingsCategoryAppWindow.categoryIcon
 
         height: Units.gu(10.0)
 
@@ -44,15 +69,9 @@ ApplicationWindow {
     Loader {
         id: categoryLoader
         anchors.fill: parent
+        source: settingsCategoryAppWindow.categoryFile
 
         property alias actionHeaderComponent: categoryHeader.actionHeaderComponent
         onActionHeaderComponentChanged: console.log("actionHeaderComponent="+actionHeaderComponent);
-    }
-
-    Component.onCompleted: {
-        var lparams = JSON.parse(application.launchParameters);
-        settingsCategoryAppWindow.categoryFile = lparams.category + "Page.qml";
-        settingsCategoryAppWindow.categoryIcon = lparams.icon;
-        settingsCategoryAppWindow.categoryTitle = lparams.title;
     }
 }

@@ -25,33 +25,49 @@ import "../Common"
 
 // Units & font sizes
 import LunaNext.Common 0.1
-// Connman
-import Connman 0.2
+// LuneOS Bluetooth wrapper
+import LuneOS.Bluetooth 0.1
 
 BasePage {
-    id: wifiPageId
-
-    TechnologyModel {
-        id: wifiModel
-        name: "wifi"
-    }
+    id: bluetoothPageId
 
     Component.onCompleted: {
         retrieveProperties();
     }
+    Component.onDestruction: {
+        console.log("Stopping bluetooth discovery.");
+        BluetoothService.stopDiscovery();
+    }
+
+    Connections {
+        target: BluetoothService
+        onReady: {
+            if(BluetoothService.powered) {
+                BluetoothService.startDiscovery();
+            }
+        }
+    }
 
     pageActionHeaderComponent: Component {
         Switch {
-            id: wifiPowerSwitch
+            id: bluetoothPowerSwitch
             LuneOSSwitch.labelOn: "On"
             LuneOSSwitch.labelOff: "Off"
 
             Connections {
-                target: wifiModel
-                onPoweredChanged: wifiPowerSwitch.checked=wifiModel.powered;
+                target: BluetoothService
+                onPoweredChanged: {
+                    bluetoothPowerSwitch.checked=BluetoothService.powered;
+                    if(BluetoothService.powered) {
+                        BluetoothService.startDiscovery();
+                    }
+                    else {
+                        BluetoothService.stopDiscovery();
+                    }
+                }
             }
-            checked: wifiModel.powered
-            onCheckedChanged: wifiModel.powered=checked;
+            checked: BluetoothService.powered
+            onCheckedChanged: BluetoothService.setPowered(checked);
         }
     }
 
@@ -73,10 +89,10 @@ BasePage {
                     width: parent.width
                     Layout.fillHeight: true
 
-                    model: wifiModel
+                    model: BluetoothService.deviceModel
 
                     delegate: Item {
-                        property NetworkService delegateService: modelData
+                        property BluetoothDevice delegateDevice: device
 
                         width: parent.width
                         height: Units.gu(3.2)
@@ -87,24 +103,11 @@ BasePage {
                             Text {
                                 height: parent.height
                                 Layout.fillWidth: true
-                                text: delegateService.name
+                                text: delegateDevice.name
                             }
                             Image {
                                 source: "../images/wifi/checkmark.png"
-                                visible: delegateService.connected
-
-                                fillMode: Image.PreserveAspectFit
-                                Layout.preferredHeight: parent.height
-                            }
-                            Image {
-                                source: "../images/secure-icon.png"
-                                visible: delegateService.securityType !== SecurityType.SecurityNone
-
-                                fillMode: Image.PreserveAspectFit
-                                Layout.preferredHeight: parent.height
-                            }
-                            Image {
-                                source: "../images/wifi/signal-icon-" + Math.floor(delegateService.strength/25) + ".png"
+                                visible: delegateDevice.connected
 
                                 fillMode: Image.PreserveAspectFit
                                 Layout.preferredHeight: parent.height
@@ -115,35 +118,10 @@ BasePage {
                         }
                     }
                 }
-
-                RowLayout {
-                    width: parent.width
-                    height: Units.gu(3.2)
-                    Image {
-                        source: "../images/icon-new.png"
-
-                        Layout.preferredHeight: parent.height
-                        Layout.preferredWidth: height
-
-                        fillMode: Image.PreserveAspectCrop
-                        verticalAlignment: Image.AlignTop
-                    }
-                    Text {
-                        height: parent.height
-                        Layout.fillWidth: true
-                        text: "Join Network"
-                    }
-                }
             }
-        }
-
-        Text {
-            font.italic: true
-            text: "Your device automatically connects to known networks."
         }
     }
 
     function retrieveProperties() {
-        // nothing special to retrieve here
     }
 }
