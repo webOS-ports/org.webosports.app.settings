@@ -71,51 +71,46 @@ BasePage {
         }
     }
 
-    ColumnLayout {
-        width: parent.width
-        height: parent.height
+    /* GroupBoxes look good! */
+    GroupBox {
+        anchors.fill: parent
 
-        /* GroupBoxes look good! */
-        GroupBox {
-            width: parent.width
-            Layout.fillHeight: true
+        title: "Choose a network"
+        ColumnLayout {
+            anchors.fill: parent
 
-            title: "Choose a network"
-            ColumnLayout {
-                width: parent.width
-                height: parent.height
+            ListView {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                clip: true
 
-                ListView {
+                model: BluetoothService.deviceModel
+
+                delegate: Item {
+                    property BluetoothDevice delegateDevice: device
+
                     width: parent.width
-                    Layout.fillHeight: true
+                    height: Units.gu(3.2)
 
-                    model: BluetoothService.deviceModel
+                    RowLayout {
+                        anchors.fill: parent
 
-                    delegate: Item {
-                        property BluetoothDevice delegateDevice: device
-
-                        width: parent.width
-                        height: Units.gu(3.2)
-
-                        RowLayout {
-                            anchors.fill: parent
-
-                            Text {
-                                height: parent.height
-                                Layout.fillWidth: true
-                                text: delegateDevice.name
-                            }
-                            Image {
-                                source: "../images/wifi/checkmark.png"
-                                visible: delegateDevice.connected
-
-                                fillMode: Image.PreserveAspectFit
-                                Layout.preferredHeight: parent.height
-                            }
+                        Label {
+                            height: parent.height
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: contentWidth
+                            text: delegateDevice.name
                         }
-                        MouseArea {
-                            anchors.fill: parent
+                        Image {
+                            source: "../images/wifi/checkmark.png"
+                            visible: delegateDevice.connected
+
+                            fillMode: Image.PreserveAspectFit
+                            Layout.preferredHeight: parent.height
                         }
+                    }
+                    MouseArea {
+                        anchors.fill: parent
                     }
                 }
             }

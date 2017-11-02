@@ -53,7 +53,8 @@ Pane {
             width: parent.width - iconImage.width
 
             text: root.title
-            font.bold: true
+            font.pixelSize: FontUtils.sizeToPixels("large")
+            font.weight: Font.Bold
             verticalAlignment: Text.AlignVCenter
         }
     }

@@ -55,92 +55,93 @@ BasePage {
         }
     }
 
-    ColumnLayout {
-        width: parent.width
-        height: parent.height
+    /* GroupBoxes look good! */
+    GroupBox {
+        anchors.fill: parent
 
-        /* GroupBoxes look good! */
-        GroupBox {
-            width: parent.width
-            Layout.fillHeight: true
+        title: "Choose a network"
+        ColumnLayout {
+            anchors.fill: parent
 
-            title: "Choose a network"
-            ColumnLayout {
-                width: parent.width
-                height: parent.height
+            ListView {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                clip: true
 
-                ListView {
-                    width: parent.width
-                    Layout.fillHeight: true
+                model: wifiModel
 
-                    model: wifiModel
+                delegate: Item {
+                    property NetworkService delegateService: modelData
 
-                    delegate: Item {
-                        property NetworkService delegateService: modelData
-
-                        width: parent.width
-                        height: Units.gu(3.2)
-
-                        RowLayout {
-                            anchors.fill: parent
-
-                            Text {
-                                height: parent.height
-                                Layout.fillWidth: true
-                                text: delegateService.name
-                            }
-                            Image {
-                                source: "../images/wifi/checkmark.png"
-                                visible: delegateService.connected
-
-                                fillMode: Image.PreserveAspectFit
-                                Layout.preferredHeight: parent.height
-                            }
-                            Image {
-                                source: "../images/secure-icon.png"
-                                visible: delegateService.securityType !== SecurityType.SecurityNone
-
-                                fillMode: Image.PreserveAspectFit
-                                Layout.preferredHeight: parent.height
-                            }
-                            Image {
-                                source: "../images/wifi/signal-icon-" + Math.floor(delegateService.strength/25) + ".png"
-
-                                fillMode: Image.PreserveAspectFit
-                                Layout.preferredHeight: parent.height
-                            }
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                        }
-                    }
-                }
-
-                RowLayout {
                     width: parent.width
                     height: Units.gu(3.2)
-                    Image {
-                        source: "../images/icon-new.png"
 
-                        Layout.preferredHeight: parent.height
-                        Layout.preferredWidth: height
+                    RowLayout {
+                        anchors.fill: parent
 
-                        fillMode: Image.PreserveAspectCrop
-                        verticalAlignment: Image.AlignTop
+                        Label {
+                            height: parent.height
+                            Layout.minimumWidth: contentWidth
+                            Layout.fillWidth: true
+                            fontSizeMode: Text.Fit
+
+                            text: delegateService.name
+                        }
+                        Image {
+                            source: "../images/wifi/checkmark.png"
+                            visible: delegateService.connected
+
+                            fillMode: Image.PreserveAspectFit
+                            Layout.preferredHeight: parent.height
+                            Layout.preferredWidth: parent.height
+                        }
+                        Image {
+                            source: "../images/secure-icon.png"
+                            visible: delegateService.securityType !== NetworkService.SecurityNone
+
+                            fillMode: Image.PreserveAspectFit
+                            Layout.preferredHeight: parent.height
+                            Layout.preferredWidth: parent.height
+                        }
+                        Image {
+                            source: "../images/wifi/signal-icon-" + Math.floor(delegateService.strength/25) + ".png"
+
+                            fillMode: Image.PreserveAspectFit
+                            Layout.preferredHeight: parent.height
+                            Layout.preferredWidth: parent.height
+                        }
                     }
-                    Text {
-                        height: parent.height
-                        Layout.fillWidth: true
-                        text: "Join Network"
+                    MouseArea {
+                        anchors.fill: parent
                     }
                 }
             }
-        }
 
-        Text {
-            font.italic: true
-            text: "Your device automatically connects to known networks."
+            RowLayout {
+                Layout.fillWidth: true
+
+                height: Units.gu(3.2)
+                Image {
+                    source: "../images/icon-new.png"
+
+                    Layout.preferredHeight: parent.height
+                    Layout.preferredWidth: height
+
+                    fillMode: Image.PreserveAspectCrop
+                    verticalAlignment: Image.AlignTop
+                }
+                Label {
+                    height: parent.height
+                    Layout.fillWidth: true
+                    text: "Join Network"
+                }
+            }
         }
+    }
+
+    footer: Label {
+        font.italic: true
+        text: "Your device automatically connects to known networks."
     }
 
     function retrieveProperties() {

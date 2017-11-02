@@ -21,14 +21,13 @@ import LunaNext.Common 0.1
 
 ApplicationWindow {
     id: settingsCategoryAppWindow
-
-    Component.onCompleted: settingsCategoryAppWindow.show();
+    visible: true
 
     readonly property var categories: ({
         "org.webosports.app.settings.example": {
             "source": "Testing/ExamplePage.qml",
             "icon": "Testing/test-category.png",
-            "title": "Generic Setttings Example"
+            "title": "Settings Example"
         },
         "org.webosports.app.settings.wifi": {
             "source": "Connectivity/WiFiPage.qml",
