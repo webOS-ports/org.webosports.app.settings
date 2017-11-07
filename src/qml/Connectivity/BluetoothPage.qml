@@ -26,26 +26,53 @@ import "../Common"
 // Units & font sizes
 import LunaNext.Common 0.1
 // LuneOS Bluetooth wrapper
-import LuneOS.Bluetooth 0.1
+import LuneOS.Bluetooth 0.2
 
 BasePage {
     id: bluetoothPageId
 
-    Component.onCompleted: {
-        retrieveProperties();
+    BluetoothDevicesModel {
+        id: btDevicesModel
     }
-    Component.onDestruction: {
-        console.log("Stopping bluetooth discovery.");
-        BluetoothService.stopDiscovery();
+    LuneOSBluetoothAgent {
+        id: btAgent
+        path: "/org/webosports/apps/settings"
+        capability: LuneOSBluetoothAgent.DisplayYesNo
+
+        onRequestPinCodeFromUser: {
+            console.log("onRequestPinCodeFromUser: device="+device+", request="+request);
+        }
+        onRequestPasskeyFromUser: {
+            console.log("onRequestPasskeyFromUser: device="+device+", request="+request);
+        }
+        onRequestConfirmationFromUser: {
+            console.log("onRequestConfirmationFromUser: device="+device+", passkey="+passkey+", request="+request);
+        }
+        onRequestAuthorizationFromUser: {
+            console.log("onRequestAuthorizationFromUser: device="+device+", request="+request);
+        }
+        onAuthorizeServiceFromUser: {
+            console.log("onAuthorizeServiceFromUser: device="+device+", uuid="+uuid+", request="+request);
+        }
+        onDisplayPasskey: {
+            console.log("onDisplayPasskey: device="+device+", passkey="+passkey+", entered="+entered);
+        }
+        onDisplayPinCode: {
+            console.log("onDisplayPinCode: device="+device+", pinCode="+pinCode);
+        }
+        onCancel: {
+            console.log("onCancel");
+        }
+        onRelease: {
+            console.log("onRelease");
+        }
     }
 
-    Connections {
-        target: BluetoothService
-        onReady: {
-            if(BluetoothService.powered) {
-                BluetoothService.startDiscovery();
-            }
-        }
+    Component.onCompleted: {
+        retrieveProperties();
+
+        BluetoothManager.discoveringMode = true;
+        btAgent.registerToManager(BluetoothManager.btManager);
     }
 
     pageActionHeaderComponent: Component {
@@ -55,19 +82,11 @@ BasePage {
             LuneOSSwitch.labelOff: "Off"
 
             Connections {
-                target: BluetoothService
-                onPoweredChanged: {
-                    bluetoothPowerSwitch.checked=BluetoothService.powered;
-                    if(BluetoothService.powered) {
-                        BluetoothService.startDiscovery();
-                    }
-                    else {
-                        BluetoothService.stopDiscovery();
-                    }
-                }
+                target: BluetoothManager
+                onPoweredChanged: bluetoothPowerSwitch.checked=BluetoothManager.powered;
             }
-            checked: BluetoothService.powered
-            onCheckedChanged: BluetoothService.setPowered(checked);
+            checked: BluetoothManager.powered
+            onCheckedChanged: BluetoothManager.powered = checked;
         }
     }
 
@@ -84,13 +103,13 @@ BasePage {
                 Layout.fillHeight: true
                 clip: true
 
-                model: BluetoothService.deviceModel
+                model: btDevicesModel
 
                 delegate: Item {
-                    property BluetoothDevice delegateDevice: device
-
                     width: parent.width
                     height: Units.gu(3.2)
+
+                    property variant btDevice: model
 
                     RowLayout {
                         anchors.fill: parent
@@ -99,11 +118,19 @@ BasePage {
                             height: parent.height
                             Layout.fillWidth: true
                             Layout.minimumWidth: contentWidth
-                            text: delegateDevice.name
+                            text: btDevice.Name || btDevice.Address
+                        }
+                        Image {
+                            source: "../images/secure-icon.png"
+                            visible: btDevice.Paired
+
+                            fillMode: Image.PreserveAspectFit
+                            Layout.preferredHeight: parent.height
+                            Layout.preferredWidth: parent.height
                         }
                         Image {
                             source: "../images/wifi/checkmark.png"
-                            visible: delegateDevice.connected
+                            visible: btDevice.Connected
 
                             fillMode: Image.PreserveAspectFit
                             Layout.preferredHeight: parent.height
@@ -111,6 +138,11 @@ BasePage {
                     }
                     MouseArea {
                         anchors.fill: parent
+                        onClicked: {
+                            // connect !
+                            console.log("Bluetooth Device Selected. Name = " + btDevice.Name + ", connected = " + btDevice.Connected);
+                            BluetoothManager.connectDeviceAddress(btDevice.Address);
+                        }
                     }
                 }
             }
