@@ -40,39 +40,60 @@ BasePage {
         capability: LuneOSBluetoothAgent.DisplayYesNo
 
         onRequestPinCodeFromUser: {
-            console.log("onRequestPinCodeFromUser: device="+device+", request="+request);
+            console.log("onRequestPinCodeFromUser: device="+device.name+", request="+request);
+            popupLoader.setSource(Qt.resolvedUrl("BluetoothProvidePinCodePopup.qml"),
+                                  {"bluezRequest": request, "deviceName": device.name});
         }
         onRequestPasskeyFromUser: {
-            console.log("onRequestPasskeyFromUser: device="+device+", request="+request);
+            console.log("onRequestPasskeyFromUser: device="+device.name+", request="+request);
+            popupLoader.setSource(Qt.resolvedUrl("BluetoothProvidePassKeyPopup.qml"),
+                                  {"bluezRequest": request});
         }
         onRequestConfirmationFromUser: {
-            console.log("onRequestConfirmationFromUser: device="+device+", passkey="+passkey+", request="+request);
+            console.log("onRequestConfirmationFromUser: device="+device.name+", passkey="+passkey+", request="+request);
+            popupLoader.setSource(Qt.resolvedUrl("BluetoothConfirmPassKeyPopup.qml"),
+                                  {"bluezRequest": request, "deviceName": device.name, "passkey": passkey});
         }
         onRequestAuthorizationFromUser: {
-            console.log("onRequestAuthorizationFromUser: device="+device+", request="+request);
+            console.log("onRequestAuthorizationFromUser: device="+device.name+", request="+request);
+            popupLoader.setSource(Qt.resolvedUrl("BluetoothConfirmAuthorizePopup.qml"),
+                                  {"bluezRequest": request, "deviceName": device.name, "passkey": passkey});
         }
         onAuthorizeServiceFromUser: {
-            console.log("onAuthorizeServiceFromUser: device="+device+", uuid="+uuid+", request="+request);
+            console.log("onAuthorizeServiceFromUser: device="+device.name+", uuid="+uuid+", request="+request);
+            popupLoader.setSource(Qt.resolvedUrl("BluetoothAuthorizeServicePopup.qml"),
+                                  {"bluezRequest": request, "deviceName": device.name, "serviceUUID": uuid});
         }
-        onDisplayPasskey: {
-            console.log("onDisplayPasskey: device="+device+", passkey="+passkey+", entered="+entered);
+        onDisplayPasskeyToUser: {
+            console.log("onDisplayPasskey: device="+device.name+", passkey="+passkey+", entered="+entered);
+            popupLoader.setSource(Qt.resolvedUrl("BluetoothDisplayPassKeyPopup.qml"),
+                                  {"deviceName": device.name, "passkey": passkey});
         }
-        onDisplayPinCode: {
-            console.log("onDisplayPinCode: device="+device+", pinCode="+pinCode);
+        onDisplayPinCodeToUser: {
+            console.log("onDisplayPinCode: device="+device.name+", pinCode="+pinCode);
+            popupLoader.setSource(Qt.resolvedUrl("BluetoothDisplayPinCodePopup.qml"),
+                                  {"deviceName": device.name, "pinCode": pinCode});
         }
         onCancel: {
             console.log("onCancel");
+            if(popupLoader.item) popupLoader.item.close();
         }
         onRelease: {
             console.log("onRelease");
+            if(popupLoader.item) popupLoader.item.close();
         }
     }
 
     Component.onCompleted: {
-        retrieveProperties();
-
         BluetoothManager.discoveringMode = true;
-        btAgent.registerToManager(BluetoothManager.btManager);
+    }
+
+    Connections {
+        target: BluetoothManager
+        onBluetoothOperationalChanged: {
+            console.log("BluetoothManager.bluetoothOperational="+BluetoothManager.bluetoothOperational);
+            btAgent.registerToManager(BluetoothManager.btManager);
+        }
     }
 
     pageActionHeaderComponent: Component {
@@ -90,58 +111,87 @@ BasePage {
         }
     }
 
-    /* GroupBoxes look good! */
-    GroupBox {
+    ColumnLayout {
         anchors.fill: parent
 
-        title: "Choose a network"
-        ColumnLayout {
-            anchors.fill: parent
+        Switch {
+            id: discoverableToggle
 
-            ListView {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                clip: true
+            text: "Discoverable"
 
-                model: btDevicesModel
+            anchors.left: parent.left
+            anchors.right: parent.right
 
-                delegate: Item {
-                    width: parent.width
-                    height: Units.gu(3.2)
+            LayoutMirroring.enabled: true
+            LuneOSSwitch.labelOn: "On"
+            LuneOSSwitch.labelOff: "Off"
 
-                    property variant btDevice: model
+            checked: BluetoothManager.discoverable
+            onClicked: {
+                BluetoothManager.setDiscoverable(discoverableToggle.checked);
+            }
+        }
 
-                    RowLayout {
-                        anchors.fill: parent
+        /* GroupBoxes look good! */
+        GroupBox {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            Layout.fillHeight: true
 
-                        Label {
-                            height: parent.height
-                            Layout.fillWidth: true
-                            Layout.minimumWidth: contentWidth
-                            text: btDevice.Name || btDevice.Address
+            title: "Choose a network"
+            ColumnLayout {
+                anchors.fill: parent
+
+                ListView {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+
+                    model: btDevicesModel
+
+                    delegate: Item {
+                        width: parent.width
+                        height: Units.gu(3.2)
+
+                        property variant btDevice: model
+
+                        RowLayout {
+                            anchors.fill: parent
+
+                            Label {
+                                height: parent.height
+                                Layout.fillWidth: true
+                                Layout.minimumWidth: contentWidth
+                                text: btDevice.Name || btDevice.Address
+                            }
+                            Image {
+                                source: "../images/secure-icon.png"
+                                visible: btDevice.Paired
+
+                                fillMode: Image.PreserveAspectFit
+                                Layout.preferredHeight: parent.height
+                                Layout.preferredWidth: parent.height
+                            }
+                            Image {
+                                source: "../images/wifi/checkmark.png"
+                                visible: btDevice.Connected
+
+                                fillMode: Image.PreserveAspectFit
+                                Layout.preferredHeight: parent.height
+                            }
                         }
-                        Image {
-                            source: "../images/secure-icon.png"
-                            visible: btDevice.Paired
-
-                            fillMode: Image.PreserveAspectFit
-                            Layout.preferredHeight: parent.height
-                            Layout.preferredWidth: parent.height
-                        }
-                        Image {
-                            source: "../images/wifi/checkmark.png"
-                            visible: btDevice.Connected
-
-                            fillMode: Image.PreserveAspectFit
-                            Layout.preferredHeight: parent.height
-                        }
-                    }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            // connect !
-                            console.log("Bluetooth Device Selected. Name = " + btDevice.Name + ", connected = " + btDevice.Connected);
-                            BluetoothManager.connectDeviceAddress(btDevice.Address);
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                console.log("Bluetooth Device Selected. Name = " + btDevice.Name + ", connected = " + btDevice.Connected);
+                                if(!btDevice.Connected) {
+                                    // connect !
+                                    BluetoothManager.connectDeviceAddress(btDevice.Address);
+                                } else {
+                                    // disconnect !
+                                    BluetoothManager.disconnectDeviceAddress(btDevice.Address);
+                                }
+                            }
                         }
                     }
                 }
@@ -149,6 +199,17 @@ BasePage {
         }
     }
 
-    function retrieveProperties() {
+    Loader {
+        id: popupLoader
+        anchors.fill: parent
+
+        onItemChanged: {
+            if(item && item.onClosed) {
+                item.onClosed.connect(function() {
+                    // ensure the component is unlaaded
+                    if(!item.visible) popupLoader.source = "";
+                });
+            }
+        }
     }
 }
