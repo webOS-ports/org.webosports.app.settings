@@ -74,45 +74,75 @@ BasePage {
                     property NetworkService delegateService: modelData
 
                     width: parent.width
-                    height: Units.gu(3.2)
+                    height: Units.gu(6)
 
                     RowLayout {
                         anchors.fill: parent
 
                         Label {
                             height: parent.height
-                            Layout.minimumWidth: contentWidth
-                            Layout.fillWidth: true
-                            fontSizeMode: Text.Fit
-
                             text: delegateService.name
+                            Layout.fillWidth: true
+                            font.pixelSize: FontUtils.sizeToPixels("medium")
+                        }
+                        Label {
+                            id: networkStatus
+                            text: "connecting..."
+                            visible: delegateService.connecting
+                            color: "darkblue"
+                            font.pixelSize: FontUtils.sizeToPixels("small")
                         }
                         Image {
                             source: "../images/wifi/checkmark.png"
                             visible: delegateService.connected
 
                             fillMode: Image.PreserveAspectFit
-                            Layout.preferredHeight: parent.height
-                            Layout.preferredWidth: parent.height
+                            verticalAlignment: Image.AlignVCenter
+                            horizontalAlignment: Image.AlignHCenter
+                            Layout.preferredHeight: Units.gu(3.2)
+                            Layout.preferredWidth: Units.gu(3.2)
                         }
                         Image {
                             source: "../images/secure-icon.png"
                             visible: delegateService.securityType !== NetworkService.SecurityNone
 
                             fillMode: Image.PreserveAspectFit
-                            Layout.preferredHeight: parent.height
-                            Layout.preferredWidth: parent.height
+                            verticalAlignment: Image.AlignVCenter
+                            horizontalAlignment: Image.AlignHCenter
+                            Layout.preferredHeight: Units.gu(3.2)
+                            Layout.preferredWidth: Units.gu(3.2)
                         }
                         Image {
                             source: "../images/wifi/signal-icon-" + Math.floor(delegateService.strength/25) + ".png"
 
                             fillMode: Image.PreserveAspectFit
-                            Layout.preferredHeight: parent.height
-                            Layout.preferredWidth: parent.height
+                            verticalAlignment: Image.AlignVCenter
+                            horizontalAlignment: Image.AlignHCenter
+                            Layout.preferredHeight: Units.gu(3.2)
+                            Layout.preferredWidth: Units.gu(3.2)
                         }
+                    }
+                    Rectangle {
+                        // separator
+                        color: "black"
+                        height: 1
+                        anchors.bottom: parent.bottom
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        visible: index !== wifiModel.count-1
                     }
                     MouseArea {
                         anchors.fill: parent
+                        onClicked: {
+                            if(delegateService.connected) {
+                                delegateService.requestDisconnect();
+                            }
+                            else {
+                                // if this service needs a password and we don't have it yet,
+                                // connman will ask the user through the UserAgent down below
+                                delegateService.requestConnect();
+                            }
+                        }
                     }
                 }
             }
@@ -142,6 +172,39 @@ BasePage {
     footer: Label {
         font.italic: true
         text: "Your device automatically connects to known networks."
+    }
+
+    UserAgent {
+        id: connmanUserAgent
+        onUserInputRequested: //(string servicePath, variant /*QVariantMap*/ fields);
+        {
+            // Find out the name of this servicePath
+            var serviceName = "";
+            for(var i=0; i<wifiModel.count; ++i) {
+                var networkService = wifiModel.get(i);
+                if(networkService.path === servicePath) {
+                    serviceName = networkService.name;
+                    break;
+                }
+            }
+
+            popupLoader.setSource(Qt.resolvedUrl("WiFiProvidePassphrasePopup.qml"),
+                                  {"agent": connmanUserAgent, "serviceName": serviceName, "requestedFields": fields});
+        }
+    }
+
+    Loader {
+        id: popupLoader
+        anchors.fill: parent
+
+        onItemChanged: {
+            if(item && item.onClosed) {
+                item.onClosed.connect(function() {
+                    // ensure the component is unlaaded
+                    if(!item.visible) popupLoader.source = "";
+                });
+            }
+        }
     }
 
     function retrieveProperties() {
