@@ -70,7 +70,7 @@ BasePage {
 
                 model: wifiModel
 
-                delegate: Item {
+                delegate: ItemDelegate {
                     property NetworkService delegateService: modelData
 
                     width: parent.width
@@ -82,6 +82,7 @@ BasePage {
                         Label {
                             height: parent.height
                             text: delegateService.name
+                            font.bold: delegateService.connected
                             Layout.fillWidth: true
                             font.pixelSize: FontUtils.sizeToPixels("medium")
                         }
@@ -110,7 +111,7 @@ BasePage {
                             verticalAlignment: Image.AlignVCenter
                             horizontalAlignment: Image.AlignHCenter
                             Layout.preferredHeight: Units.gu(3.2)
-                            Layout.preferredWidth: Units.gu(3.2)
+                            Layout.preferredWidth: Units.gu(1.5)
                         }
                         Image {
                             source: "../images/wifi/signal-icon-" + Math.floor(delegateService.strength/25) + ".png"
@@ -122,14 +123,18 @@ BasePage {
                             Layout.preferredWidth: Units.gu(3.2)
                         }
                     }
+                    // Show a separator between items
                     Rectangle {
-                        // separator
-                        color: "black"
+                        y: parent.height-1
                         height: 1
-                        anchors.bottom: parent.bottom
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        visible: index !== wifiModel.count-1
+                        width: parent.width
+                        color: '#ADADAD'
+                    }
+                    Rectangle {
+                        y: parent.height
+                        height: 1
+                        width: parent.width
+                        color: '#ECECEC'
                     }
                     MouseArea {
                         anchors.fill: parent
@@ -145,6 +150,8 @@ BasePage {
                         }
                     }
                 }
+
+                ScrollIndicator.vertical: ScrollIndicator { }
             }
 
             RowLayout {
@@ -170,6 +177,9 @@ BasePage {
     }
 
     footer: Label {
+        width: parent.width
+        padding: Units.gu(0.5)
+        wrapMode: Label.WordWrap
         font.italic: true
         text: "Your device automatically connects to known networks."
     }

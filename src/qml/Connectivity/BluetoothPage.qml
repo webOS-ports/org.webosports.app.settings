@@ -151,7 +151,7 @@ BasePage {
 
                     delegate: Item {
                         width: parent.width
-                        height: Units.gu(3.2)
+                        height: Units.gu(6)
 
                         property variant btDevice: model
 
@@ -169,16 +169,36 @@ BasePage {
                                 visible: btDevice.Paired
 
                                 fillMode: Image.PreserveAspectFit
-                                Layout.preferredHeight: parent.height
-                                Layout.preferredWidth: parent.height
+                                horizontalAlignment: Image.AlignHCenter
+                                verticalAlignment: Image.AlignVCenter
+                                Layout.preferredHeight: Units.gu(3.2)
+                                Layout.preferredWidth: Units.gu(1.5)
                             }
                             Image {
                                 source: "../images/wifi/checkmark.png"
                                 visible: btDevice.Connected
 
                                 fillMode: Image.PreserveAspectFit
-                                Layout.preferredHeight: parent.height
+                                horizontalAlignment: Image.AlignHCenter
+                                verticalAlignment: Image.AlignVCenter
+                                Layout.preferredHeight: Units.gu(3.2)
+                                Layout.preferredWidth: Units.gu(3.2)
                             }
+                        }
+                        // Show a separator between items
+                        Rectangle {
+                            y: parent.height-1
+                            height: 1
+                            width: parent.width
+                            color: '#ADADAD'
+                            visible: index < btDevicesModel.count - 1
+                        }
+                        Rectangle {
+                            y: parent.height
+                            height: 1
+                            width: parent.width
+                            color: '#ECECEC'
+                            visible: index < btDevicesModel.count - 1
                         }
                         MouseArea {
                             anchors.fill: parent
