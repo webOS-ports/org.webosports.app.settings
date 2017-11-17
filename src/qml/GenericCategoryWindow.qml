@@ -32,7 +32,7 @@ ApplicationWindow {
         "org.webosports.app.settings.wifi": {
             "source": "Connectivity/WiFiPage.qml",
             "icon": "images/icons/icon-wifi.png",
-            "title": "WiFi"
+            "title": "Wi-Fi"
         },
        "org.webosports.app.settings.bluetooth": {
            "source": "Connectivity/BluetoothPage.qml",
