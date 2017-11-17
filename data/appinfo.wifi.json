@@ -1,5 +1,5 @@
 {
-    "title": "WiFi Settings",
+    "title": "Wi-Fi",
     "id": "org.webosports.app.settings.wifi",
     "version": "0.4.0",
 	"vendor": "WebOS Ports",
