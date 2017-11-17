@@ -124,18 +124,11 @@ BasePage {
                         }
                     }
                     // Show a separator between items
-                    Rectangle {
-                        y: parent.height-1
-                        height: 1
+                    HorizontalSeparator {
+                        anchors.bottom: parent.bottom
                         width: parent.width
-                        color: '#ADADAD'
                     }
-                    Rectangle {
-                        y: parent.height
-                        height: 1
-                        width: parent.width
-                        color: '#ECECEC'
-                    }
+
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
