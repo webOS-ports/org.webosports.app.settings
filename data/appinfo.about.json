@@ -1,0 +1,13 @@
+{
+    "title": "Device Info",
+    "id": "org.webosports.app.settings.about",
+    "version": "0.4.0",
+	"vendor": "WebOS Ports",
+	"vendor_url": "https://github.com/webOS-ports/org.webosports.app.settings",
+    "type": "qml",
+    "useLuneOSStyle": true,
+    "main": "qml/GenericCategoryWindow.qml",
+    "icon": "qml/images/icons/icon-deviceinfo.png",
+	"uiRevision": "2"
+}
+
