@@ -37,6 +37,7 @@ Page {
     // Convenience LS2 services & functions
     property LunaService luna: LunaService {
         name: "org.webosports.app.settings"
+        usePrivateBus: true
     }
 
     function _handleGetError(message) {

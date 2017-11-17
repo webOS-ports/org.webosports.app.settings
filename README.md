@@ -19,6 +19,20 @@ then you can apply the LuneOS style by adding the passing the following argument
 -style ../luneos-components/modules/QtQuick/Controls.2/LuneOS
 ```
 
+Creating a new settings page
+----------------------------
+
+Let's suppose you want to add a new setting XXX, corresponding to the
+new app org.webosports.app.settings.XXX
+
+This is partially automated. Here are the remaining manual tasks:
+* Create a dedicated XXX.qml file in the corresponding folder (General, Connectivity...)
+* Eventually create a dedicated icon in images/icons
+* Follow the best practices given in Testing/ExamplePage.qml
+* Fill in the corresponding entry in the property "categories" of GenericCategoryWindow.qml
+* Create the dedicated appinfo.XXX.json file in data/
+* Add XXX to the list of "CATEGORY" list in data/CMakeLists.txt
+
 ## Contributing
 
 If you want to contribute you can just start with cloning the repository and make your

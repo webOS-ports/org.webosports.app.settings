@@ -186,18 +186,9 @@ BasePage {
                             }
                         }
                         // Show a separator between items
-                        Rectangle {
-                            y: parent.height-1
-                            height: 1
+                        HorizontalSeparator {
+                            anchors.bottom: parent.bottom
                             width: parent.width
-                            color: '#ADADAD'
-                            visible: index < btDevicesModel.count - 1
-                        }
-                        Rectangle {
-                            y: parent.height
-                            height: 1
-                            width: parent.width
-                            color: '#ECECEC'
                             visible: index < btDevicesModel.count - 1
                         }
                         MouseArea {

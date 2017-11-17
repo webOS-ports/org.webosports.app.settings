@@ -41,7 +41,7 @@ ApplicationWindow {
        },
        "org.webosports.app.settings.about": {
            "source": "General/AboutPage.qml",
-           "icon": "images/General/about-category.png",
+           "icon": "images/icons/icon-deviceinfo.png",
            "title": "About"
        }
     })
