@@ -38,88 +38,97 @@ BasePage {
     }
 
     /* A settings page has a vertical layout: put everything in a Column */
-    Column {
-        width: parent.width
-        spacing: Units.gu(2)
+    Flickable {
+        id: flickableItem
+        anchors.fill: parent
+        anchors.margins: Units.gu(1)
+        contentWidth: width
+        contentHeight: contentItem.childrenRect.height
+        flickableDirection: Flickable.AutoFlickIfNeeded
+        clip: true
 
-        GroupBox {
-            width: parent.width
+        Column {
+            width: flickableItem.width
+            spacing: Units.gu(2)
 
-            title: "Device"
-            Column {
+            GroupBox {
                 width: parent.width
 
-                LabelAndValue {
-                    id: deviceNameLabel
+                title: "Device"
+                Column {
                     width: parent.width
-                    label: "Name"
+
+                    LabelAndValue {
+                        id: deviceNameLabel
+                        width: parent.width
+                        label: "Name"
+                    }
+                    HorizontalSeparator {
+                        width: parent.width
+                    }
+                    LabelAndValue {
+                        id: deviceSerialLabel
+                        width: parent.width
+                        label: "Serial number"
+                    }
+                    HorizontalSeparator {
+                        width: parent.width
+                    }
+                    LabelAndValue {
+                        id: deviceWifiAddrLabel
+                        width: parent.width
+                        label: "Wi-Fi MAC Address"
+                    }
                 }
-                HorizontalSeparator {
+            }
+
+            GroupBox {
+                width: parent.width
+
+                title: "Software"
+                Column {
                     width: parent.width
-                }
-                LabelAndValue {
-                    id: deviceSerialLabel
-                    width: parent.width
-                    label: "Serial number"
-                }
-                HorizontalSeparator {
-                    width: parent.width
-                }
-                LabelAndValue {
-                    id: deviceWifiAddrLabel
-                    width: parent.width
-                    label: "Wi-Fi MAC Address"
+
+                    LabelAndValue {
+                        id: softwareVersionLabel
+                        width: parent.width
+                        label: "Version"
+                    }
+                    HorizontalSeparator {
+                        width: parent.width
+                    }
+                    LabelAndValue {
+                        id: softwareCodenameLabel
+                        width: parent.width
+                        label: "Codename"
+                    }
+                    HorizontalSeparator {
+                        width: parent.width
+                    }
+                    LabelAndValue {
+                        id: softwareBuildTreeLabel
+                        width: parent.width
+                        label: "Build Tree"
+                    }
+                    HorizontalSeparator {
+                        width: parent.width
+                    }
+                    LabelAndValue {
+                        id: softwareBuildNumberLabel
+                        width: parent.width
+                        label: "Build Number"
+                    }
+                    HorizontalSeparator {
+                        width: parent.width
+                    }
+                    LabelAndValue {
+                        id: softwareAndroidVersionLabel
+                        width: parent.width
+                        label: "Android Version"
+                    }
                 }
             }
         }
-
-        GroupBox {
-            width: parent.width
-
-            title: "Software"
-            Column {
-                width: parent.width
-
-                LabelAndValue {
-                    id: softwareVersionLabel
-                    width: parent.width
-                    label: "Version"
-                }
-                HorizontalSeparator {
-                    width: parent.width
-                }
-                LabelAndValue {
-                    id: softwareCodenameLabel
-                    width: parent.width
-                    label: "Codename"
-                }
-                HorizontalSeparator {
-                    width: parent.width
-                }
-                LabelAndValue {
-                    id: softwareBuildTreeLabel
-                    width: parent.width
-                    label: "Build Tree"
-                }
-                HorizontalSeparator {
-                    width: parent.width
-                }
-                LabelAndValue {
-                    id: softwareBuildNumberLabel
-                    width: parent.width
-                    label: "Build Number"
-                }
-                HorizontalSeparator {
-                    width: parent.width
-                }
-                LabelAndValue {
-                    id: softwareAndroidVersionLabel
-                    width: parent.width
-                    label: "Android Version"
-                }
-            }
-        }
-
     }
 
     function retrieveProperties() {
