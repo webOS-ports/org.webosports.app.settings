@@ -132,8 +132,8 @@ BasePage {
     }
 
     function retrieveProperties() {
-        luna.call("palm://org.webosports.service.update/retrieveVersion", '{}', _handleRetrieveVersion, _handleGetError);
-        luna.call("palm://com.android.properties/getProperty",
+        luna.call("luna://org.webosports.service.update/retrieveVersion", '{}', _handleRetrieveVersion, _handleGetError);
+        luna.call("luna://com.android.properties/getProperty",
                   '{"keys":["ro.serialno","ro.product.model","ro.product.manufacturer","ro.build.version.release"]}',
                   _handleGetProperty, _handleGetError);
         luna.call("luna://com.palm.connectionmanager/getinfo", '{}', _handleGetInfo, _handleGetError);
