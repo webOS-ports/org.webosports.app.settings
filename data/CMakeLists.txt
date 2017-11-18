@@ -5,7 +5,7 @@ endmacro(install_symlink)
 
 # For each category, install the appinfo and the LS2 json files
 foreach(CATEGORY
-  about
+  deviceinfo
   wifi
   bluetooth)
   # for a new category, just add the name up there.

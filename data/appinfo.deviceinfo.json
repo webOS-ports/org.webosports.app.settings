@@ -1,6 +1,6 @@
 {
     "title": "Device Info",
-    "id": "org.webosports.app.settings.about",
+    "id": "org.webosports.app.settings.deviceinfo",
     "version": "0.4.0",
     "vendor": "WebOS Ports",
     "vendor_url": "https://github.com/webOS-ports/org.webosports.app.settings",
