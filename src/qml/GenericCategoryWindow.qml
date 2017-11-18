@@ -39,10 +39,10 @@ ApplicationWindow {
            "icon": "images/icons/icon-bluetooth.png",
            "title": "Bluetooth"
        },
-       "org.webosports.app.settings.about": {
-           "source": "General/AboutPage.qml",
+       "org.webosports.app.settings.deviceinfo": {
+           "source": "General/DeviceInfo.qml",
            "icon": "images/icons/icon-deviceinfo.png",
-           "title": "About"
+           "title": "Device Info"
        }
     })
 
