@@ -67,9 +67,9 @@ GenericCategoryWindow {
         }
 
         ListElement {
-            title: "About"
+            title: "Device Info"
             categorySection: "General"
-            appId: "org.webosports.app.settings.about"
+            appId: "org.webosports.app.settings.deviceinfo"
         }
 
         ListElement {
