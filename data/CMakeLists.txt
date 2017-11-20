@@ -5,9 +5,24 @@ endmacro(install_symlink)
 
 # For each category, install the appinfo and the LS2 json files
 foreach(CATEGORY
+  backup
+  bluetooth
+  certificate
+  dateandtime
   deviceinfo
-  wifi
-  bluetooth)
+  devmodeswitcher
+  exhibitionpreferences
+  help
+  languagepicker
+  location
+  networksettings
+  screenlock
+  searchpreferences
+  soundsandalerts
+  textassist
+  updates
+  vpn
+  wifi)
   # for a new category, just add the name up there.
   # it will correspond to the app name suffix put after org.webosports.app.settings.
 

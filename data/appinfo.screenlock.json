@@ -1,0 +1,13 @@
+{
+    "title": "Screen & Lock",
+    "id": "org.webosports.app.settings.screenlock",
+    "version": "0.4.0",
+    "vendor": "WebOS Ports",
+    "vendor_url": "https://github.com/webOS-ports/org.webosports.app.settings",
+    "type": "qml",
+    "useLuneOSStyle": true,
+    "main": "qml/GenericCategoryWindow.qml",
+    "icon": "qml/images/icons/icon-screenandlock.png",
+    "uiRevision": "2"
+}
+
