@@ -39,10 +39,65 @@ ApplicationWindow {
            "icon": "images/icons/icon-bluetooth.png",
            "title": "Bluetooth"
        },
+       "org.webosports.app.settings.vpn": {
+           "source": "Connectivity/VPNPage.qml",
+           "icon": "images/icons/icon-vpn.png",
+           "title": "VPN (placeholder)"
+       },
        "org.webosports.app.settings.deviceinfo": {
-           "source": "General/DeviceInfo.qml",
+           "source": "General/DeviceInfoPage.qml",
            "icon": "images/icons/icon-deviceinfo.png",
            "title": "Device Info"
+       },
+       "org.webosports.app.settings.help": {
+           "source": "General/HelpPage.qml",
+           "icon": "images/icons/icon-help.png",
+           "title": "Help (placeholder)"
+       },
+       "org.webosports.app.settings.devmodeswitcher": {
+           "source": "General/DeveloperOptionsPage.qml",
+           "icon": "images/icons/icon-devmode.png",
+           "title": "Developer Option (placeholder)"
+       },
+       "org.webosports.app.settings.dateandtime": {
+           "source": "General/DateAndTimePage.qml",
+           "icon": "images/icons/icon-dateandtime.png",
+           "title": "Dàte & Time (placeholder)"
+       },
+       "org.webosports.app.settings.exhibitionpreferences": {
+           "source": "General/DeveloperOptionsPage.qml",
+           "icon": "images/icons/icon-exhibitionpreferences.png",
+           "title": "Exhibition (placeholder)"
+       },
+       "org.webosports.app.settings.searchpreferences": {
+           "source": "General/SearchPreferencesPage.qml",
+           "icon": "images/icons/icon-searchpreferences.png",
+           "title": "Just Type (placeholder)"
+       },
+       "org.webosports.app.settings.location": {
+           "source": "General/LocationPage.qml",
+           "icon": "images/icons/icon-location.png",
+           "title": "Location Services (placeholder)"
+       },
+       "org.webosports.app.settings.languagepicker": {
+           "source": "General/LanguagePickerPage.qml",
+           "icon": "images/icons/icon-languageandinput.png",
+           "title": "Regional Settings (placeholder)"
+       },
+       "org.webosports.app.settings.soundsandalerts": {
+           "source": "General/SoundsAndAlertsPage.qml",
+           "icon": "images/icons/icon-soundandringtones.png",
+           "title": "Sounds & Ringtones (placeholder)"
+       },
+       "org.webosports.app.settings.textassist": {
+           "source": "General/TextAssistPage.qml",
+           "icon": "images/icons/icon-textassist.png",
+           "title": "Text Assist (placeholder)"
+       },
+       "org.webosports.app.settings.backup": {
+           "source": "General/BackupPage.qml",
+           "icon": "images/icons/icon-backup.png",
+           "title": "Backup (placeholder)"
        }
     })
 

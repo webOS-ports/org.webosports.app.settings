@@ -1,0 +1,13 @@
+{
+    "title": "VPN",
+    "id": "org.webosports.app.settings.vpn",
+    "version": "0.4.0",
+    "vendor": "WebOS Ports",
+    "vendor_url": "https://github.com/webOS-ports/org.webosports.app.settings",
+    "type": "qml",
+    "useLuneOSStyle": true,
+    "main": "qml/GenericCategoryWindow.qml",
+    "icon": "qml/images/icons/icon-vpn.png",
+    "uiRevision": "2"
+}
+
