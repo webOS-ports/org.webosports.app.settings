@@ -49,21 +49,51 @@ GenericCategoryWindow {
         }
 
         ListElement {
-            title: "WiFi"
-            categorySection: "Connectivity"
-            appId: "org.webosports.app.settings.wifi"
-        }
-
-        ListElement {
             title: "Bluetooth"
             categorySection: "Connectivity"
             appId: "org.webosports.app.settings.bluetooth"
         }
 
         ListElement {
-            title: "Cellular"
+            title: "Network Settings"
             categorySection: "Connectivity"
-            appId: "org.webosports.app.settings.phone"
+            appId: "org.webosports.app.settings.networksettings"
+        }
+
+        ListElement {
+            title: "VPN"
+            categorySection: "Connectivity"
+            appId: "org.webosports.app.settings.vpn"
+        }
+
+        ListElement {
+            title: "WiFi"
+            categorySection: "Connectivity"
+            appId: "org.webosports.app.settings.wifi"
+        }
+
+        ListElement {
+            title: "Backup"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.backup"
+        }
+
+        ListElement {
+            title: "Certificate Manager"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.certificate"
+        }
+
+        ListElement {
+            title: "Date & Time"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.dateandtime"
+        }
+
+        ListElement {
+            title: "Developer Options"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.devmodeswitcher"
         }
 
         ListElement {
@@ -73,21 +103,57 @@ GenericCategoryWindow {
         }
 
         ListElement {
+            title: "Exhibition"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.exhibitionpreferences"
+        }
+
+        ListElement {
+            title: "Help"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.help"
+        }
+
+        ListElement {
+            title: "Just Type"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.searchpreferences"
+        }
+
+        ListElement {
+            title: "Location Services"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.location"
+        }
+
+        ListElement {
+            title: "Regional Settings"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.languagepicker"
+        }
+
+        ListElement {
             title: "Screen & Lock"
             categorySection: "General"
             appId: "org.webosports.app.settings.screenlock"
         }
 
         ListElement {
-            title: "Date & Time"
+            title: "Sounds & Ringtones"
             categorySection: "General"
-            appId: "org.webosports.app.settings.datetime"
+            appId: "org.webosports.app.settings.soundsandalerts"
         }
 
         ListElement {
-            title: "Developer Options"
+            title: "System Updates"
             categorySection: "General"
-            appId: "org.webosports.app.settings.developper"
+            appId: "org.webosports.app.settings.updates"
+        }
+
+        ListElement {
+            title: "Text Assist"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.textassist"
         }
     }
 
