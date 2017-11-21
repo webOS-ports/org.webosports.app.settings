@@ -7,7 +7,7 @@
     "type": "qml",
     "useLuneOSStyle": true,
     "main": "qml/GenericCategoryWindow.qml",
-    "icon": "qml/images/icons/icon-soundandringtones.png",
+    "icon": "qml/images/icons/icon-soundsandalerts.png",
     "uiRevision": "2"
 }
 

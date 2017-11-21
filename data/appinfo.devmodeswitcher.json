@@ -7,7 +7,7 @@
     "type": "qml",
     "useLuneOSStyle": true,
     "main": "qml/GenericCategoryWindow.qml",
-    "icon": "qml/images/icons/icon-devmode.png",
+    "icon": "qml/images/icons/icon-devmodeswitcher.png",
     "uiRevision": "2"
 }
 

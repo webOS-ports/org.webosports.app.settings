@@ -56,7 +56,7 @@ ApplicationWindow {
         },
         "org.webosports.app.settings.certificate": {
             "source": "General/CertificatePage.qml",
-            "icon": "images/icons/icon-certificates.png",
+            "icon": "images/icons/icon-certificate.png",
             "title": "Certificate Manager (placeholder)"
         },
         "org.webosports.app.settings.dateandtime": {
@@ -66,7 +66,7 @@ ApplicationWindow {
         },
         "org.webosports.app.settings.devmodeswitcher": {
             "source": "General/DeveloperOptionsPage.qml",
-            "icon": "images/icons/icon-devmode.png",
+            "icon": "images/icons/icon-devmodeswitcher.png",
             "title": "Developer Option (placeholder)"
         },
         "org.webosports.app.settings.deviceinfo": {
@@ -86,7 +86,7 @@ ApplicationWindow {
         },
         "org.webosports.app.settings.languagepicker": {
             "source": "General/LanguagePickerPage.qml",
-            "icon": "images/icons/icon-languageandinput.png",
+            "icon": "images/icons/icon-languagepicker.png",
             "title": "Regional Settings (placeholder)"
         },
         "org.webosports.app.settings.location": {
@@ -96,7 +96,7 @@ ApplicationWindow {
         },
         "org.webosports.app.settings.screenlock": {
             "source": "General/ScreenLockPage.qml",
-            "icon": "images/icons/icon-screenandlock.png",
+            "icon": "images/icons/icon-screenlock.png",
             "title": "Screen & Lock (placeholder)"
         },
         "org.webosports.app.settings.searchpreferences": {
@@ -106,12 +106,12 @@ ApplicationWindow {
         },
         "org.webosports.app.settings.soundsandalerts": {
             "source": "General/SoundsAndAlertsPage.qml",
-            "icon": "images/icons/icon-soundandringtones.png",
+            "icon": "images/icons/icon-soundandalerts.png",
             "title": "Sounds & Ringtones (placeholder)"
         },
         "org.webosports.app.settings.updates": {
             "source": "General/UpdatesPage.qml",
-            "icon": "images/icons/icon-update.png",
+            "icon": "images/icons/icon-updates.png",
             "title": "System Updates (placeholder)"
         },
         "org.webosports.app.settings.textassist": {

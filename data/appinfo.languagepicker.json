@@ -7,7 +7,7 @@
     "type": "qml",
     "useLuneOSStyle": true,
     "main": "qml/GenericCategoryWindow.qml",
-    "icon": "qml/images/icons/icon-languageandinput.png",
+    "icon": "qml/images/icons/icon-languagepicker.png",
     "uiRevision": "2"
 }
 

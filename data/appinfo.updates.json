@@ -7,7 +7,7 @@
     "type": "qml",
     "useLuneOSStyle": true,
     "main": "qml/GenericCategoryWindow.qml",
-    "icon": "qml/images/icons/icon-update.png",
+    "icon": "qml/images/icons/icon-updates.png",
     "uiRevision": "2"
 }
 

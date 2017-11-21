@@ -7,7 +7,7 @@
     "type": "qml",
     "useLuneOSStyle": true,
     "main": "qml/GenericCategoryWindow.qml",
-    "icon": "qml/images/icons/icon-screenandlock.png",
+    "icon": "qml/images/icons/icon-screenlock.png",
     "uiRevision": "2"
 }
 
