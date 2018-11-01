@@ -4,5 +4,11 @@
         "type": "privileged",
         "allowedNames": [""]
     },
-    "permissions": [ ]
+    "permissions": [ 
+        {
+            "service":"",
+            "inbound":["*"],
+            "outbound":["*"]
+        }
+    ]
 }
