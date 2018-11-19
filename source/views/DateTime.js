@@ -70,11 +70,11 @@ enyo.kind({
 					]},
 					{ name: "TimePickerRow", kind: "enyo.FittableColumns", classes: "group-item", components:[
 						{content: "Time", fit: true},
-						{name: "TimePicker", kind: "onyx.TimePicker", disabled: true, onSelect: "dateTimeChanged"},
+						{name: "TimePicker", kind: "onyx.TimePicker", onSelect: "dateTimeChanged"},
 					]},
 					{ name: "DatePickerRow", kind: "enyo.FittableColumns", classes: "group-item", components:[
 						{content: "Date", fit: true},
-						{name: "DatePicker", kind: "onyx.DatePicker", disabled: true, onSelect: "dateTimeChanged"},
+						{name: "DatePicker", kind: "onyx.DatePicker", onSelect: "dateTimeChanged"},
 					]}
 				]},
 				{kind: "onyx.Groupbox", layoutKind: "FittableRowsLayout",
