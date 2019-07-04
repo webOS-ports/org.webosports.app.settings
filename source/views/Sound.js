@@ -9,7 +9,6 @@ enyo.kind({
 	mute: false,
 	keys: false,
 	vibrate: false,
-	micMute: false,
 	system: false,
 	systemVolume: 0,
 	ringerVolume: 0,
@@ -56,14 +55,6 @@ enyo.kind({
 							]}
 						]},
 						{kind: "enyo.FittableColumns", classes: "group-item", components: [
-							{fit: true, content: "Mic Mute"},
-							{kind: "onyx.TooltipDecorator", components: [
-								{name: "micMuteToggle", kind: "onyx.ToggleButton", style: "float: right;",
-								 onChange: "micMuteToggleChanged"},
-								{kind: "onyx.Tooltip", content: "Mic mute on/off"}
-							]}
-						]},
-						{kind: "enyo.FittableColumns", classes: "group-item", components: [
 							{fit: true, content: "System Sounds"},
 							{kind: "onyx.TooltipDecorator", components: [
 								{name: "systemSoundToggle", kind: "onyx.ToggleButton", style: "float: right;",
@@ -93,15 +84,13 @@ enyo.kind({
 		{name: "ErrorPopup", kind: "onyx.Popup", classes: "error-popup", modal: true, style: "padding: 10px;", components: [
 			{name: "ErrorMessage", content: "", style: "display: inline;"}
 		]},
-		{name: "GetAudioStatus", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
+		{name: "GetAudioStatus", kind: "enyo.LunaService", service: "luna://com.webos.service.audio",
 		 subscribe: true,
-		 method: "getStatus", onComplete: "handleGetAudioStatusResponse"},
-		{name: "SetMute", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
-		 method: "setMute"},
-		{name: "SetVolume", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
+		 method: "status", onComplete: "handleGetAudioStatusResponse"},
+		{name: "SetMuted", kind: "enyo.LunaService", service: "luna://com.webos.service.audio",
+		 method: "setMuted"},
+		{name: "SetVolume", kind: "enyo.LunaService", service: "luna://com.webos.service.audio",
 		 method: "setVolume"},
-		{name: "SetMicMute", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
-		 method: "setMicMute"},
 		{name: "GetSystemPreferences", kind: "SystemService", method: "getPreferences",
 		 onComplete: "handleGetPreferencesResponse", subscribe: true},
 		{name: "SetSystemPreferences", kind: "SystemService", method: "setPreferences"}
@@ -150,7 +139,7 @@ enyo.kind({
 	muteToggleChanged: function(inSender, inEvent) {
 		this.mute = inEvent.value;
 		if (this.palm) {
-			this.$.SetMute.send({mute: this.mute});
+			this.$.SetMuted.send({mute: this.mute});
 		}
 		this.doMuteChanged({mute: this.mute});
 	},
@@ -168,12 +157,7 @@ enyo.kind({
 	vib: function(inSender, inEvent) {
 		this.vibrate = inEvent.value;
 	},
-	micMuteToggleChanged: function(inSender, inEvent) {
-		this.micMute = inEvent.value;
-		if (this.palm) {
-			this.$.SetMicMute.send({micMute: this.micMute});
-		}
-	},
+	
 	systemSounds: function(inSender, inEvent) {
 		this.system = inEvent.value;
 	},
@@ -201,12 +185,6 @@ enyo.kind({
 			this.$.muteToggle.setValue(this.mute);
 			this.$.muteToggle.unsilence();
 			this.doMuteChanged({mute: this.mute});
-		}
-		if (inResponse.micMute != undefined) {
-			this.micMute = inResponse.micMute;
-			this.$.micMuteToggle.silence();
-			this.$.micMuteToggle.setValue(this.micMute);
-			this.$.micMuteToggle.unsilence();
 		}
 	},
 	handleGetPreferencesResponse: function(inSender, inResponse) {
