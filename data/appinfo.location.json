@@ -9,6 +9,6 @@
     "main": "qml/GenericCategoryWindow.qml",
     "icon": "qml/images/icons/icon-location.png",
     "uiRevision": "2",
-    "visible": "true"
+    "visible": "false"
 }
 
