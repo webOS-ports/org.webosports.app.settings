@@ -138,7 +138,7 @@ BasePage {
             anchors.right: parent.right
             Layout.fillHeight: true
 
-            title: "Choose a network"
+            title: "Choose a device"
             ColumnLayout {
                 anchors.fill: parent
 
