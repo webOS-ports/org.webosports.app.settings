@@ -25,7 +25,7 @@ BasePage {
 
     property alias deviceName:        deviceNameLabel.value
     property alias deviceSerial:      deviceSerialLabel.value
-    property alias deviceWifiAddress: deviceWifiAddrLabel.value
+    property alias deviceMACAddress:  deviceMACAddrLabel.value
 
     property alias softwareVersion:        softwareVersionLabel.value
     property alias softwareCodename:       softwareCodenameLabel.value
@@ -75,7 +75,7 @@ BasePage {
                         width: parent.width
                     }
                     LabelAndValue {
-                        id: deviceWifiAddrLabel
+                        id: deviceMACAddrLabel
                         width: parent.width
                         label: "Wi-Fi MAC Address"
                     }
@@ -137,39 +137,74 @@ BasePage {
                   '{"keys":["ro.serialno","ro.product.model","ro.product.manufacturer","ro.build.version.release"]}',
                   _handleGetProperty, _handleGetError);
         luna.call("luna://com.palm.connectionmanager/getinfo", '{}', _handleGetInfo, _handleGetError);
+        luna.call("luna://com.palm.preferences/systemProperties/getSomeSysProperties", '[{"key":"com.palm.properties.nduid"}, {"key":"com.palm.properties.buildName"}, {"key":"com.palm.properties.buildNumber"}, {"key":"com.palm.properties.machineName"}, {"key":"com.palm.properties.browserOsName"}, {"key":"com.palm.properties.version"}]', _handleGetProperties, _handleGetError );
     }
 
     function _handleRetrieveVersion(message) {
         if(message && message.payload) {
             var payloadValue = JSON.parse(message.payload);
 
-            if (payloadValue.localVersion) softwareVersion = payloadValue.localVersion;
-            if (payloadValue.codename) softwareCodename = payloadValue.codename;
-            if (payloadValue.buildTree) softwareBuildTree = payloadValue.buildTree;
-            if (payloadValue.buildNumber) softwareBuildNumber = payloadValue.buildNumber;
+            if (payloadValue.localVersion) {
+                softwareVersion = payloadValue.localVersion;
+            }
+            if (payloadValue.codename) {
+                softwareCodename = payloadValue.codename;
+            }
+            if (payloadValue.buildTree) {
+                softwareBuildTree = payloadValue.buildTree;
+            }
+            if (payloadValue.buildNumber) {
+                softwareBuildNumber = payloadValue.buildNumber;
+            }
         }
     }
 
     function _handleGetProperty(message) {
         if(message && message.payload) {
             var payloadValue = JSON.parse(message.payload);
-
-            var model = "";
-            var manufacturer = "";
-
-            for (var n = 0; n < payloadValue.properties.length; n++) {
-                var property = payloadValue.properties[n];
-                if (property["ro.serialno"])
-                    deviceSerial = property["ro.serialno"];
-                else if (property["ro.product.model"])
-                    model = property["ro.product.model"];
-                else if (property["ro.product.manufacturer"])
-                    manufacturer = property["ro.product.manufacturer"];
-                else if (property["ro.build.version.release"])
-                    softwareAndroidVersion = property["ro.build.version.release"];
+            if(!payloadValue.returnValue) {
+                console.log("com.android.properties doesn't exist, we're probably in an emulator or using a device with mainline kernel");
             }
+            else {
+                var model = "";
+                var manufacturer = "";
 
-            deviceName = manufacturer + " " + model;
+                for (var n = 0; n < payloadValue.properties.length; n++) {
+                    var property = payloadValue.properties[n];
+                    if (property["ro.serialno"]) {
+                        deviceSerial = property["ro.serialno"];
+                    }
+                    else if (property["ro.product.model"]) {
+                        model = property["ro.product.model"];
+                    }
+                    else if (property["ro.product.manufacturer"]) {
+                        manufacturer = property["ro.product.manufacturer"];
+                    }
+                    else if (property["ro.build.version.release"]) {
+                        softwareAndroidVersion = property["ro.build.version.release"];
+                    }
+                }
+                deviceName = manufacturer + " " + model;
+            }
+        }
+    }
+
+    function _handleGetProperties(message) {
+        if(message && message.payload) {
+            var payloadValue = JSON.parse(message.payload);
+            
+            for (var n = 0; n < payloadValue.length; n++) {
+                var property = payloadValue[n];
+                if (property["com.palm.properties.nduid"] && !deviceSerial) {
+                    deviceSerial = property["com.palm.properties.nduid"];
+                }
+                else if (property["com.palm.properties.buildName"] && !softwareBuildTree) {
+                    softwareBuildTree = property["com.palm.properties.buildName"];
+                }
+                else if (property["com.palm.properties.machineName"] && !deviceName) {
+                    deviceName = property["com.palm.properties.machineName"];
+                }
+            }
         }
     }
 
@@ -177,8 +212,13 @@ BasePage {
         if(message && message.payload) {
             var payloadValue = JSON.parse(message.payload);
 
-            if (payloadValue.wifiInfo && payloadValue.wifiInfo.macAddress)
-                deviceWifiAddress = payloadValue.wifiInfo.macAddress;
+            if (payloadValue.wifiInfo && payloadValue.wifiInfo.macAddress) {
+                deviceMACAddress = payloadValue.wifiInfo.macAddress;
+                deviceMACAddrLabel.label = "Wi-Fi MAC Address";
+            } else if (payloadValue.wiredInfo && payloadValue.wiredInfo.macAddress) {
+                deviceMACAddress = payloadValue.wiredInfo.macAddress;
+                deviceMACAddrLabel.label = "MAC Address";
+            }
         }
     }
 }
