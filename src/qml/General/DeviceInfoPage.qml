@@ -144,7 +144,7 @@ BasePage {
         if(message && message.payload) {
             var payloadValue = JSON.parse(message.payload);
 
-            if (payloadValue.localVersion) {
+            if (typeof payloadValue.localVersion !== "undefined") {
                 softwareVersion = payloadValue.localVersion;
             }
             if (payloadValue.codename) {
@@ -164,6 +164,7 @@ BasePage {
             var payloadValue = JSON.parse(message.payload);
             if(!payloadValue.returnValue) {
                 console.log("com.android.properties doesn't exist, we're probably in an emulator or using a device with mainline kernel");
+                softwareAndroidVersion = "N/A; Not based on Android";
             }
             else {
                 var model = "";
