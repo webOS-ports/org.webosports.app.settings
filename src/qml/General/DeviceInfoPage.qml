@@ -144,7 +144,7 @@ BasePage {
         if(message && message.payload) {
             var payloadValue = JSON.parse(message.payload);
 
-            if (payloadValue.localVersion) {
+            if (typeof payloadValue.localVersion !== "undefined") {
                 softwareVersion = payloadValue.localVersion;
             }
             if (payloadValue.codename) {
