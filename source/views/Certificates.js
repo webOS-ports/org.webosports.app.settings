@@ -1,7 +1,7 @@
 enyo.kind({
   name: "CertMgrService",
   kind: "enyo.LunaService",
-  service: "palm://org.webosports.certmgr"
+  service: "palm://org.webosports.service.certmgr"
 });
 
 enyo.kind({
