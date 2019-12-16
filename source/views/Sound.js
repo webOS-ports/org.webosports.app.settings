@@ -93,14 +93,14 @@ enyo.kind({
 		{name: "ErrorPopup", kind: "onyx.Popup", classes: "error-popup", modal: true, style: "padding: 10px;", components: [
 			{name: "ErrorMessage", content: "", style: "display: inline;"}
 		]},
-		{name: "GetAudioStatus", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
+		{name: "GetAudioStatus", kind: "enyo.LunaService", service: "luna://org.webosports.service.audio",
 		 subscribe: true,
 		 method: "getStatus", onComplete: "handleGetAudioStatusResponse"},
-		{name: "SetMute", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
+		{name: "SetMute", kind: "enyo.LunaService", service: "luna://org.webosports.service.audio",
 		 method: "setMute"},
-		{name: "SetVolume", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
+		{name: "SetVolume", kind: "enyo.LunaService", service: "luna://org.webosports.service.audio",
 		 method: "setVolume"},
-		{name: "SetMicMute", kind: "enyo.LunaService", service: "luna://org.webosports.audio",
+		{name: "SetMicMute", kind: "enyo.LunaService", service: "luna://org.webosports.service.audio",
 		 method: "setMicMute"},
 		{name: "GetSystemPreferences", kind: "SystemService", method: "getPreferences",
 		 onComplete: "handleGetPreferencesResponse", subscribe: true},
