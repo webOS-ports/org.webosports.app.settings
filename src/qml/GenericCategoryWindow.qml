@@ -37,7 +37,7 @@ ApplicationWindow {
        "org.webosports.app.settings.networksettings": {
             "source": "Connectivity/NetworkSettingsPage.qml",
             "icon": "images/icons/icon-networksettings.png",
-            "title": "Network Settings (placeholder)"
+            "title": "Network Settings"
         },
         "org.webosports.app.settings.vpn": {
             "source": "Connectivity/VPNPage.qml",
