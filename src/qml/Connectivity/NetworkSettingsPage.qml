@@ -24,6 +24,8 @@ import LunaNext.Common 0.1
 
 import "../Common"
 
+import MeeGo.QOfono 0.2
+
 /*
  * This is an example of what the code for some settings can look like
  * It is supposed to be a set of good practices, don't hesitate to
@@ -38,33 +40,12 @@ BasePage {
     /*
      * These alias properties summarize what settings are relative to this page
      */
-    property alias hourlyCoffee: hourlyCoffeeSwitch.checked
-    property alias wikiSearch: wikiSearchSwitch.checked
-    property alias publicName: publicNameTextField.text
-    property alias aggressivity: aggressivityCombo.currentIndex
+    property alias roamingAllowed: roamingAllowedSwitch.checked
+    property alias dataUsage: dataUsageSwitch.checked
 //    property alias exampleEnabled: mainExampleSwitch.checked
-
-    pageActionHeaderComponent: Component {
-        Switch {
-            id: mainExampleSwitch
-            LuneOSSwitch.labelOn: "On"
-            LuneOSSwitch.labelOff: "Off"
-        }
-    }
 
     Component.onCompleted: {
         retrieveProperties();
-    }
-
-    /*
-     * Need some models for combos or lists ? Let's declare it before the UI.
-     */
-    ListModel {
-        id: aggressivityModel
-        ListElement { level: "Low" }
-        ListElement { level: "Medium" }
-        ListElement { level: "High" }
-        ListElement { level: "Fatal" }
     }
 
     /* A settings page has a vertical layout: put everything in a Column */
@@ -75,30 +56,32 @@ BasePage {
         GroupBox {
             width: parent.width
 
-            title: "Productivity"
+            title: "Network"
             Column {
                 width: parent.width
 
                 Switch {
-                    id: hourlyCoffeeSwitch
+                    id: roamingAllowedSwitch
                     width: parent.width
-                    text: "Hourly Coffee"
+                    text: "Roaming allowed"
                     font.weight: Font.Normal
                     LayoutMirroring.enabled: true // by default the switch is on the left in Qt, not very webOS-ish
 
-                    LuneOSSwitch.labelOn: "On"
-                    LuneOSSwitch.labelOff: "Off"
+                    LuneOSSwitch.labelOn: "Yes"
+                    LuneOSSwitch.labelOff: "No"
                 }
-                Rectangle { color: "silver"; width: parent.width; height: 2 }
-                Switch {
-                    id: wikiSearchSwitch
+                HorizontalSeparator {
                     width: parent.width
-                    text: "Search in Wikipedia"
+                }
+                Switch {
+                    id: dataUsageSwitch
+                    width: parent.width
+                    text: "Data usage"
                     font.weight: Font.Normal
                     LayoutMirroring.enabled: true
 
-                    LuneOSSwitch.labelOn: "Yes"
-                    LuneOSSwitch.labelOff: "No"
+                    LuneOSSwitch.labelOn: "On"
+                    LuneOSSwitch.labelOff: "Off"
                 }
             }
         }
@@ -106,22 +89,38 @@ BasePage {
         GroupBox {
             width: parent.width
 
-            title: "Advertising"
+            title: "Information"
             Column {
                 width: parent.width
 
-                TextField {
-                    id: publicNameTextField
+                LabelAndValue {
                     width: parent.width
-                    placeholderText: "Public name..."
-                    text: "Default Name"
+                    label: "Operator"
+                    value: network.name
                 }
-                Rectangle { color: "silver"; width: parent.width; height: 2 }
-                ComboBox {
-                    id: aggressivityCombo
+                HorizontalSeparator {
                     width: parent.width
-                    textRole: "level"
-                    model: aggressivityModel
+                }
+                LabelAndValue {
+                    width: parent.width
+                    label: "Technology"
+                    value: network.technology
+                }
+                HorizontalSeparator {
+                    width: parent.width
+                }
+                LabelAndValue {
+                    width: parent.width
+                    label: "Strength"
+                    value: network.strength
+                }
+                HorizontalSeparator {
+                    width: parent.width
+                }
+                LabelAndValue {
+                    width: parent.width
+                    label: "Status"
+                    value: network.status
                 }
             }
         }
@@ -132,30 +131,45 @@ BasePage {
      */
     // Initialization and eventual subscription
     function retrieveProperties() {
-        luna.call("palm://com.palm.systemservice/getCoffeePreference", '{"subscribe": "true"}', _handleGetCoffeePreference, _handleGetError);
-        luna.call("palm://com.palm.systemservice/getAggressivity", '{}', _handleGetAggressivity, _handleGetError);
+        luna.call("luna://com.palm.wan/getstatus", '{"subscribe": "true"}', _handleWanStatus, _handleGetError);
     }
-    function _handleGetCoffeePreference(message) {
+    function _handleWanStatus(message) {
         if(message && message.payload) {
             payloadValue = JSON.parse(message.payload);
-            if(typeof payloadValue.hourly !== 'undefined') {
-                pageRoot.hourlyCoffee = payloadValue.hourly;
+            if(typeof payloadValue.roamguard !== 'undefined') {
+                roamingAllowed = (payloadValue.roamguard === "disable");
+            }
+            if(typeof payloadValue.disablewan !== 'undefined') {
+                dataUsage = (payloadValue.disablewan === "off");
             }
         }
     }
-    function _handleGetAggressivity(message) {
-        if(message && message.payload) {
-            payloadValue = JSON.parse(message.payload);
-            if(typeof payloadValue.value !== 'undefined') {
-                pageRoot.aggressivity = payloadValue.value;
-            }
-        }
+    OfonoManager {
+        id: modemManager
     }
+    OfonoSimManager {
+        id: simManager
+        modemPath: modemManager.defaultModem
+    }
+    OfonoModem {
+        id: modem
+        modemPath: modemManager.defaultModem
+    }
+    OfonoNetworkRegistration {
+        id: network
+        modemPath: modemManager.defaultModem
+    }
+    OfonoNetworkOperator {
+        id: networkOperator
+    }
+
     // Push changes to LuneOS
-    onHourlyCoffeeChanged: {
-        luna.call("palm://com.palm.systemservice/setCoffeePreference", '{"hourly": "'+hourlyCoffee+'"}', _handleSetSuccess, _handleSetError);
+    onRoamingAllowedChanged: {
+        var roamguard = roamingAllowed ? "disable" : "enable"
+        luna.call("palm://com.palm.wan/set", '{"roamguard": "'+roamguard+'"}', _handleSetSuccess, _handleSetError);
     }
-    onAggressivityChanged: {
-        luna.call("palm://com.palm.systemservice/setAggressivity", '{"value": "'+aggressivity+'"}', _handleSetSuccess, _handleSetError);
+    onDataUsageChanged: {
+        var disablewan = dataUsage ? "off" : "on"
+        luna.call("palm://com.palm.wan/set", '{"disablewan": "'+disablewan+'"}', _handleSetSuccess, _handleSetError);
     }
 }
