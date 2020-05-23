@@ -9,6 +9,7 @@
     "main": "qml/GenericCategoryWindow.qml",
     "icon": "qml/images/icons/icon-networksettings.png",
     "uiRevision": "2",
-    "visible": "true"
+    "visible": "true",
+    "requiredPermissions": ["networking"]
 }
 

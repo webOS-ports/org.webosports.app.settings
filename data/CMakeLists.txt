@@ -33,13 +33,6 @@ foreach(CATEGORY
             RENAME appinfo.json)
 
     install_symlink(${APP_DIR}/qml ${WEBOS_INSTALL_WEBOS_APPLICATIONSDIR}/org.webosports.app.settings.${CATEGORY}/qml)
-
-    # generate a dedicated LS2 json file for this category
-    set(APPINFO_JSON_ALL ${APPINFO_JSON_ALL} ${APPINFO_JSON_${CATEGORY}})
-    configure_file(../files/sysbus/org.webosports.app.settings.json.prv.in.in ${CMAKE_CURRENT_BINARY_DIR}/tmp/files/sysbus/org.webosports.app.settings.${CATEGORY}.json.prv.in)
 endforeach()
 
 add_custom_target(AppInfoFiles SOURCES ${APPINFO_JSON_ALL})
-
-# install all the generated ls2 files
-webos_build_system_bus_files(${CMAKE_CURRENT_BINARY_DIR}/tmp/files/sysbus)
