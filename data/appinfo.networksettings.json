@@ -10,6 +10,5 @@
     "icon": "qml/images/icons/icon-networksettings.png",
     "uiRevision": "2",
     "visible": "true",
-    "requiredPermissions": ["networking"]
+    "requiredPermissions": ["networking", "networking.query", "networking.internal"]
 }
-
