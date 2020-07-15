@@ -32,7 +32,9 @@ GenericCategoryWindow {
 
     Connections {
         target: _categoryLoader
-        onLoaded: categoryChooserDrawer.close();
+        function onLoaded() {
+            categoryChooserDrawer.close();
+        }
     }
 
     ListModel {
