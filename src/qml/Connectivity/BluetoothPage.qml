@@ -90,7 +90,7 @@ BasePage {
 
     Connections {
         target: BluetoothManager
-        onBluetoothOperationalChanged: {
+        function onBluetoothOperationalChanged() {
             console.log("BluetoothManager.bluetoothOperational="+BluetoothManager.bluetoothOperational);
             btAgent.registerToManager(BluetoothManager.btManager);
         }
@@ -104,7 +104,9 @@ BasePage {
 
             Connections {
                 target: BluetoothManager
-                onPoweredChanged: bluetoothPowerSwitch.checked=BluetoothManager.powered;
+                function onPoweredChanged() {
+                    bluetoothPowerSwitch.checked=BluetoothManager.powered;
+                }
             }
             checked: BluetoothManager.powered
             onCheckedChanged: BluetoothManager.powered = checked;
@@ -119,9 +121,7 @@ BasePage {
 
             text: "Discoverable"
 
-            anchors.left: parent.left
-            anchors.right: parent.right
-
+            Layout.fillWidth: true
             LayoutMirroring.enabled: true
             LuneOSSwitch.labelOn: "On"
             LuneOSSwitch.labelOff: "Off"
@@ -134,9 +134,8 @@ BasePage {
 
         /* GroupBoxes look good! */
         GroupBox {
-            anchors.left: parent.left
-            anchors.right: parent.right
             Layout.fillHeight: true
+            Layout.fillWidth: true
 
             title: "Choose a device"
             ColumnLayout {

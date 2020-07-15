@@ -48,7 +48,9 @@ BasePage {
 
             Connections {
                 target: wifiModel
-                onPoweredChanged: wifiPowerSwitch.checked=wifiModel.powered;
+                function onPoweredChanged () {
+                    wifiPowerSwitch.checked=wifiModel.powered;
+                }
             }
             checked: wifiModel.powered
             onCheckedChanged: wifiModel.powered=checked;
