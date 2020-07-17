@@ -42,85 +42,132 @@ BasePage {
      */
     property alias roamingAllowed: roamingAllowedSwitch.checked
     property alias dataUsage: dataUsageSwitch.checked
-//    property alias exampleEnabled: mainExampleSwitch.checked
 
     Component.onCompleted: {
         retrieveProperties();
     }
 
     /* A settings page has a vertical layout: put everything in a Column */
-    Column {
-        width: parent.width
-
-        /* GroupBoxes look good! */
-        GroupBox {
+    Flickable {
+        id: flickableItem
+        anchors.fill: parent
+        anchors.margins: Units.gu(1)
+        contentWidth: width
+        contentHeight: contentItem.childrenRect.height
+        flickableDirection: Flickable.AutoFlickIfNeeded
+        clip: true
+        Column {
+            spacing: Units.gu(2)
             width: parent.width
 
-            title: "Network"
-            Column {
+            /* GroupBoxes look good! */
+            GroupBox {
                 width: parent.width
 
-                Switch {
-                    id: roamingAllowedSwitch
+                title: "Network"
+                Column {
                     width: parent.width
-                    text: "Roaming allowed"
-                    font.weight: Font.Normal
-                    LayoutMirroring.enabled: true // by default the switch is on the left in Qt, not very webOS-ish
 
-                    LuneOSSwitch.labelOn: "Yes"
-                    LuneOSSwitch.labelOff: "No"
-                }
-                HorizontalSeparator {
-                    width: parent.width
-                }
-                Switch {
-                    id: dataUsageSwitch
-                    width: parent.width
-                    text: "Data usage"
-                    font.weight: Font.Normal
-                    LayoutMirroring.enabled: true
+                    Switch {
+                        id: roamingAllowedSwitch
+                        width: parent.width
+                        text: "Roaming allowed"
+                        font.weight: Font.Normal
+                        LayoutMirroring.enabled: true // by default the switch is on the left in Qt, not very webOS-ish
 
-                    LuneOSSwitch.labelOn: "On"
-                    LuneOSSwitch.labelOff: "Off"
+                        LuneOSSwitch.labelOn: "Yes"
+                        LuneOSSwitch.labelOff: "No"
+                    }
+                    HorizontalSeparator {
+                        width: parent.width
+                    }
+                    Switch {
+                        id: dataUsageSwitch
+                        width: parent.width
+                        text: "Data usage"
+                        font.weight: Font.Normal
+                        LayoutMirroring.enabled: true
+
+                        LuneOSSwitch.labelOn: "On"
+                        LuneOSSwitch.labelOff: "Off"
+                    }
                 }
             }
-        }
 
-        GroupBox {
-            width: parent.width
-
-            title: "Information"
-            Column {
+            GroupBox {
                 width: parent.width
 
-                LabelAndValue {
+                title: modemManager.modems[1] ? "Information SIM 1" : "Information"
+                Column {
                     width: parent.width
-                    label: "Operator"
-                    value: network.name
+
+                    LabelAndValue {
+                        width: parent.width
+                        label: "Operator"
+                        value: network.name
+                    }
+                    HorizontalSeparator {
+                        width: parent.width
+                    }
+                    LabelAndValue {
+                        width: parent.width
+                        label: "Technology"
+                        value: network.technology
+                    }
+                    HorizontalSeparator {
+                        width: parent.width
+                    }
+                    LabelAndValue {
+                        width: parent.width
+                        label: "Strength"
+                        value: network.strength
+                    }
+                    HorizontalSeparator {
+                        width: parent.width
+                    }
+                    LabelAndValue {
+                        width: parent.width
+                        label: "Status"
+                        value: network.status
+                    }
                 }
-                HorizontalSeparator {
+            }
+            GroupBox {
+                width: parent.width
+
+                title: "Information SIM 2"
+                visible: modemManager.modems[1] ? true : false
+                Column {
                     width: parent.width
-                }
-                LabelAndValue {
-                    width: parent.width
-                    label: "Technology"
-                    value: network.technology
-                }
-                HorizontalSeparator {
-                    width: parent.width
-                }
-                LabelAndValue {
-                    width: parent.width
-                    label: "Strength"
-                    value: network.strength
-                }
-                HorizontalSeparator {
-                    width: parent.width
-                }
-                LabelAndValue {
-                    width: parent.width
-                    label: "Status"
-                    value: network.status
+                    LabelAndValue {
+                        width: parent.width
+                        label: "Operator"
+                        value: network.name
+                    }
+                    HorizontalSeparator {
+                        width: parent.width
+                    }
+                    LabelAndValue {
+                        width: parent.width
+                        label: "Technology"
+                        value: network.technology
+                    }
+                    HorizontalSeparator {
+                        width: parent.width
+                    }
+                    LabelAndValue {
+                        width: parent.width
+                        label: "Strength"
+                        value: network.strength
+                    }
+                    HorizontalSeparator {
+                        width: parent.width
+                    }
+                    LabelAndValue {
+                        width: parent.width
+                        label: "Status"
+                        value: network.status
+                    }
                 }
             }
         }
