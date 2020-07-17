@@ -13,8 +13,8 @@
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import QtQuick 2.9
-import QtQuick.Controls 2.2
+import QtQuick 2.12
+import QtQuick.Controls 2.12
 
 // Theme specific properties
 import QtQuick.Controls.LuneOS 2.0
@@ -47,87 +47,114 @@ BasePage {
     }
 
     /* A settings page has a vertical layout: put everything in a Column */
-    Flickable {
-        id: flickableItem
-        anchors.fill: parent
-        anchors.margins: Units.gu(1)
-        contentWidth: width
-        contentHeight: contentItem.childrenRect.height
-        flickableDirection: Flickable.AutoFlickIfNeeded
-        clip: true
-        Column {
-            spacing: Units.gu(2)
-            width: parent.width
+    Column {
+        width: parent.width
+
+        Row {
+            id: tabBar
+
+            anchors.horizontalCenter: parent.horizontalCenter
+            height: Units.gu(5)
 
             Repeater {
-                width: parent.width
                 model: simListModel
-                delegate: /* GroupBoxes look good! */
-                          GroupBox {
-                    width: parent.width
 
-                    title: "Information SIM " + (index + 1)
-                    Column {
+                RadioButton {
+                    LuneOSRadioButton.useCollapsedLayout: true
+
+                    height: tabBar.height
+                    width: pageRoot.width/(simListModel.count+1)
+                    text: "SIM " + (index+1)
+                    checked: swipeView.currentIndex === index
+                    onClicked: swipeView.currentIndex = index;
+                }
+            }
+        }
+
+        SwipeView {
+            id: swipeView
+            width: parent.width
+            height: pageRoot.height - tabBar.height
+
+            Repeater {
+                model: simListModel
+
+                Flickable {
+                    id: flickableItem
+                    anchors.margins: Units.gu(1)
+                    contentWidth: width
+                    contentHeight: Units.gu(60) //groupBox.height
+                    flickableDirection: Flickable.AutoFlickIfNeeded
+                    clip: true
+
+                    /* GroupBoxes look good! */
+                    GroupBox {
+                        id: groupBox
                         width: parent.width
 
-                        Switch {
-                            id: roamingAllowedSwitch
+                        title: "Network"
+                        Column {
                             width: parent.width
-                            text: "Roaming allowed"
-                            font.weight: Font.Normal
-                            LayoutMirroring.enabled: true // by default the switch is on the left in Qt, not very webOS-ish
 
-                            LuneOSSwitch.labelOn: "Yes"
-                            LuneOSSwitch.labelOff: "No"
-                        }
-                        HorizontalSeparator {
-                            width: parent.width
-                        }
-                        Switch {
-                            id: dataUsageSwitch
-                            width: parent.width
-                            text: "Data usage"
-                            font.weight: Font.Normal
-                            LayoutMirroring.enabled: true
+                            Switch {
+                                id: roamingAllowedSwitch
+                                width: parent.width
+                                text: "Roaming allowed"
+                                font.weight: Font.Normal
+                                LayoutMirroring.enabled: true // by default the switch is on the left in Qt, not very webOS-ish
 
-                            LuneOSSwitch.labelOn: "On"
-                            LuneOSSwitch.labelOff: "Off"
-                        }
-                        HorizontalSeparator {
-                            width: parent.width
-                        }
-                        LabelAndValue {
-                            width: parent.width
-                            label: "Operator"
-                            value: serviceProviderName
-                        }
-                        HorizontalSeparator {
-                            width: parent.width
-                        }
-                        LabelAndValue {
-                            width: parent.width
-                            label: "MCC"
-                            //label: "Technology"
-                            //value: network.technology
-                            value: mobileCountryCode
-                        }
-                        HorizontalSeparator {
-                            width: parent.width
-                        }
-                        LabelAndValue {
-                            width: parent.width
-                            //label: "Strength"
-                            //value: network.strength
-                            label: "MNC"
-                            value: mobileNetworkCode
-                        }
-                        HorizontalSeparator {
-                            width: parent.width
-                        }
-                        LabelAndValue {
-                            width: parent.width
-                            label: "Status"
-                            value: network.status
+                                LuneOSSwitch.labelOn: "Yes"
+                                LuneOSSwitch.labelOff: "No"
+                            }
+                            HorizontalSeparator {
+                                width: parent.width
+                            }
+                            Switch {
+                                id: dataUsageSwitch
+                                width: parent.width
+                                text: "Data usage"
+                                font.weight: Font.Normal
+                                LayoutMirroring.enabled: true
+
+                                LuneOSSwitch.labelOn: "On"
+                                LuneOSSwitch.labelOff: "Off"
+                            }
+                            HorizontalSeparator {
+                                width: parent.width
+                            }
+                            LabelAndValue {
+                                width: parent.width
+                                label: "Operator"
+                                value: serviceProviderName
+                            }
+                            HorizontalSeparator {
+                                width: parent.width
+                            }
+                            LabelAndValue {
+                                width: parent.width
+                                label: "MCC"
+                                //label: "Technology"
+                                //value: network.technology
+                                value: mobileCountryCode
+                            }
+                            HorizontalSeparator {
+                                width: parent.width
+                            }
+                            LabelAndValue {
+                                width: parent.width
+                                //label: "Strength"
+                                //value: network.strength
+                                label: "MNC"
+                                value: mobileNetworkCode
+                            }
+                            HorizontalSeparator {
+                                width: parent.width
+                            }
+                            LabelAndValue {
+                                width: parent.width
+                                label: "Status"
+                                value: network.status
+                            }
                         }
                     }
                 }
