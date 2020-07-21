@@ -13,7 +13,6 @@
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 import QtQuick 2.9
 import QtQuick.Controls 2.2
 
@@ -24,6 +23,9 @@ import LunaNext.Common 0.1
 
 import "../Common"
 
+import MeeGo.QOfono 0.2
+
+
 /*
  * This is an example of what the code for some settings can look like
  * It is supposed to be a set of good practices, don't hesitate to
@@ -31,131 +33,131 @@ import "../Common"
  *
  * Note: All the settings here are fake. Of Course.
  */
-
 BasePage {
     id: pageRoot
 
-    /*
-     * These alias properties summarize what settings are relative to this page
-     */
-    property alias hourlyCoffee: hourlyCoffeeSwitch.checked
-    property alias wikiSearch: wikiSearchSwitch.checked
-    property alias publicName: publicNameTextField.text
-    property alias aggressivity: aggressivityCombo.currentIndex
-//    property alias exampleEnabled: mainExampleSwitch.checked
-
-    pageActionHeaderComponent: Component {
-        Switch {
-            id: mainExampleSwitch
-            LuneOSSwitch.labelOn: "On"
-            LuneOSSwitch.labelOff: "Off"
+    OfonoManager {
+        id: ofonoManager
+        onAvailableChanged: {
+           console.log("Herrie ofono is " + available ? "available": "not available")
+           //textLine2.text = modemManager.available ? netreg.currentOperator["Name"].toString() :"Ofono not available"
         }
-    }
-
-    Component.onCompleted: {
-        retrieveProperties();
-    }
-
-    /*
-     * Need some models for combos or lists ? Let's declare it before the UI.
-     */
-    ListModel {
-        id: aggressivityModel
-        ListElement { level: "Low" }
-        ListElement { level: "Medium" }
-        ListElement { level: "High" }
-        ListElement { level: "Fatal" }
+        onModemAdded: {
+            console.log("Herrie modem added "+modem)
+        }
+        onModemRemoved: {
+            console.log("Herrie modem removed "+modem)
+        }
+        onModemsChanged: {
+            console.log("Herrie modems changed "+modems)
+        }
+        onDefaultModemChanged: {
+            console.log("Herrie default modem changed "+modem)
+        }
     }
 
     /* A settings page has a vertical layout: put everything in a Column */
-    Column {
-        width: parent.width
-
-        /* GroupBoxes look good! */
-        GroupBox {
+    Flickable {
+        id: flickableItem
+        anchors.fill: parent
+        anchors.margins: Units.gu(1)
+        contentWidth: width
+        contentHeight: contentItem.childrenRect.height
+        flickableDirection: Flickable.AutoFlickIfNeeded
+        clip: true
+        Column {
+            spacing: Units.gu(2)
             width: parent.width
 
-            title: "Productivity"
-            Column {
+            Repeater {
                 width: parent.width
-
-                Switch {
-                    id: hourlyCoffeeSwitch
+                model: ofonoManager.modems.length
+                delegate: /* GroupBoxes look good! */
+                          GroupBox {
+                    //property int modemId: model.index
                     width: parent.width
-                    text: "Hourly Coffee"
-                    font.weight: Font.Normal
-                    LayoutMirroring.enabled: true // by default the switch is on the left in Qt, not very webOS-ish
 
-                    LuneOSSwitch.labelOn: "On"
-                    LuneOSSwitch.labelOff: "Off"
-                }
-                Rectangle { color: "silver"; width: parent.width; height: 2 }
-                Switch {
-                    id: wikiSearchSwitch
-                    width: parent.width
-                    text: "Search in Wikipedia"
-                    font.weight: Font.Normal
-                    LayoutMirroring.enabled: true
+                    title: "Information SIM " + (index + 1)
+                    Column {
+                        width: parent.width
+                        LabelAndValue {
+                            visible: netreg.name
+                            width: parent.width
+                            label: "Operator: "
+                            value: netreg.name
+                        }
+                        HorizontalSeparator {
+                            width: parent.width
+                        }
+                        LabelAndValue {
+                            visible: netreg.mode != ""
+                            width: parent.width
+                            label: "Mode: "
+                            value: netreg.mode
+                        }
+                        HorizontalSeparator {
+                            width: parent.width
+                        }
+                        LabelAndValue {
+                            visible: netreg.cellId != ""
+                            width: parent.width
+                            label: "Cell Id: "
+                            value: netreg.cellId
+                        }
+                        HorizontalSeparator {
+                            width: parent.width
+                        }
+                        LabelAndValue {
+                            visible: netreg.mcc != ""
+                            width: parent.width
+                            label: "MCC: "
+                            value: netreg.mcc
+                        }
+                        HorizontalSeparator {
+                            width: parent.width
+                        }
+                        LabelAndValue {
+                            visible: netreg.mnc != ""
+                            width: parent.width
+                            label: "MNC: "
+                            value: netreg.mnc
+                        }
+                        HorizontalSeparator {
+                            width: parent.width
+                        }
+                        LabelAndValue {
+                            visible: netreg.technology != ""
+                            width: parent.width
+                            label: "Technology: "
+                            value: netreg.technology
+                        }
+                        HorizontalSeparator {
+                            width: parent.width
+                        }
+                        LabelAndValue {
+                            visible: netreg.strength  != ""
+                            width: parent.width
+                            label: "Strength: "
+                            value: netreg.strength
+                        }
+                        HorizontalSeparator {
+                            width: parent.width
+                        }
+                        LabelAndValue {
+                            visible: netreg.baseStation   != ""
+                            width: parent.width
+                            label: "Basestation : "
+                            value: netreg.baseStation
+                        }
+                    }
 
-                    LuneOSSwitch.labelOn: "Yes"
-                    LuneOSSwitch.labelOff: "No"
+                    OfonoNetworkRegistration {
+                        id: netreg
+                        modemPath: ofonoManager.modems[0]
+                    }
+
                 }
             }
         }
-
-        GroupBox {
-            width: parent.width
-
-            title: "Advertising"
-            Column {
-                width: parent.width
-
-                TextField {
-                    id: publicNameTextField
-                    width: parent.width
-                    placeholderText: "Public name..."
-                    text: "Default Name"
-                }
-                Rectangle { color: "silver"; width: parent.width; height: 2 }
-                ComboBox {
-                    id: aggressivityCombo
-                    width: parent.width
-                    textRole: "level"
-                    model: aggressivityModel
-                }
-            }
-        }
-    }
-
-    /*
-     * Bindings with LuneOS settings
-     */
-    // Initialization and eventual subscription
-    function retrieveProperties() {
-        luna.call("palm://com.palm.systemservice/getCoffeePreference", '{"subscribe": "true"}', _handleGetCoffeePreference, _handleGetError);
-        luna.call("palm://com.palm.systemservice/getAggressivity", '{}', _handleGetAggressivity, _handleGetError);
-    }
-    function _handleGetCoffeePreference(message) {
-        if(message && message.payload) {
-            payloadValue = JSON.parse(message.payload);
-            if(typeof payloadValue.hourly !== 'undefined') {
-                pageRoot.hourlyCoffee = payloadValue.hourly;
-            }
-        }
-    }
-    function _handleGetAggressivity(message) {
-        if(message && message.payload) {
-            payloadValue = JSON.parse(message.payload);
-            if(typeof payloadValue.value !== 'undefined') {
-                pageRoot.aggressivity = payloadValue.value;
-            }
-        }
-    }
-    // Push changes to LuneOS
-    onHourlyCoffeeChanged: {
-        luna.call("palm://com.palm.systemservice/setCoffeePreference", '{"hourly": "'+hourlyCoffee+'"}', _handleSetSuccess, _handleSetError);
-    }
-    onAggressivityChanged: {
-        luna.call("palm://com.palm.systemservice/setAggressivity", '{"value": "'+aggressivity+'"}', _handleSetSuccess, _handleSetError);
     }
 }
