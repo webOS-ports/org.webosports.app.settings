@@ -3,12 +3,12 @@
     "id": "org.webosports.app.settings.help",
     "version": "0.4.0",
     "vendor": "WebOS Ports",
-    "vendor_url": "https://github.com/webOS-ports/org.webosports.app.settings",
+    "vendorurl": "https://github.com/webOS-ports/org.webosports.app.settings",
     "type": "qml",
     "useLuneOSStyle": true,
     "main": "qml/GenericCategoryWindow.qml",
     "icon": "qml/images/icons/icon-help.png",
     "uiRevision": "2",
-    "visible": "false"
+    "visible": false
 }
 

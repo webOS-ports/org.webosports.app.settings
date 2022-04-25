@@ -3,13 +3,13 @@
     "id": "org.webosports.app.settings.deviceinfo",
     "version": "0.4.0",
     "vendor": "WebOS Ports",
-    "vendor_url": "https://github.com/webOS-ports/org.webosports.app.settings",
+    "vendorurl": "https://github.com/webOS-ports/org.webosports.app.settings",
     "type": "qml",
     "useLuneOSStyle": true,
     "main": "qml/GenericCategoryWindow.qml",
     "icon": "qml/images/icons/icon-deviceinfo.png",
     "uiRevision": "2",
-    "visible": "true",
+    "visible": true,
     "requiredPermissions": ["system", "networking", "networking.query", "settings"]
 }
 
