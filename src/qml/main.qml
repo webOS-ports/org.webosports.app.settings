@@ -25,10 +25,8 @@ GenericCategoryWindow {
     height: 800
     visible: true
 
-    property QtObject application: QtObject {
-        property variant appInfo: ({"id": "org.webosports.app.settings.example"})
-        property string launchParameters: "{}";
-    }
+    appId: "org.webosports.app.settings.example"
+    launchParams: "{}"
 
     Connections {
         target: _categoryLoader
@@ -197,7 +195,7 @@ GenericCategoryWindow {
                     anchors.fill: parent
                     onClicked: {
                         console.log("Switching to app " + model.appId);
-                        application.appInfo = { "id": model.appId };
+                        testingApp.appId = model.appId;
                     }
                 }
             }
