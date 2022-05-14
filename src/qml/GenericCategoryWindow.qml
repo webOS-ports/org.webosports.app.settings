@@ -18,8 +18,9 @@ import QtQuick 2.9
 import QtQuick.Controls 2.2
 
 import LunaNext.Common 0.1
+import Eos.Window 0.1
 
-ApplicationWindow {
+WebOSWindow {
     id: settingsCategoryAppWindow
     visible: true
 
@@ -121,29 +122,36 @@ ApplicationWindow {
         }
     })
 
-    property string categoryFile: categories[application.appInfo.id].source
-    property string categoryIcon: categories[application.appInfo.id].icon
-    property string categoryTitle: categories[application.appInfo.id].title
+    property string categoryFile: categories[appId].source
+    property string categoryIcon: categories[appId].icon
+    property string categoryTitle: categories[appId].title
 
     property Loader _categoryLoader: categoryLoader  // useful for the tests
 
-    header: CategoryHeader {
+    Rectangle {
+        z: -1
+        anchors.fill: parent
+        color: "#D8D8D8"
+    }
+
+    CategoryHeader {
         id: categoryHeader
         title: settingsCategoryAppWindow.categoryTitle
         icon: settingsCategoryAppWindow.categoryIcon
 
         height: Units.gu(10.0)
-
-    }
-
-    background: Rectangle {
-        color: "#D8D8D8";
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
     }
 
     Loader {
         id: categoryLoader
-        anchors.fill: parent
-        source: settingsCategoryAppWindow.categoryFile
+        anchors.top: categoryHeader.bottom
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        source: categoryFile
 
         property alias actionHeaderComponent: categoryHeader.actionHeaderComponent
         onActionHeaderComponentChanged: console.log("actionHeaderComponent="+actionHeaderComponent);
