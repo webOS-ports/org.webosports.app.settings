@@ -9,11 +9,12 @@ include(webOS/webOS)
 webos_modules_init(1 0 0 QUALIFIER RC3)
 webos_component(0 4 0)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -fvisibility-inlines-hidden -Wall -std=c++0x")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -fvisibility-inlines-hidden -Wall -std=c++1z")
 
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Qml REQUIRED)
-find_package(Qt5Quick REQUIRED)
+find_package(Qt6 COMPONENTS Core Qml Quick REQUIRED)
+if (NOT Qt6_FOUND)
+    find_package(Qt5 5.15 REQUIRED COMPONENTS Core Qml Quick)
+endif()
 
 find_package(PkgConfig "0.22" REQUIRED)
 

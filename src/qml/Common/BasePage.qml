@@ -36,7 +36,7 @@ Page {
 
     // Convenience LS2 services & functions
     property LunaService luna: LunaService {
-        name: application.appInfo.id
+        name: appId
     }
 
     function _handleGetError(message) {
