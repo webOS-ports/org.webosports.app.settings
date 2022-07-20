@@ -24,6 +24,9 @@ WebOSWindow {
     id: settingsCategoryAppWindow
     visible: true
 
+    width: Settings.displayWidth
+    height: Settings.displayHeight
+
     readonly property var categories: ({
         "org.webosports.app.settings.example": {
             "source": "Testing/ExamplePage.qml",

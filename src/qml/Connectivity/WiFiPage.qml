@@ -173,7 +173,6 @@ BasePage {
 
     footer: Label {
         width: parent.width
-        padding: Units.gu(0.5)
         wrapMode: Label.WordWrap
         font.italic: true
         text: "Your device automatically connects to known networks."
