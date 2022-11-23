@@ -1,6 +1,7 @@
 {
     "title": "Device Info",
     "id": "org.webosports.app.settings.deviceinfo",
+    "trustLevel": "trusted",
     "version": "0.4.0",
     "vendor": "WebOS Ports",
     "vendorurl": "https://github.com/webOS-ports/org.webosports.app.settings",
@@ -10,6 +11,6 @@
     "icon": "qml/images/icons/icon-deviceinfo.png",
     "uiRevision": "2",
     "visible": true,
-    "requiredPermissions": ["system", "networking", "networking.query", "settings"]
+    "requiredPermissions": ["networkconnection.query", "networkconnection.management", "preferences.system", "wifi.query", "wifi.management"]
 }
 
