@@ -11,6 +11,6 @@
     "icon": "qml/images/icons/icon-deviceinfo.png",
     "uiRevision": "2",
     "visible": true,
-    "requiredPermissions": ["networkconnection.query", "networkconnection.management", "preferences.system", "wifi.query", "wifi.management"]
+    "requiredPermissions": ["networkconnection.query", "networkconnection.management", "preferences.system", "update-service.operation", "wifi.query", "wifi.management"]
 }
 
