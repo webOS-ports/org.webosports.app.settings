@@ -1,6 +1,7 @@
 {
     "title": "Network Settings",
     "id": "org.webosports.app.settings.networksettings",
+    "trustLevel": "trusted",
     "version": "0.4.0",
     "vendor": "WebOS Ports",
     "vendorurl": "https://github.com/webOS-ports/org.webosports.app.settings",
@@ -10,5 +11,5 @@
     "icon": "qml/images/icons/icon-networksettings.png",
     "uiRevision": "2",
     "visible": true,
-    "requiredPermissions": ["networking", "networking.query", "networking.internal"]
+    "requiredPermissions": ["networkconnection.query", "networkconnection.management", "telephony.management", "telephony.query", "wifi.query", "wifi.management"]
 }

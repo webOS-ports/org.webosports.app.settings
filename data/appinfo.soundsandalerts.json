@@ -1,6 +1,7 @@
 {
     "title": "Sounds & Ringtones",
     "id": "org.webosports.app.settings.soundsandalerts",
+    "trustLevel": "trusted",
     "version": "0.4.0",
     "vendor": "WebOS Ports",
     "vendorurl": "https://github.com/webOS-ports/org.webosports.app.settings",
