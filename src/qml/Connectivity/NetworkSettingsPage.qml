@@ -131,11 +131,11 @@ BasePage {
      */
     // Initialization and eventual subscription
     function retrieveProperties() {
-        luna.call("luna://com.palm.wan/getstatus", '{"subscribe": "true"}', _handleWanStatus, _handleGetError);
+        luna.subscribe("luna://com.palm.wan/getstatus", '{"subscribe": true}', _handleWanStatus, _handleGetError);
     }
     function _handleWanStatus(message) {
         if(message && message.payload) {
-            payloadValue = JSON.parse(message.payload);
+            let payloadValue = JSON.parse(message.payload);
             if(typeof payloadValue.roamguard !== 'undefined') {
                 roamingAllowed = (payloadValue.roamguard === "disable");
             }
