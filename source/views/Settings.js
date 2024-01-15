@@ -75,7 +75,7 @@ enyo.kind({
 			components:[
 				//Connectivity
 				{kind: "onyx.Toolbar", classes: "list-header", content: "Connectivity"},
-				{kind: "ListItem", icon: "assets/icons/icon-wifi.png", title: "Wi-Fi", ontap: "openPanel", targetPanel: "WiFiPanel",
+				/*{kind: "ListItem", icon: "assets/icons/icon-wifi.png", title: "Wi-Fi", ontap: "openPanel", targetPanel: "WiFiPanel",
 				components:[
 					{name: "WiFiToggle",
 					kind: "onyx.ToggleButton",
@@ -88,7 +88,7 @@ enyo.kind({
 					kind: "onyx.ToggleButton",
 					ontap: "bluetoothToggleChanged",
 					style: "position: absolute; top: 11px; right: 9px; height: 31px;" }
-				]},
+				]},*/
 				{kind: "ListItem", icon: "assets/icons/icon-telephony.png", title: "Telephony", ontap: "openPanel", targetPanel: "TelephonyPanel"},
 
 				//Services
@@ -126,8 +126,8 @@ enyo.kind({
 		index: 1,
 		components:[
 			{kind: "EmptyPanel"},
-			{name: "WiFiPanel", kind: "WiFi", onActiveChanged: "wifiActiveChanged"},
-			{name: "BluetoothPanel", kind: "Bluetooth", onActiveChanged: "bluetoothActiveChanged"},
+			/*{name: "WiFiPanel", kind: "WiFi", onActiveChanged: "wifiActiveChanged"},
+			{name: "BluetoothPanel", kind: "Bluetooth", onActiveChanged: "bluetoothActiveChanged"},*/
 			{name: "SystemUpdatesPanel", kind: "SystemUpdates"},
 			{name: "CertificatesPanel", kind: "Certificates"},
 			{name: "ScreenLockPanel", kind: "ScreenLock"},
@@ -146,7 +146,7 @@ enyo.kind({
 		this.$.GetDevModeStatus.send({});
 	},
 	//Action Functions
-	wifiActiveChanged: function(inSender, inEvent) {
+	/*wifiActiveChanged: function(inSender, inEvent) {
 		this.$.WiFiToggle.silence();
 		this.$.WiFiToggle.setValue(inEvent.value);
 		this.$.WiFiToggle.unsilence();
@@ -163,7 +163,7 @@ enyo.kind({
 	bluetoothToggleChanged: function(inObj) {
 		this.$.BluetoothPanel.setToggleValue(inObj.value);
 		return true;
-	},
+	},*/
 	muteChanged: function(inSender, inEvent) {
 		this.$.muteToggle.silence();
 		this.$.muteToggle.setValue(inEvent.mute);
@@ -204,10 +204,10 @@ enyo.kind({
 	handleBack: function() {
 		if (this.currentPanel === "AboutPanel")
 			this.$.AboutPanel.handleBackGesture();
-		else if (this.currentPanel === "WiFiPanel" )
+		/*else if (this.currentPanel === "WiFiPanel" )
 			this.$.WiFiPanel.handleBackGesture();
 		else if (this.currentPanel === "BluetoothPanel" )
-			this.$.BluetoothPanel.handleBackGesture();
+			this.$.BluetoothPanel.handleBackGesture();*/
 		else if (this.currentPanel === "CertificatesPanel")
 			this.$.CertificatesPanel.handleBackGesture();
 		else if (this.currentPanel === "DateTimePanel")
@@ -250,16 +250,16 @@ enyo.kind({
 		if(enyo.Panels.isScreenNarrow()) {
 			this.$.AppPanels.setDraggable(false);
 			this.$.AppPanels.$.ContentPanels.applyStyle("box-shadow", "0");
-			this.$.AppPanels.$.WiFiToggle.setShowing(true);
-			this.$.AppPanels.$.BluetoothToggle.setShowing(true);
+			/*this.$.AppPanels.$.WiFiToggle.setShowing(true);
+			this.$.AppPanels.$.BluetoothToggle.setShowing(true);*/
 			this.$.AppPanels.$.muteLabel.setShowing(true);
 			this.$.AppPanels.$.muteToggle.setShowing(true);
 		}
 		else {
 			this.$.AppPanels.setDraggable(true);
 			this.$.AppPanels.$.ContentPanels.applyStyle("box-shadow", "-4px 0px 4px rgba(0,0,0,0.3)");
-			this.$.AppPanels.$.WiFiToggle.setShowing(false);
-			this.$.AppPanels.$.BluetoothToggle.setShowing(false);
+			/*this.$.AppPanels.$.WiFiToggle.setShowing(false);
+			this.$.AppPanels.$.BluetoothToggle.setShowing(false);*/
 			this.$.AppPanels.$.muteLabel.setShowing(false);
 			this.$.AppPanels.$.muteToggle.setShowing(false);
 		}
@@ -273,12 +273,12 @@ enyo.kind({
 			var targetPanelName = params.page + "Panel";
 			this.log("Switching to panel " + targetPanelName);
 			this.$.AppPanels.openPanel({ targetPanel: targetPanelName });
-		} else if (typeof(params.target) !== 'undefined' &&
+		}/* else if (typeof(params.target) !== 'undefined' &&
 			typeof(params.target.ssid) !== 'undefined' &&
 			typeof(params.target.securityType !== 'undefined')) {
 			this.$.AppPanels.openPanel({targetPanel:"WiFiPanel"});
 			this.$.AppPanels.$.WiFiPanel.wifiTarget = params.target;
-		}
+		}*/
 	},
 	handleBackGesture: function(inSender, inEvent) {
 		this.log("sender:", inSender, ", event:", inEvent);
