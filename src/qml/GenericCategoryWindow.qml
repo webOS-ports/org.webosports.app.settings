@@ -43,6 +43,11 @@ WebOSWindow {
             "icon": "images/icons/icon-networksettings.png",
             "title": "Network Settings"
         },
+        "org.webosports.app.settings.nfc": {
+            "source": "Connectivity/NfcPage.qml",
+            "icon": "images/icons/icon-nfc.png",
+            "title": "NFC"
+        },
         "org.webosports.app.settings.vpn": {
             "source": "Connectivity/VPNPage.qml",
             "icon": "images/icons/icon-vpn.png",
