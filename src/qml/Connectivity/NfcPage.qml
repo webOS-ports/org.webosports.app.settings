@@ -254,7 +254,8 @@ BasePage {
                     visible: nfcPageId.tagInfo !== null
                     clip: true
 
-                    model: nfcPageId.tagInfo ? nfcPageId.tagInfo.records : []
+                    model: (nfcPageId.tagInfo && nfcPageId.tagInfo.records)
+                           ? nfcPageId.tagInfo.records : []
 
                     delegate: Item {
                         width: ListView.view.width
