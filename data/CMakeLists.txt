@@ -16,6 +16,7 @@ foreach(CATEGORY
   languagepicker
   location
   networksettings
+  nfc
   screenlock
   searchpreferences
   soundsandalerts

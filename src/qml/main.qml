@@ -61,6 +61,12 @@ GenericCategoryWindow {
         }
 
         ListElement {
+            title: "NFC"
+            categorySection: "Connectivity"
+            appId: "org.webosports.app.settings.nfc"
+        }
+
+        ListElement {
             title: "VPN"
             categorySection: "Connectivity"
             appId: "org.webosports.app.settings.vpn"
