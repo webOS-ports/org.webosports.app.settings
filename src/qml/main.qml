@@ -109,6 +109,12 @@ GenericCategoryWindow {
         }
 
         ListElement {
+            title: "Fingerprint"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.fingerprint"
+        }
+
+        ListElement {
             title: "Help"
             categorySection: "General"
             appId: "org.webosports.app.settings.help"

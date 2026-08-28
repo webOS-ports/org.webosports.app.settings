@@ -12,6 +12,7 @@ foreach(CATEGORY
   deviceinfo
   devmodeswitcher
   exhibitionpreferences
+  fingerprint
   help
   languagepicker
   location
