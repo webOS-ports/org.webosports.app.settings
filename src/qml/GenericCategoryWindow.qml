@@ -121,8 +121,8 @@ WebOSWindow {
         },
         "org.webosports.app.settings.soundsandalerts": {
             "source": "General/SoundsAndAlertsPage.qml",
-            "icon": "images/icons/icon-soundandalerts.png",
-            "title": "Sounds & Ringtones (placeholder)"
+            "icon": "images/icons/icon-soundsandalerts.png",
+            "title": "Sounds & Ringtones"
         },
         "org.webosports.app.settings.updates": {
             "source": "General/UpdatesPage.qml",
