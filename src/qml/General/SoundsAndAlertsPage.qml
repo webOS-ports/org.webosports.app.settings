@@ -60,7 +60,8 @@ BasePage {
     property bool soundsOn: true
     property bool systemSounds: true
     property bool keyboardClicks: true
-    property bool vibrate: true
+    property bool vibrateWhenSoundsOn: true
+    property bool vibrateWhenSoundsOff: true
     property int systemVolume: 50
     property int ringtoneVolume: 50
     property string ringtoneName: ""
@@ -277,31 +278,49 @@ BasePage {
                 }
             }
 
+            /*
+             * Stays put when the master switch goes off: what the device does
+             * with the sound off is exactly what this group is about.
+             */
             GroupBox {
                 width: parent.width
 
+                title: "Vibrate"
                 Column {
                     width: parent.width
 
-                    Switch {
-                        id: vibrateSwitch
+                    LabelAndSelector {
+                        id: vibrateWhenOnSelector
                         width: parent.width
-                        text: "Vibrate"
-                        font.pixelSize: FontUtils.sizeToPixels("16pt")
-                        font.weight: Font.Normal
-                        LayoutMirroring.enabled: true
+                        label: "Sounds on"
+                        model: ["Sound & Vibrate", "Sound"]
 
-                        LuneOSSwitch.labelOn: "On"
-                        LuneOSSwitch.labelOff: "Off"
-
-                        checked: pageRoot.vibrate
+                        currentIndex: pageRoot.vibrateWhenSoundsOn ? 0 : 1
                         Connections {
                             target: pageRoot
-                            function onVibrateChanged() {
-                                vibrateSwitch.checked = pageRoot.vibrate;
+                            function onVibrateWhenSoundsOnChanged() {
+                                vibrateWhenOnSelector.currentIndex = pageRoot.vibrateWhenSoundsOn ? 0 : 1;
                             }
                         }
-                        onToggled: pageRoot.setVibrate(checked)
+                        onActivated: (index) => pageRoot.setVibrateWhenSoundsOn(index === 0)
+                    }
+                    HorizontalSeparator {
+                        width: parent.width
+                    }
+                    LabelAndSelector {
+                        id: vibrateWhenOffSelector
+                        width: parent.width
+                        label: "Sounds off"
+                        model: ["Vibrate", "Mute"]
+
+                        currentIndex: pageRoot.vibrateWhenSoundsOff ? 0 : 1
+                        Connections {
+                            target: pageRoot
+                            function onVibrateWhenSoundsOffChanged() {
+                                vibrateWhenOffSelector.currentIndex = pageRoot.vibrateWhenSoundsOff ? 0 : 1;
+                            }
+                        }
+                        onActivated: (index) => pageRoot.setVibrateWhenSoundsOff(index === 0)
                     }
                 }
             }
@@ -430,12 +449,10 @@ BasePage {
             if (pageRoot.keyboardPrefs.hasOwnProperty("keyPressFeedback"))
                 pageRoot.keyboardClicks = pageRoot.keyboardPrefs.keyPressFeedback;
         }
-        // The original tracked ringer-on and ringer-off separately but only
-        // ever set them together, so one switch tells the whole story.
+        if (response.hasOwnProperty("VibrateWhenRingerOn"))
+            pageRoot.vibrateWhenSoundsOn = response.VibrateWhenRingerOn;
         if (response.hasOwnProperty("VibrateWhenRingerOff"))
-            pageRoot.vibrate = response.VibrateWhenRingerOff;
-        else if (response.hasOwnProperty("VibrateWhenRingerOn"))
-            pageRoot.vibrate = response.VibrateWhenRingerOn;
+            pageRoot.vibrateWhenSoundsOff = response.VibrateWhenRingerOff;
 
         pageRoot.prefsLoaded = true;
     }
@@ -496,21 +513,25 @@ BasePage {
         _setPreference("keyboard", pageRoot.keyboardPrefs);
     }
 
-    function setVibrate(on) {
-        pageRoot.vibrate = on;
-        if (!pageRoot.prefsLoaded) {
-            console.log("Trying to set preferences before reading them first: ignoring.");
+    function setVibrateWhenSoundsOn(vibrates) {
+        pageRoot.vibrateWhenSoundsOn = vibrates;
+        _setPreference("VibrateWhenRingerOn", vibrates);
+        _buzz(vibrates);
+    }
+
+    function setVibrateWhenSoundsOff(vibrates) {
+        pageRoot.vibrateWhenSoundsOff = vibrates;
+        _setPreference("VibrateWhenRingerOff", vibrates);
+        _buzz(vibrates);
+    }
+
+    // A short buzz so you can tell it took.
+    function _buzz(vibrates) {
+        if (!vibrates)
             return;
-        }
 
-        luna.call("luna://com.palm.systemservice/setPreferences",
-                  JSON.stringify({"VibrateWhenRingerOn": on, "VibrateWhenRingerOff": on}),
+        luna.call("luna://com.palm.vibrate/vibrate", JSON.stringify({"period": 200, "duration": 500}),
                   _handleSetSuccess, _handleSetError);
-
-        // A short buzz so you can tell it took.
-        if (on)
-            luna.call("luna://com.palm.vibrate/vibrate", JSON.stringify({"period": 200, "duration": 500}),
-                      _handleSetSuccess, _handleSetError);
     }
 
     function setTone(target, name, path) {
