@@ -27,26 +27,30 @@ import LunaNext.Common 0.1
 import "../Common"
 
 /*
- * The ringtone list.
+ * The tone list, shared by the ringtone, the alert tone and the notification
+ * tone: all three are picked from the same two directories.
  *
  * The legacy app handed this over to the system file picker, which listed what
  * the media indexer had filed under "ringtone". LuneOS has no such picker for
- * QML apps, so the two directories ringtones actually live in are listed
+ * QML apps, so the directories the sounds actually live in are listed
  * directly: the ones the user copied over USB first, the system ones below.
  */
 Popup {
-    id: ringtonePicker
+    id: tonePicker
 
+    // Which preference the pick is for, so the page knows what to write
+    property string target
+    property string title: "Ringtone"
     property string currentPath
 
-    signal ringtoneSelected(string name, string path)
+    signal toneSelected(string target, string name, string path)
 
     readonly property var audioFilters: ["*.mp3", "*.wav", "*.ogg", "*.m4a", "*.aac", "*.flac", "*.wma"]
 
     FolderListModel {
         id: userRingtonesModel
         folder: "file:///media/internal/ringtones"
-        nameFilters: ringtonePicker.audioFilters
+        nameFilters: tonePicker.audioFilters
         showDirs: false
         showDotAndDotDot: false
         sortField: FolderListModel.Name
@@ -54,7 +58,7 @@ Popup {
     FolderListModel {
         id: systemSoundsModel
         folder: "file:///usr/palm/sounds"
-        nameFilters: ringtonePicker.audioFilters
+        nameFilters: tonePicker.audioFilters
         showDirs: false
         showDotAndDotDot: false
         sortField: FolderListModel.Name
@@ -81,7 +85,7 @@ Popup {
 
         Label {
             Layout.fillWidth: true
-            text: "Ringtone"
+            text: tonePicker.title
             horizontalAlignment: Text.AlignHCenter
             font.pixelSize: FontUtils.sizeToPixels("18pt")
             font.weight: Font.Bold
@@ -93,7 +97,7 @@ Popup {
             Layout.preferredHeight: Units.gu(6)
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
-            text: "No ringtones found"
+            text: "No sounds found"
             color: "#666666"
             font.pixelSize: FontUtils.sizeToPixels("medium")
         }
@@ -113,7 +117,7 @@ Popup {
                 width: foldersFlickable.width
 
                 Repeater {
-                    model: ringtonePicker.sections
+                    model: tonePicker.sections
 
                     delegate: Column {
                         id: folderSection
@@ -147,12 +151,12 @@ Popup {
                                         Layout.fillWidth: true
                                         text: fileBaseName
                                         elide: Text.ElideRight
-                                        font.bold: filePath === ringtonePicker.currentPath
+                                        font.bold: filePath === tonePicker.currentPath
                                         font.pixelSize: FontUtils.sizeToPixels("medium")
                                     }
                                     Image {
                                         source: "../images/wifi/checkmark.png"
-                                        visible: filePath === ringtonePicker.currentPath
+                                        visible: filePath === tonePicker.currentPath
 
                                         fillMode: Image.PreserveAspectFit
                                         verticalAlignment: Image.AlignVCenter
@@ -171,8 +175,8 @@ Popup {
                                     // The preference keeps the file name with
                                     // its extension, the way the shipped
                                     // default ringtone.mp3 does.
-                                    ringtonePicker.ringtoneSelected(fileName, filePath);
-                                    ringtonePicker.close();
+                                    tonePicker.toneSelected(tonePicker.target, fileName, filePath);
+                                    tonePicker.close();
                                 }
                             }
                         }
@@ -184,7 +188,7 @@ Popup {
         Button {
             Layout.fillWidth: true
             text: "Cancel"
-            onClicked: ringtonePicker.close()
+            onClicked: tonePicker.close()
         }
     }
 }

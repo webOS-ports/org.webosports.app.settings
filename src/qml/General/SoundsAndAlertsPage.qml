@@ -17,7 +17,6 @@
 
 import QtQuick 2.9
 import QtQuick.Controls 2.2
-import QtQuick.Layouts 1.3
 import QtMultimedia 6.3
 
 // Theme specific properties
@@ -35,6 +34,10 @@ import "../Common"
  * hides everything below it, volume, system sounds, keyboard clicks, the
  * ringtone and its volume, and vibrate. The Beats Audio row is gone - it drove
  * an HP-specific audio path that no LuneOS device has.
+ *
+ * The alert and notification tones are an addition: the shell plays both of
+ * them off the alerttone and notificationtone preferences, and until now
+ * nothing on the device could change either.
  *
  * Where the settings live:
  *  - muteSound, systemSounds, ringtone and the keyboard preferences are
@@ -62,6 +65,10 @@ BasePage {
     property int ringtoneVolume: 50
     property string ringtoneName: ""
     property string ringtonePath: ""
+    property string alertToneName: ""
+    property string alertTonePath: ""
+    property string notificationToneName: ""
+    property string notificationTonePath: ""
 
     // audiod wants the sound output it reported back when setting the volume:
     // its schema is REQUIRED_2(soundOutput, volume) and an empty payload is
@@ -195,30 +202,14 @@ BasePage {
                     HorizontalSeparator {
                         width: parent.width
                     }
-                    ItemDelegate {
-                        id: ringtoneItem
+                    LabelAndPicker {
                         width: parent.width
-                        height: Units.gu(6)
+                        label: "Ringtone"
+                        value: pageRoot.displayName(pageRoot.ringtoneName)
+                        placeholder: "Pick a ringtone"
 
-                        RowLayout {
-                            anchors.fill: parent
-
-                            Label {
-                                text: "Ringtone"
-                                font.pixelSize: FontUtils.sizeToPixels("16pt")
-                            }
-                            Label {
-                                Layout.fillWidth: true
-                                horizontalAlignment: Text.AlignRight
-                                text: pageRoot.ringtoneName !== "" ? pageRoot.displayName(pageRoot.ringtoneName)
-                                                                   : "Pick a ringtone"
-                                elide: Text.ElideRight
-                                color: pageRoot.ringtoneName !== "" ? "black" : "#666666"
-                                font.pixelSize: FontUtils.sizeToPixels("16pt")
-                            }
-                        }
-
-                        onClicked: ringtonePickerPopup.open()
+                        onClicked: pageRoot.openTonePicker("ringtone", "Ringtone",
+                                                           pageRoot.ringtonePath)
                     }
                     HorizontalSeparator {
                         width: parent.width
@@ -245,6 +236,43 @@ BasePage {
                             pageRoot.applyRingtoneVolume(newVolume);
                             pageRoot.previewRingtone();
                         }
+                    }
+                }
+            }
+
+            /*
+             * Not part of the 3.0.5 app, but the shell rings the alert and the
+             * notification tone off these two preferences and nothing else on
+             * the device sets them.
+             */
+            GroupBox {
+                width: parent.width
+                visible: pageRoot.soundsOn
+
+                title: "Alerts"
+                Column {
+                    width: parent.width
+
+                    LabelAndPicker {
+                        width: parent.width
+                        label: "Alert Tone"
+                        value: pageRoot.displayName(pageRoot.alertToneName)
+                        placeholder: "Pick an alert tone"
+
+                        onClicked: pageRoot.openTonePicker("alerttone", "Alert Tone",
+                                                           pageRoot.alertTonePath)
+                    }
+                    HorizontalSeparator {
+                        width: parent.width
+                    }
+                    LabelAndPicker {
+                        width: parent.width
+                        label: "Notification Tone"
+                        value: pageRoot.displayName(pageRoot.notificationToneName)
+                        placeholder: "Pick a notification tone"
+
+                        onClicked: pageRoot.openTonePicker("notificationtone", "Notification Tone",
+                                                           pageRoot.notificationTonePath)
                     }
                 }
             }
@@ -280,22 +308,30 @@ BasePage {
         }
     }
 
-    RingtonePickerPopup {
-        id: ringtonePickerPopup
-        currentPath: pageRoot.ringtonePath
+    TonePickerPopup {
+        id: tonePickerPopup
 
-        onRingtoneSelected: (name, path) => pageRoot.setRingtone(name, path)
+        onToneSelected: (target, name, path) => pageRoot.setTone(target, name, path)
         onClosed: pageRoot.stopPreview()
+    }
+
+    function openTonePicker(target, title, currentPath) {
+        tonePickerPopup.target = target;
+        tonePickerPopup.title = title;
+        tonePickerPopup.currentPath = currentPath;
+        tonePickerPopup.open();
     }
 
     /*
      * Ringtone preview. The shell rings with a plain MediaPlayer too, so this
      * is the same path the ringtone will take when a call comes in.
      */
+    property real previewVolume: 1.0
+
     MediaPlayer {
         id: ringtonePreview
         audioOutput: AudioOutput {
-            volume: pageRoot.ringtoneVolume / 100
+            volume: pageRoot.previewVolume
         }
     }
     Timer {
@@ -305,18 +341,27 @@ BasePage {
     }
 
     // "ringtone.mp3" is what the preference holds, "ringtone" is what the row
-    // should read.
+    // should read. Nothing set yet stays empty, so the row shows its
+    // placeholder instead.
     function displayName(fileName) {
+        if (!fileName)
+            return "";
+
         var dot = fileName.lastIndexOf(".");
         return dot > 0 ? fileName.substring(0, dot) : fileName;
     }
 
     function previewRingtone() {
-        if (pageRoot.ringtonePath === "")
+        previewTone(pageRoot.ringtonePath, pageRoot.ringtoneVolume / 100);
+    }
+
+    function previewTone(path, volume) {
+        if (path === "")
             return;
 
         stopPreview();
-        ringtonePreview.source = pageRoot.ringtonePath;
+        pageRoot.previewVolume = volume;
+        ringtonePreview.source = path;
         ringtonePreview.play();
         previewTimer.restart();
     }
@@ -332,7 +377,7 @@ BasePage {
     function retrieveProperties() {
         luna.subscribe("luna://com.palm.systemservice/getPreferences",
                        JSON.stringify({"keys": ["muteSound", "systemSounds", "ringtone",
-                                                "keyboard",
+                                                "alerttone", "notificationtone", "keyboard",
                                                 "VibrateWhenRingerOn", "VibrateWhenRingerOff"],
                                        "subscribe": true}),
                        _handleGetPreferences, _handleGetError);
@@ -360,6 +405,14 @@ BasePage {
         if (response.hasOwnProperty("ringtone") && response.ringtone) {
             pageRoot.ringtoneName = response.ringtone.name || "";
             pageRoot.ringtonePath = response.ringtone.fullPath || "";
+        }
+        if (response.hasOwnProperty("alerttone") && response.alerttone) {
+            pageRoot.alertToneName = response.alerttone.name || "";
+            pageRoot.alertTonePath = response.alerttone.fullPath || "";
+        }
+        if (response.hasOwnProperty("notificationtone") && response.notificationtone) {
+            pageRoot.notificationToneName = response.notificationtone.name || "";
+            pageRoot.notificationTonePath = response.notificationtone.fullPath || "";
         }
         if (response.hasOwnProperty("keyboard")) {
             var keyboardValue = response.keyboard;
@@ -460,11 +513,25 @@ BasePage {
                       _handleSetSuccess, _handleSetError);
     }
 
-    function setRingtone(name, path) {
-        pageRoot.ringtoneName = name;
-        pageRoot.ringtonePath = path;
-        _setPreference("ringtone", {"name": name, "fullPath": path});
-        previewRingtone();
+    function setTone(target, name, path) {
+        if (target === "alerttone") {
+            pageRoot.alertToneName = name;
+            pageRoot.alertTonePath = path;
+        } else if (target === "notificationtone") {
+            pageRoot.notificationToneName = name;
+            pageRoot.notificationTonePath = path;
+        } else {
+            pageRoot.ringtoneName = name;
+            pageRoot.ringtonePath = path;
+        }
+
+        _setPreference(target, {"name": name, "fullPath": path});
+
+        // Alerts and notifications have no volume of their own to preview at -
+        // audiod hands out one volume for everything - so they play at the
+        // system volume, the ringtone at its own.
+        previewTone(path, target === "ringtone" ? pageRoot.ringtoneVolume / 100
+                                                : pageRoot.systemVolume / 100);
     }
 
     function applySystemVolume(volume) {
