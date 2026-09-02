@@ -43,6 +43,11 @@ WebOSWindow {
             "icon": "images/icons/icon-networksettings.png",
             "title": "Network Settings"
         },
+        "org.webosports.app.settings.esim": {
+            "source": "Connectivity/EsimPage.qml",
+            "icon": "images/icons/icon-esim.png",
+            "title": "eSIM"
+        },
         "org.webosports.app.settings.nfc": {
             "source": "Connectivity/NfcPage.qml",
             "icon": "images/icons/icon-nfc.png",
