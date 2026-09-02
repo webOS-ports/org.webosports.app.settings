@@ -17,6 +17,7 @@ foreach(CATEGORY
   languagepicker
   location
   networksettings
+  esim
   nfc
   screenlock
   searchpreferences

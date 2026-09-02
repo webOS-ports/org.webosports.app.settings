@@ -61,6 +61,12 @@ GenericCategoryWindow {
         }
 
         ListElement {
+            title: "eSIM"
+            categorySection: "Connectivity"
+            appId: "org.webosports.app.settings.esim"
+        }
+
+        ListElement {
             title: "NFC"
             categorySection: "Connectivity"
             appId: "org.webosports.app.settings.nfc"
