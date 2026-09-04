@@ -10,6 +10,13 @@
     "main": "qml/GenericCategoryWindow.qml",
     "icon": "qml/images/icons/icon-screenlock.png",
     "uiRevision": "2",
-    "visible": false
+    "visible": true,
+    "requiredPermissions": [
+        "systemsettings.query",
+        "systemsettings.management",
+        "luna-sysmgr.operation",
+        "fingerprint.query",
+        "application.launcher"
+    ]
 }
 

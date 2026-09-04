@@ -195,6 +195,14 @@ BasePage {
             popupLoader.setSource(Qt.resolvedUrl("WiFiProvidePassphrasePopup.qml"),
                                   {"agent": connmanUserAgent, "serviceName": serviceName, "requestedFields": fields});
         }
+        // connman can cancel a pending request out from under the popup -
+        // the network went out of range, or another client answered it
+        // first. Left unhandled, the popup keeps showing a prompt the agent
+        // has already discarded; submitting it then would silently do
+        // nothing (UserAgent::sendUserReply() just warns and returns when
+        // there is no request left to answer), which is exactly what
+        // "entered a password and nothing happened" looks like from here.
+        onUserInputCanceled: popupLoader.source = ""
     }
 
     Loader {

@@ -33,6 +33,7 @@ ItemDelegate {
     property string placeholder
 
     height: Units.gu(6)
+    implicitHeight: Units.gu(6)
 
     RowLayout {
         anchors.fill: parent

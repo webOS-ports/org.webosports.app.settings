@@ -85,12 +85,6 @@ GenericCategoryWindow {
         }
 
         ListElement {
-            title: "Backup"
-            categorySection: "General"
-            appId: "org.webosports.app.settings.backup"
-        }
-
-        ListElement {
             title: "Certificate Manager"
             categorySection: "General"
             appId: "org.webosports.app.settings.certificate"
@@ -142,6 +136,12 @@ GenericCategoryWindow {
             title: "Location Services"
             categorySection: "General"
             appId: "org.webosports.app.settings.location"
+        }
+
+        ListElement {
+            title: "Print Manager"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.printmanager"
         }
 
         ListElement {

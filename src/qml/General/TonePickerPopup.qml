@@ -141,6 +141,18 @@ Popup {
                             model: folderSection.sectionFiles
 
                             delegate: ItemDelegate {
+                                // Qt6's Repeater/DelegateModel no longer
+                                // injects a FolderListModel's roles as bare
+                                // context properties by default, but here the
+                                // model comes from folderSection.sectionFiles
+                                // - a property on an already-dynamic (outer
+                                // Repeater) delegate - and that extra
+                                // indirection keeps "required property" role
+                                // auto-wiring from firing at all ("Required
+                                // property filePath was not initialized",
+                                // even with real rows in the model). Reading
+                                // the roles off the implicit "model" context
+                                // property instead sidesteps it.
                                 width: folderSection.width
                                 height: Units.gu(6)
 
@@ -149,14 +161,14 @@ Popup {
 
                                     Label {
                                         Layout.fillWidth: true
-                                        text: fileBaseName
+                                        text: model.fileBaseName
                                         elide: Text.ElideRight
-                                        font.bold: filePath === tonePicker.currentPath
+                                        font.bold: model.filePath === tonePicker.currentPath
                                         font.pixelSize: FontUtils.sizeToPixels("medium")
                                     }
                                     Image {
                                         source: "../images/wifi/checkmark.png"
-                                        visible: filePath === tonePicker.currentPath
+                                        visible: model.filePath === tonePicker.currentPath
 
                                         fillMode: Image.PreserveAspectFit
                                         verticalAlignment: Image.AlignVCenter
@@ -175,7 +187,7 @@ Popup {
                                     // The preference keeps the file name with
                                     // its extension, the way the shipped
                                     // default ringtone.mp3 does.
-                                    tonePicker.toneSelected(tonePicker.target, fileName, filePath);
+                                    tonePicker.toneSelected(tonePicker.target, model.fileName, model.filePath);
                                     tonePicker.close();
                                 }
                             }

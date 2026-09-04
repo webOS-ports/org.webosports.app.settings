@@ -12,12 +12,39 @@ Usage
 -----
 
 Using QtCreator, you can start testing the application by opening "settingsapp.qmlproject".
-If you have checked-out "luneos-components" in the folder besides org.webosports.app.settings,
-then you can apply the LuneOS style by adding the passing the following argument to qmlscene:
+It expects "luneos-components" to be checked out in the folder beside
+org.webosports.app.settings: "modules" provides the LuneOS style, and "test/imports"
+provides the desktop stand-ins for the LS2 services, so the pages show and keep real
+values instead of failing every call.
+
+On Qt 6 the style is named by its module URI rather than by a path, so set this in the
+run environment:
 
 ```
--style ../luneos-components/modules/QtQuick/Controls.2/LuneOS
+QT_QUICK_CONTROLS_STYLE=QtQuick.Controls.LuneOS
 ```
+
+From a terminal the whole thing is:
+
+```
+QT_QUICK_CONTROLS_STYLE=QtQuick.Controls.LuneOS qml \
+    -I ../luneos-components/test/imports -I ../luneos-components/modules \
+    src/qml/main.qml -- --profile=tp
+```
+
+The application opens with the category drawer showing; picking an entry switches to
+that settings page. "--profile" chooses the device the run pretends to be, which is what
+the pages lay themselves out for: "tp" for a TouchPad, "n5" or "gnex" for a phone,
+"desktop" for a small window. Every page is meant to work on both, so it is worth trying
+a page at a phone size as well as a tablet one.
+
+Services that are not there yet
+-------------------------------
+
+Some pages are written against services LuneOS does not have yet. They show a "Not
+available on this device" notice rather than offering switches that go nowhere, and come
+to life on their own once something answers. docs/missing-services.md lists which pages
+those are and the exact contract each one expects, so the service can be written to fit.
 
 Creating a new settings page
 ----------------------------
