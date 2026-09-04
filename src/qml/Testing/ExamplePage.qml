@@ -132,8 +132,8 @@ BasePage {
      */
     // Initialization and eventual subscription
     function retrieveProperties() {
-        luna.call("palm://com.palm.systemservice/getCoffeePreference", '{"subscribe": "true"}', _handleGetCoffeePreference, _handleGetError);
-        luna.call("palm://com.palm.systemservice/getAggressivity", '{}', _handleGetAggressivity, _handleGetError);
+        luna.call("palm://com.webos.service.systemservice/getCoffeePreference", '{"subscribe": "true"}', _handleGetCoffeePreference, _handleGetError);
+        luna.call("palm://com.webos.service.systemservice/getAggressivity", '{}', _handleGetAggressivity, _handleGetError);
     }
     function _handleGetCoffeePreference(message) {
         if(message && message.payload) {
@@ -153,9 +153,9 @@ BasePage {
     }
     // Push changes to LuneOS
     onHourlyCoffeeChanged: {
-        luna.call("palm://com.palm.systemservice/setCoffeePreference", '{"hourly": "'+hourlyCoffee+'"}', _handleSetSuccess, _handleSetError);
+        luna.call("palm://com.webos.service.systemservice/setCoffeePreference", '{"hourly": "'+hourlyCoffee+'"}', _handleSetSuccess, _handleSetError);
     }
     onAggressivityChanged: {
-        luna.call("palm://com.palm.systemservice/setAggressivity", '{"value": "'+aggressivity+'"}', _handleSetSuccess, _handleSetError);
+        luna.call("palm://com.webos.service.systemservice/setAggressivity", '{"value": "'+aggressivity+'"}', _handleSetSuccess, _handleSetError);
     }
 }

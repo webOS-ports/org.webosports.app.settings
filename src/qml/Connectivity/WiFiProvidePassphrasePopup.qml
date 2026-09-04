@@ -122,7 +122,14 @@ Popup {
                 text: "Cancel"
                 LuneOSButton.mainColor: LuneOSButton.secondaryColor
                 onClicked: {
-                    agent.userInputCanceled();
+                    // userInputCanceled is UserAgent's *incoming* signal for
+                    // connman-initiated cancellation (see WiFiPage.qml) -
+                    // calling it here just emits an unlistened-to Qt signal
+                    // and never touches the pending D-Bus RequestInput call,
+                    // which then hangs until connman's own timeout. An empty
+                    // reply is UserAgent::sendUserReply()'s documented way
+                    // of telling connman the user declined.
+                    agent.sendUserReply({});
                     providePassphrasePopup.close();
                 }
             }

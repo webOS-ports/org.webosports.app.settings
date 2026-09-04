@@ -10,6 +10,10 @@
     "main": "qml/GenericCategoryWindow.qml",
     "icon": "qml/images/icons/icon-languagepicker.png",
     "uiRevision": "2",
-    "visible": false
+    "visible": true,
+    "requiredPermissions": [
+        "systemsettings.query",
+        "systemsettings.management"
+    ]
 }
 

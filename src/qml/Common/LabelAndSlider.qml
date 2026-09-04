@@ -33,11 +33,16 @@ Item {
     property alias label: labelName.text
     property alias value: slider.value
     property alias pressed: slider.pressed
+    // The range, for a setting that does not run from nothing to everything -
+    // screen brightness has a floor, for one.
+    property alias from: slider.from
+    property alias to: slider.to
 
     signal moved(int value)
     signal released(int value)
 
     height: labelName.height + slider.height + Units.gu(1)
+    implicitHeight: labelName.height + slider.height + Units.gu(1)
 
     Label {
         id: labelName

@@ -41,7 +41,7 @@ import "../Common"
  *
  * Where the settings live:
  *  - muteSound, systemSounds, ringtone and the keyboard preferences are
- *    com.palm.systemservice preferences, exactly as they were. The shell reads
+ *    com.webos.service.systemservice preferences, exactly as they were. The shell reads
  *    muteSound and ringtone from there, so the two agree.
  *  - the master volume goes to audiod's own com.webos.service.audio/master,
  *    which is the call that actually moves the volume.
@@ -394,7 +394,7 @@ BasePage {
      */
     // Initialization and subscriptions
     function retrieveProperties() {
-        luna.subscribe("luna://com.palm.systemservice/getPreferences",
+        luna.subscribe("luna://com.webos.service.systemservice/getPreferences",
                        JSON.stringify({"keys": ["muteSound", "systemSounds", "ringtone",
                                                 "alerttone", "notificationtone", "keyboard",
                                                 "VibrateWhenRingerOn", "VibrateWhenRingerOff"],
@@ -489,7 +489,7 @@ BasePage {
 
         var params = {};
         params[key] = value;
-        luna.call("luna://com.palm.systemservice/setPreferences", JSON.stringify(params),
+        luna.call("luna://com.webos.service.systemservice/setPreferences", JSON.stringify(params),
                   _handleSetSuccess, _handleSetError);
     }
 

@@ -56,27 +56,22 @@ WebOSWindow {
         "org.webosports.app.settings.vpn": {
             "source": "Connectivity/VPNPage.qml",
             "icon": "images/icons/icon-vpn.png",
-            "title": "VPN (placeholder)"
+            "title": "VPN"
         },
         "org.webosports.app.settings.wifi": {
             "source": "Connectivity/WiFiPage.qml",
             "icon": "images/icons/icon-wifi.png",
             "title": "Wi-Fi"
         },
-        "org.webosports.app.settings.backup": {
-            "source": "General/BackupPage.qml",
-            "icon": "images/icons/icon-backup.png",
-            "title": "Backup (placeholder)"
-        },
         "org.webosports.app.settings.certificate": {
             "source": "General/CertificatePage.qml",
             "icon": "images/icons/icon-certificate.png",
-            "title": "Certificate Manager (placeholder)"
+            "title": "Certificate Manager"
         },
         "org.webosports.app.settings.dateandtime": {
             "source": "General/DateAndTimePage.qml",
             "icon": "images/icons/icon-dateandtime.png",
-            "title": "Date & Time (placeholder)"
+            "title": "Date & Time"
         },
         "org.webosports.app.settings.devmodeswitcher": {
             "source": "General/DeveloperOptionsPage.qml",
@@ -89,9 +84,9 @@ WebOSWindow {
             "title": "Device Info"
         },
         "org.webosports.app.settings.exhibitionpreferences": {
-            "source": "General/DeveloperOptionsPage.qml",
+            "source": "General/ExhibitionPage.qml",
             "icon": "images/icons/icon-exhibitionpreferences.png",
-            "title": "Exhibition (placeholder)"
+            "title": "Exhibition"
         },
         "org.webosports.app.settings.fingerprint": {
             "source": "General/FingerprintPage.qml",
@@ -107,22 +102,27 @@ WebOSWindow {
         "org.webosports.app.settings.languagepicker": {
             "source": "General/LanguagePickerPage.qml",
             "icon": "images/icons/icon-languagepicker.png",
-            "title": "Regional Settings (placeholder)"
+            "title": "Regional Settings"
         },
         "org.webosports.app.settings.location": {
             "source": "General/LocationPage.qml",
             "icon": "images/icons/icon-location.png",
-            "title": "Location Services (placeholder)"
+            "title": "Location Services"
+        },
+        "org.webosports.app.settings.printmanager": {
+            "source": "General/PrintManagerPage.qml",
+            "icon": "images/icons/icon-printmanager.png",
+            "title": "Print Manager"
         },
         "org.webosports.app.settings.screenlock": {
             "source": "General/ScreenLockPage.qml",
             "icon": "images/icons/icon-screenlock.png",
-            "title": "Screen & Lock (placeholder)"
+            "title": "Screen & Lock"
         },
         "org.webosports.app.settings.searchpreferences": {
             "source": "General/SearchPreferencesPage.qml",
             "icon": "images/icons/icon-searchpreferences.png",
-            "title": "Just Type (placeholder)"
+            "title": "Just Type"
         },
         "org.webosports.app.settings.soundsandalerts": {
             "source": "General/SoundsAndAlertsPage.qml",
@@ -130,14 +130,14 @@ WebOSWindow {
             "title": "Sounds & Ringtones"
         },
         "org.webosports.app.settings.updates": {
-            "source": "General/UpdatesPage.qml",
+            "source": "General/UpdatePage.qml",
             "icon": "images/icons/icon-updates.png",
             "title": "System Updates (placeholder)"
         },
         "org.webosports.app.settings.textassist": {
             "source": "General/TextAssistPage.qml",
             "icon": "images/icons/icon-textassist.png",
-            "title": "Text Assist (placeholder)"
+            "title": "Text Assist"
         }
     })
 

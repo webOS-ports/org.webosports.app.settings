@@ -23,7 +23,10 @@ Item {
     property alias label: labelName.text
     property alias value: labelValue.text
 
+    // Both, so the row is sized correctly whether it is laid out by a
+    // Column (which reads height) or by a GroupBox (which reads implicit).
     height: Units.gu(6)
+    implicitHeight: Units.gu(6)
     Label {
         id: labelName
         anchors.left: parent.left
@@ -32,8 +35,15 @@ Item {
     }
     Label {
         id: labelValue
+        // Held to the right of the label rather than only to the right edge:
+        // a long value used to run underneath the label instead of being cut
+        // short, and the two overlapped.
+        anchors.left: labelName.right
+        anchors.leftMargin: Units.gu(1)
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
+        horizontalAlignment: Text.AlignRight
+        elide: Text.ElideRight
         font.pixelSize: FontUtils.sizeToPixels("16pt")
     }
 }

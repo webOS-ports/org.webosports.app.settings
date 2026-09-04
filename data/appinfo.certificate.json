@@ -1,5 +1,5 @@
 {
-    "title": "Certifcate Manager",
+    "title": "Certificate Manager",
     "id": "org.webosports.app.settings.certificate",
     "trustLevel": "trusted",
     "version": "0.4.0",

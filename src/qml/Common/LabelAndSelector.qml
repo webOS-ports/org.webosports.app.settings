@@ -33,7 +33,10 @@ Item {
 
     signal activated(int index)
 
+    // Both, so the row is sized correctly whether it is laid out by a
+    // Column (which reads height) or by a GroupBox (which reads implicit).
     height: Units.gu(6)
+    implicitHeight: Units.gu(6)
 
     Label {
         id: labelName

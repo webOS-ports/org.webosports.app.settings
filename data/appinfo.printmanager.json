@@ -1,6 +1,6 @@
 {
-    "title": "Backup",
-    "id": "org.webosports.app.settings.backup",
+    "title": "Print Manager",
+    "id": "org.webosports.app.settings.printmanager",
     "trustLevel": "trusted",
     "version": "0.4.0",
     "vendor": "WebOS Ports",
@@ -8,8 +8,11 @@
     "type": "qml",
     "useLuneOSStyle": true,
     "main": "qml/GenericCategoryWindow.qml",
-    "icon": "qml/images/icons/icon-backup.png",
+    "icon": "qml/images/icons/icon-printmanager.png",
     "uiRevision": "2",
-    "visible": false
+    "visible": true,
+    "requiredPermissions": [
+        "print.query",
+        "print.operation"
+    ]
 }
-
