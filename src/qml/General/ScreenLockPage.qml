@@ -114,6 +114,13 @@ BasePage {
     property var fingerprintTemplates: []
     property bool fingerprintUnlockEnabled: true
 
+    // Face. Same shape as fingerprint, with one difference: luneos-faced holds
+    // a single template rather than a list, so there is a bool where
+    // fingerprintTemplates has a count.
+    property bool faceServiceAvailable: false
+    property bool faceEnrolled: false
+    property bool faceUnlockEnabled: true
+
     Component.onCompleted: retrieveProperties();
 
     function _indexOf(values, value, fallback) {
@@ -382,6 +389,69 @@ BasePage {
             }
         }
 
+        /*
+         * Face unlock. Mirrors the fingerprint group above, including the rule
+         * that a biometric sits behind a knowledge factor, so it stays hidden
+         * while Secure Unlock is Off. Hidden entirely where luneos-faced is not
+         * running, which is any device without a usable front camera.
+         *
+         * The lock screen defaults this on - enrolling a face is itself the
+         * opt-in - so this switch exists to turn it off again without throwing
+         * the enrolled template away.
+         */
+        GroupBox {
+            width: parent.width
+            enabled: pageRoot.lockServiceAvailable
+            visible: pageRoot.faceServiceAvailable
+
+            title: "Face Unlock"
+            Column {
+                width: parent.width
+
+                LabelAndSwitch {
+                    id: faceUnlockSwitch
+                    label: "Unlock with Face"
+                    enabled: pageRoot.lockMode !== "none" && pageRoot.faceEnrolled
+
+                    checked: pageRoot.faceUnlockEnabled
+                    Connections {
+                        target: pageRoot
+                        function onFaceUnlockEnabledChanged() {
+                            faceUnlockSwitch.checked = pageRoot.faceUnlockEnabled;
+                        }
+                    }
+                    onToggled: pageRoot.setFaceUnlockEnabled(checked)
+                }
+
+                HorizontalSeparator {
+                    width: parent.width
+                }
+
+                ItemDelegate {
+                    width: parent.width
+                    height: Units.gu(6)
+                    text: pageRoot.faceEnrolled ? "Face enrolled" : "No face enrolled"
+                    font.pixelSize: FontUtils.sizeToPixels("16pt")
+
+                    onClicked: pageRoot.openFaceUnlockSettings()
+                }
+            }
+        }
+
+        ExplanationText {
+            text: {
+                if (!pageRoot.faceServiceAvailable)
+                    return "";
+                if (pageRoot.lockMode === "none")
+                    return "Set a pattern, PIN or password above before face " +
+                           "unlock can be turned on.";
+                if (!pageRoot.faceEnrolled)
+                    return "No face is enrolled yet. Add one to use it here.";
+                return "Face unlock is less secure than a PIN or password. " +
+                       "A photo or a similar-looking person may be able to unlock your device.";
+            }
+        }
+
         GroupBox {
             width: parent.width
             title: "Notifications"
@@ -576,7 +646,8 @@ BasePage {
                        JSON.stringify({"keys": ["enableALS", "sysUiEnableNextPrevGestures",
                                                 "showAlertsWhenLocked", "BlinkNotifications",
                                                 "lockTimeout", "wallpaper",
-                                                "enableFingerprintUnlock"],
+                                                "enableFingerprintUnlock",
+                                                "enableFaceUnlock"],
                                        "subscribe": true}),
                        _handleGetPreferences, _handleGetError);
 
@@ -594,6 +665,12 @@ BasePage {
         luna.subscribe("luna://com.webos.service.fingerprint/getStatus",
                        JSON.stringify({"subscribe": true}),
                        _handleFingerprintStatus, _handleFingerprintUnavailable);
+
+        // Likewise: luneos-faced only exists on devices with a usable front
+        // camera, so a failure here is the feature being absent, not an error.
+        luna.subscribe("luna://com.webos.service.faceunlock/getStatus",
+                       JSON.stringify({"subscribe": true}),
+                       _handleFaceStatus, _handleFaceUnavailable);
     }
 
     function retrieveLockMode() {
@@ -621,6 +698,8 @@ BasePage {
             pageRoot.wallpaper = response.wallpaper;
         if (response.hasOwnProperty("enableFingerprintUnlock"))
             pageRoot.fingerprintUnlockEnabled = response.enableFingerprintUnlock;
+        if (response.hasOwnProperty("enableFaceUnlock"))
+            pageRoot.faceUnlockEnabled = response.enableFaceUnlock;
 
         pageRoot.prefsLoaded = true;
     }
@@ -639,6 +718,23 @@ BasePage {
         pageRoot.fingerprintSensorAvailable = response.available === true;
         pageRoot.fingerprintTemplates = response.fingerprints !== undefined
                                         ? response.fingerprints : [];
+    }
+
+    function _handleFaceStatus(message) {
+        if (!message || !message.payload)
+            return;
+
+        var response = JSON.parse(message.payload);
+        if (!response.returnValue)
+            return;
+
+        pageRoot.faceServiceAvailable = response.available === true;
+        pageRoot.faceEnrolled = response.enrolled === true;
+    }
+
+    function _handleFaceUnavailable(message) {
+        // No front camera, or luneos-faced is not installed.
+        pageRoot.faceServiceAvailable = false;
     }
 
     function _handleFingerprintUnavailable(message) {
@@ -737,12 +833,23 @@ BasePage {
         _setPreference("enableFingerprintUnlock", on);
     }
 
+    function setFaceUnlockEnabled(on) {
+        pageRoot.faceUnlockEnabled = on;
+        _setPreference("enableFaceUnlock", on);
+    }
+
     // Each settings category is its own launchable application on the
     // device; this is how one of them opens another, the way the legacy
     // Help menu items opened com.palm.app.help.
     function openFingerprintSettings() {
         luna.call("luna://com.webos.service.applicationManager/launch",
                   JSON.stringify({"id": "org.webosports.app.settings.fingerprint"}),
+                  _handleSetSuccess, _handleSetError);
+    }
+
+    function openFaceUnlockSettings() {
+        luna.call("luna://com.webos.service.applicationManager/launch",
+                  JSON.stringify({"id": "org.webosports.app.settings.faceunlock"}),
                   _handleSetSuccess, _handleSetError);
     }
 }

@@ -16,6 +16,7 @@
         "systemsettings.management",
         "luna-sysmgr.operation",
         "fingerprint.query",
+        "faceunlock.query",
         "application.launcher"
     ]
 }

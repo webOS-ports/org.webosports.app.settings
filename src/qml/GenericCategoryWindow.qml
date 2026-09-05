@@ -88,6 +88,11 @@ WebOSWindow {
             "icon": "images/icons/icon-exhibitionpreferences.png",
             "title": "Exhibition"
         },
+        "org.webosports.app.settings.faceunlock": {
+            "source": "General/FaceUnlockPage.qml",
+            "icon": "images/icons/icon-faceunlock.png",
+            "title": "Face Unlock"
+        },
         "org.webosports.app.settings.fingerprint": {
             "source": "General/FingerprintPage.qml",
             "icon": "images/icons/icon-fingerprint.png",

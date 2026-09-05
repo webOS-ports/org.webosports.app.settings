@@ -11,6 +11,7 @@ foreach(CATEGORY
   deviceinfo
   devmodeswitcher
   exhibitionpreferences
+  faceunlock
   fingerprint
   help
   languagepicker
