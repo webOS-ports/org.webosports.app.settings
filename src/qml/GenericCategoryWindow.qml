@@ -90,8 +90,7 @@ WebOSWindow {
         },
         "org.webosports.app.settings.fingerprint": {
             "source": "General/FingerprintPage.qml",
-            // TODO: draw a dedicated icon-fingerprint.png
-            "icon": "images/icons/icon-screenlock.png",
+            "icon": "images/icons/icon-fingerprint.png",
             "title": "Fingerprint"
         },
         "org.webosports.app.settings.help": {
