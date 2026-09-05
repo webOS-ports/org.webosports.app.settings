@@ -1,6 +1,6 @@
 {
-    "title": "Fingerprint",
-    "id": "org.webosports.app.settings.fingerprint",
+    "title": "Face Unlock",
+    "id": "org.webosports.app.settings.faceunlock",
     "version": "0.4.0",
     "trustLevel": "trusted",
     "vendor": "WebOS Ports",
@@ -8,11 +8,11 @@
     "type": "qml",
     "useLuneOSStyle": true,
     "main": "qml/GenericCategoryWindow.qml",
-    "icon": "qml/images/icons/icon-fingerprint.png",
+    "icon": "qml/images/icons/icon-faceunlock.png",
     "uiRevision": "2",
     "visible": true,
     "requiredPermissions": [
-        "fingerprint.operation",
-        "fingerprint.query"
+        "faceunlock.operation",
+        "faceunlock.query"
     ]
 }

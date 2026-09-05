@@ -88,10 +88,14 @@ WebOSWindow {
             "icon": "images/icons/icon-exhibitionpreferences.png",
             "title": "Exhibition"
         },
+        "org.webosports.app.settings.faceunlock": {
+            "source": "General/FaceUnlockPage.qml",
+            "icon": "images/icons/icon-faceunlock.png",
+            "title": "Face Unlock"
+        },
         "org.webosports.app.settings.fingerprint": {
             "source": "General/FingerprintPage.qml",
-            // TODO: draw a dedicated icon-fingerprint.png
-            "icon": "images/icons/icon-screenlock.png",
+            "icon": "images/icons/icon-fingerprint.png",
             "title": "Fingerprint"
         },
         "org.webosports.app.settings.help": {
