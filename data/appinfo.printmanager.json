@@ -1,6 +1,7 @@
 {
     "title": "Print Manager",
     "id": "org.webosports.app.settings.printmanager",
+    "category": "Settings",
     "trustLevel": "trusted",
     "version": "0.4.0",
     "vendor": "WebOS Ports",
