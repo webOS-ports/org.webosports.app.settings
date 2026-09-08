@@ -1,6 +1,7 @@
 {
     "title": "Help",
     "id": "org.webosports.app.settings.help",
+    "category": "Settings",
     "trustLevel": "trusted",
     "version": "0.4.0",
     "vendor": "WebOS Ports",

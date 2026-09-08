@@ -1,6 +1,7 @@
 {
     "title": "eSIM",
     "id": "org.webosports.app.settings.esim",
+    "category": "Settings",
     "version": "0.1.0",
     "trustLevel": "trusted",
     "vendor": "WebOS Ports",

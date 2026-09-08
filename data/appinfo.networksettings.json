@@ -1,6 +1,7 @@
 {
     "title": "Network Settings",
     "id": "org.webosports.app.settings.networksettings",
+    "category": "Settings",
     "trustLevel": "trusted",
     "version": "0.4.0",
     "vendor": "WebOS Ports",
