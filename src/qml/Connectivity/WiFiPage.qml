@@ -143,6 +143,14 @@ BasePage {
                                 delegateService.requestConnect();
                             }
                         }
+                        // Press-and-hold opens what the network actually is,
+                        // the way the legacy app's "config" scene did. Qt
+                        // suppresses clicked() once pressAndHold() has fired,
+                        // so this cannot also toggle the connection.
+                        onPressAndHold: {
+                            networkInfoPopup.service = delegateService;
+                            networkInfoPopup.open();
+                        }
                     }
                 }
 
@@ -175,7 +183,10 @@ BasePage {
         width: parent.width
         wrapMode: Label.WordWrap
         font.italic: true
-        text: "Your device automatically connects to known networks."
+        // Press-and-hold is worth saying out loud: there is nothing on the
+        // row itself to suggest a network has a details page behind it.
+        text: "Your device automatically connects to known networks. "
+              + "Touch and hold a network to see its details."
     }
 
     UserAgent {
@@ -203,6 +214,13 @@ BasePage {
         // there is no request left to answer), which is exactly what
         // "entered a password and nothing happened" looks like from here.
         onUserInputCanceled: popupLoader.source = ""
+    }
+
+    WiFiNetworkInfoPopup {
+        id: networkInfoPopup
+        // Nothing to keep once it is off screen, and holding the service
+        // would keep this pinned to a network the list may have dropped.
+        onClosed: service = null
     }
 
     Loader {
