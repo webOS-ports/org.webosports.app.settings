@@ -33,6 +33,11 @@ BasePage {
     property bool esimAvailable: false
     property int slotCount: 1
     property int activeSlot: 1
+    // ofono only publishes ActiveCardSlot while a card is present, so on a
+    // single-SIM device with the eUICC's slot inactive there is no card and no
+    // active slot to report. Distinguish that from "slot 1 is active": with it
+    // unknown, every slot is offered rather than one being disabled on a guess.
+    property bool activeSlotKnown: false
     property bool simPresent: false
     property string iccid: ""
 
@@ -66,7 +71,8 @@ BasePage {
 
         esimAvailable = response.available === true;
         slotCount = response.slotCount !== undefined ? response.slotCount : 1;
-        activeSlot = response.activeSlot !== undefined ? response.activeSlot : 1;
+        activeSlotKnown = response.activeSlot !== undefined;
+        activeSlot = activeSlotKnown ? response.activeSlot : 1;
         simPresent = response.simPresent === true;
         iccid = response.iccid !== undefined ? response.iccid : "";
 
@@ -528,9 +534,14 @@ BasePage {
                         Label {
                             Layout.fillWidth: true
                             wrapMode: Text.WordWrap
-                            text: "Slot " + esimPageId.activeSlot + " of " +
-                                  esimPageId.slotCount + " is in use. The eSIM " +
-                                  "is only reachable while its slot is active."
+                            text: esimPageId.activeSlotKnown
+                                  ? "Slot " + esimPageId.activeSlot + " of " +
+                                    esimPageId.slotCount + " is in use. The " +
+                                    "eSIM is only reachable while its slot is " +
+                                    "active."
+                                  : "No SIM slot is active, so the eSIM cannot " +
+                                    "be read. Select the slot the eSIM is in " +
+                                    "(usually the last one)."
                             font.pixelSize: FontUtils.sizeToPixels("small")
                         }
 
@@ -544,7 +555,8 @@ BasePage {
                                 Button {
                                     text: "Slot " + (index + 1)
                                     enabled: !esimPageId.busy &&
-                                             esimPageId.activeSlot !== (index + 1)
+                                             (!esimPageId.activeSlotKnown ||
+                                              esimPageId.activeSlot !== (index + 1))
                                     onClicked: esimPageId.setActiveSlot(index + 1)
                                 }
                             }
