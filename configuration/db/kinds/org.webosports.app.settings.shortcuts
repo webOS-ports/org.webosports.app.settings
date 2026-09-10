@@ -1,0 +1,11 @@
+{
+    "id": "org.webosports.app.settings.shortcuts:1",
+    "owner": "org.webosports.app.settings.textassist",
+    "sync": true,
+    "indexes": [{
+        "name": "shortcut",
+        "props": [{
+            "name": "shortcut"
+        }]
+    }]
+}
