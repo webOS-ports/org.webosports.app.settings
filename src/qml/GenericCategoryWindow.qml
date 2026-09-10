@@ -91,7 +91,7 @@ WebOSWindow {
         "org.webosports.app.settings.devmodeswitcher": {
             "source": "General/DeveloperOptionsPage.qml",
             "icon": "images/icons/icon-devmodeswitcher.png",
-            "title": "Developer Option (placeholder)"
+            "title": "Developer Mode"
         },
         "org.webosports.app.settings.deviceinfo": {
             "source": "General/DeviceInfoPage.qml",

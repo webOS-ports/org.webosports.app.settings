@@ -109,7 +109,7 @@ GenericCategoryWindow {
         }
 
         ListElement {
-            title: "Developer Options"
+            title: "Developer Mode"
             categorySection: "General"
             appId: "org.webosports.app.settings.devmodeswitcher"
         }
