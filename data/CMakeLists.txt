@@ -8,6 +8,7 @@ foreach(CATEGORY
   appearance
   battery
   bluetooth
+  cellbroadcast
   certificate
   dateandtime
   deviceinfo

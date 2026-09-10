@@ -58,6 +58,11 @@ WebOSWindow {
             "icon": "images/icons/icon-usb.png",
             "title": "USB"
         },
+        "org.webosports.app.settings.cellbroadcast": {
+            "source": "Connectivity/CellBroadcastPage.qml",
+            "icon": "images/icons/icon-cellbroadcast.png",
+            "title": "Emergency Broadcast"
+        },
         "org.webosports.app.settings.bluetooth": {
             "source": "Connectivity/BluetoothPage.qml",
             "icon": "images/icons/icon-bluetooth.png",

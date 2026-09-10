@@ -55,6 +55,12 @@ GenericCategoryWindow {
         }
 
         ListElement {
+            title: "Emergency Broadcast"
+            categorySection: "Connectivity"
+            appId: "org.webosports.app.settings.cellbroadcast"
+        }
+
+        ListElement {
             title: "Network Settings"
             categorySection: "Connectivity"
             appId: "org.webosports.app.settings.networksettings"
