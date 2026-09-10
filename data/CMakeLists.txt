@@ -15,6 +15,7 @@ foreach(CATEGORY
   deviceinfo
   devmodeswitcher
   display
+  encryption
   esim
   exhibitionpreferences
   faceunlock
@@ -28,6 +29,7 @@ foreach(CATEGORY
   screenlock
   searchpreferences
   soundsandalerts
+  storage
   tethering
   textassist
   updates

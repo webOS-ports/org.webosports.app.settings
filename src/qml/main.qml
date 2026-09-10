@@ -151,6 +151,12 @@ GenericCategoryWindow {
         }
 
         ListElement {
+            title: "Encryption"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.encryption"
+        }
+
+        ListElement {
             title: "Exhibition"
             categorySection: "General"
             appId: "org.webosports.app.settings.exhibitionpreferences"
@@ -202,6 +208,12 @@ GenericCategoryWindow {
             title: "Sounds & Ringtones"
             categorySection: "General"
             appId: "org.webosports.app.settings.soundsandalerts"
+        }
+
+        ListElement {
+            title: "Storage"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.storage"
         }
 
         ListElement {
