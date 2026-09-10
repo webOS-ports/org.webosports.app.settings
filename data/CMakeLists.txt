@@ -5,11 +5,19 @@ endmacro(install_symlink)
 
 # For each category, install the appinfo and the LS2 json files
 foreach(CATEGORY
+  accessibility
+  appearance
+  applications
+  battery
   bluetooth
+  cellbroadcast
   certificate
   dateandtime
   deviceinfo
   devmodeswitcher
+  display
+  encryption
+  esim
   exhibitionpreferences
   faceunlock
   fingerprint
@@ -17,14 +25,17 @@ foreach(CATEGORY
   languagepicker
   location
   networksettings
-  esim
   nfc
+  notifications
   printmanager
   screenlock
   searchpreferences
   soundsandalerts
+  storage
+  tethering
   textassist
   updates
+  usb
   vpn
   wifi)
   # for a new category, just add the name up there.

@@ -1,6 +1,6 @@
 {
-    "title": "Developer Mode",
-    "id": "org.webosports.app.settings.devmodeswitcher",
+    "title": "Storage",
+    "id": "org.webosports.app.settings.storage",
     "category": "Settings",
     "trustLevel": "trusted",
     "version": "0.4.0",
@@ -9,10 +9,11 @@
     "type": "qml",
     "useLuneOSStyle": true,
     "main": "qml/GenericCategoryWindow.qml",
-    "icon": "qml/images/icons/icon-devmodeswitcher.png",
+    "icon": "qml/images/icons/icon-storage.png",
     "uiRevision": "2",
     "visible": true,
     "requiredPermissions": [
-        "devmode-service.operation"
+        "storaged.operation",
+        "application.launcher"
     ]
 }

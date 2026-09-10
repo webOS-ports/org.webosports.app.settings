@@ -55,6 +55,12 @@ GenericCategoryWindow {
         }
 
         ListElement {
+            title: "Emergency Broadcast"
+            categorySection: "Connectivity"
+            appId: "org.webosports.app.settings.cellbroadcast"
+        }
+
+        ListElement {
             title: "Network Settings"
             categorySection: "Connectivity"
             appId: "org.webosports.app.settings.networksettings"
@@ -73,6 +79,18 @@ GenericCategoryWindow {
         }
 
         ListElement {
+            title: "Tethering"
+            categorySection: "Connectivity"
+            appId: "org.webosports.app.settings.tethering"
+        }
+
+        ListElement {
+            title: "USB"
+            categorySection: "Connectivity"
+            appId: "org.webosports.app.settings.usb"
+        }
+
+        ListElement {
             title: "VPN"
             categorySection: "Connectivity"
             appId: "org.webosports.app.settings.vpn"
@@ -82,6 +100,30 @@ GenericCategoryWindow {
             title: "WiFi"
             categorySection: "Connectivity"
             appId: "org.webosports.app.settings.wifi"
+        }
+
+        ListElement {
+            title: "Accessibility"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.accessibility"
+        }
+
+        ListElement {
+            title: "Appearance"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.appearance"
+        }
+
+        ListElement {
+            title: "Applications"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.applications"
+        }
+
+        ListElement {
+            title: "Battery"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.battery"
         }
 
         ListElement {
@@ -97,7 +139,7 @@ GenericCategoryWindow {
         }
 
         ListElement {
-            title: "Developer Options"
+            title: "Developer Mode"
             categorySection: "General"
             appId: "org.webosports.app.settings.devmodeswitcher"
         }
@@ -106,6 +148,18 @@ GenericCategoryWindow {
             title: "Device Info"
             categorySection: "General"
             appId: "org.webosports.app.settings.deviceinfo"
+        }
+
+        ListElement {
+            title: "Display"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.display"
+        }
+
+        ListElement {
+            title: "Encryption"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.encryption"
         }
 
         ListElement {
@@ -139,6 +193,12 @@ GenericCategoryWindow {
         }
 
         ListElement {
+            title: "Notifications"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.notifications"
+        }
+
+        ListElement {
             title: "Print Manager"
             categorySection: "General"
             appId: "org.webosports.app.settings.printmanager"
@@ -160,6 +220,12 @@ GenericCategoryWindow {
             title: "Sounds & Ringtones"
             categorySection: "General"
             appId: "org.webosports.app.settings.soundsandalerts"
+        }
+
+        ListElement {
+            title: "Storage"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.storage"
         }
 
         ListElement {

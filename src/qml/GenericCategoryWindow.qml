@@ -33,6 +33,61 @@ WebOSWindow {
             "icon": "Testing/test-category.png",
             "title": "Settings Example"
         },
+        "org.webosports.app.settings.battery": {
+            "source": "General/BatteryPage.qml",
+            "icon": "images/icons/icon-battery.png",
+            "title": "Battery"
+        },
+        "org.webosports.app.settings.display": {
+            "source": "General/DisplayPage.qml",
+            "icon": "images/icons/icon-display.png",
+            "title": "Display"
+        },
+        "org.webosports.app.settings.appearance": {
+            "source": "General/AppearancePage.qml",
+            "icon": "images/icons/icon-appearance.png",
+            "title": "Appearance"
+        },
+        "org.webosports.app.settings.tethering": {
+            "source": "Connectivity/TetheringPage.qml",
+            "icon": "images/icons/icon-tethering.png",
+            "title": "Tethering"
+        },
+        "org.webosports.app.settings.usb": {
+            "source": "Connectivity/UsbPage.qml",
+            "icon": "images/icons/icon-usb.png",
+            "title": "USB"
+        },
+        "org.webosports.app.settings.cellbroadcast": {
+            "source": "Connectivity/CellBroadcastPage.qml",
+            "icon": "images/icons/icon-cellbroadcast.png",
+            "title": "Emergency Broadcast"
+        },
+        "org.webosports.app.settings.applications": {
+            "source": "General/ApplicationsPage.qml",
+            "icon": "images/icons/icon-applications.png",
+            "title": "Applications"
+        },
+        "org.webosports.app.settings.storage": {
+            "source": "General/StoragePage.qml",
+            "icon": "images/icons/icon-storage.png",
+            "title": "Storage"
+        },
+        "org.webosports.app.settings.encryption": {
+            "source": "General/EncryptionPage.qml",
+            "icon": "images/icons/icon-encryption.png",
+            "title": "Encryption"
+        },
+        "org.webosports.app.settings.notifications": {
+            "source": "General/NotificationsPage.qml",
+            "icon": "images/icons/icon-notifications.png",
+            "title": "Notifications"
+        },
+        "org.webosports.app.settings.accessibility": {
+            "source": "General/AccessibilityPage.qml",
+            "icon": "images/icons/icon-accessibility.png",
+            "title": "Accessibility"
+        },
         "org.webosports.app.settings.bluetooth": {
             "source": "Connectivity/BluetoothPage.qml",
             "icon": "images/icons/icon-bluetooth.png",
@@ -76,7 +131,7 @@ WebOSWindow {
         "org.webosports.app.settings.devmodeswitcher": {
             "source": "General/DeveloperOptionsPage.qml",
             "icon": "images/icons/icon-devmodeswitcher.png",
-            "title": "Developer Option (placeholder)"
+            "title": "Developer Mode"
         },
         "org.webosports.app.settings.deviceinfo": {
             "source": "General/DeviceInfoPage.qml",

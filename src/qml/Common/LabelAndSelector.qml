@@ -52,7 +52,24 @@ Item {
         id: selector
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        width: Units.gu(24)
+        /*
+         * gu(24) where there is room, otherwise whatever is left once the
+         * label has what it needs, down to a floor of gu(12) - which still
+         * holds the longest value any of these rows carries.
+         *
+         * A fixed gu(24) does not survive the interface scale. The row is
+         * capped in pixels by the screen while a grid unit, and the text in
+         * it, grow with the scale - so the picker took an ever larger share
+         * of an unchanging width and ate the label: "Turn off After" came
+         * out as "Turn off Af..." at Normal and "Tu..." at Largest.
+         *
+         * Sizing off the label's implicitWidth rather than its width is what
+         * keeps this from being a loop: implicitWidth is the text's natural
+         * width and does not depend on the width it is given.
+         */
+        width: Math.max(Units.gu(12),
+                        Math.min(Units.gu(24),
+                                 labelAndSelector.width - labelName.implicitWidth - Units.gu(2)))
 
         onActivated: (index) => labelAndSelector.activated(index)
     }

@@ -1,5 +1,6 @@
 /*
  * (c) 2017 Christophe Chapuis <chris.chapuis@gmail.com>
+ * (c) 2026 Herman van Hazendonk <github.com@herrie.org>
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3, as published
@@ -25,137 +26,179 @@ import LunaNext.Common 0.1
 import "../Common"
 
 /*
- * This is an example of what the code for some settings can look like
- * It is supposed to be a set of good practices, don't hesitate to
- * copy/paste code from here and adapt to your needs.
+ * Developer Mode, after the webOS 3.0.5 app of the same name
+ * (com.palm.app.devmodeswitcher).
  *
- * Note: All the settings here are fake. Of Course.
+ * Until now this page was still the ExamplePage template it was copied from
+ * in 2017 - it shipped as a launcher entry offering "Hourly Coffee" and
+ * "Search in Wikipedia" against no service at all - while
+ * org.webosports.service.devmode, which is what actually turns developer mode
+ * on, had no UI anywhere.
+ *
+ * That service has two switches and this page is those two switches:
+ *  - getStatus returns "status" and "usbDebugging", each "enabled" or
+ *    "disabled".
+ *  - setStatus takes either or both. "status" writes or removes
+ *    /var/luna/dev-mode-enabled; "usbDebugging" writes or removes
+ *    /var/usb-debugging-enabled and starts or stops android-tools-adbd with
+ *    it. Turning developer mode off stops adbd too, which is why the switch
+ *    below follows it down.
+ *
+ * The reply is not trusted for the result. setStatus builds its returnValue
+ * from a "success" flag that the usbDebugging path only sets inside an
+ * asynchronous fs callback, after the reply has already been composed - so a
+ * change that worked can still answer false. Every change is followed by a
+ * fresh getStatus, and that is what the switches are drawn from.
+ *
+ * The legacy app also had a "Change Password" row. That was novacom's
+ * password and there is no novacom here: LuneOS reaches a device over adb
+ * where the Android tools are installed, and over ssh everywhere.
  */
-
 BasePage {
     id: pageRoot
 
-    /*
-     * These alias properties summarize what settings are relative to this page
-     */
-    property alias hourlyCoffee: hourlyCoffeeSwitch.checked
-    property alias wikiSearch: wikiSearchSwitch.checked
-    property alias publicName: publicNameTextField.text
-    property alias aggressivity: aggressivityCombo.currentIndex
-//    property alias exampleEnabled: mainExampleSwitch.checked
+    property bool serviceAvailable: false
+    property bool devModeEnabled: false
+    property bool usbDebuggingEnabled: false
 
-    pageActionHeaderComponent: Component {
-        Switch {
-            id: mainExampleSwitch
-            LuneOSSwitch.labelOn: "On"
-            LuneOSSwitch.labelOff: "Off"
+    Component.onCompleted: retrieveProperties();
+
+    SettingsPageContent {
+        ServiceUnavailableNotice {
+            visible: !pageRoot.serviceAvailable
+            serviceName: "org.webosports.service.devmode"
+            description: "Developer mode is turned on and off by this service, " +
+                         "so nothing here can be changed until it answers."
+            onRetry: pageRoot.retrieveProperties()
+        }
+
+        GroupBox {
+            width: parent.width
+            enabled: pageRoot.serviceAvailable
+
+            Column {
+                width: parent.width
+
+                LabelAndSwitch {
+                    id: devModeSwitch
+                    label: "Developer Mode"
+
+                    checked: pageRoot.devModeEnabled
+                    Connections {
+                        target: pageRoot
+                        function onDevModeEnabledChanged() {
+                            devModeSwitch.checked = pageRoot.devModeEnabled;
+                        }
+                    }
+                    onToggled: pageRoot.setDevMode(checked)
+                }
+            }
+        }
+
+        ExplanationText {
+            text: "Developer mode marks the device as one that is being " +
+                  "worked on. It is what the developer tools look for before " +
+                  "they will do anything to it."
+        }
+
+        GroupBox {
+            width: parent.width
+            enabled: pageRoot.serviceAvailable
+
+            title: "Debugging"
+
+            Column {
+                width: parent.width
+
+                LabelAndSwitch {
+                    id: usbDebuggingSwitch
+                    label: "USB Debugging"
+                    // adbd is started by the same service and stopped again
+                    // when developer mode goes off, so there is nothing to
+                    // turn on while that is off.
+                    enabled: pageRoot.devModeEnabled
+
+                    checked: pageRoot.usbDebuggingEnabled
+                    Connections {
+                        target: pageRoot
+                        function onUsbDebuggingEnabledChanged() {
+                            usbDebuggingSwitch.checked = pageRoot.usbDebuggingEnabled;
+                        }
+                    }
+                    onToggled: pageRoot.setUsbDebugging(checked)
+                }
+            }
+        }
+
+        ExplanationText {
+            text: pageRoot.devModeEnabled
+                  ? "USB Debugging runs the Android adb daemon, so it only " +
+                    "does something on a device that has the Android tools - " +
+                    "a Halium port. ssh is listening on every build and does " +
+                    "not need this."
+                  : "Turn Developer Mode on first. USB Debugging is stopped " +
+                    "with it."
         }
     }
 
-    Component.onCompleted: {
+    /*
+     * Bindings with the devmode service
+     */
+    function retrieveProperties() {
+        luna.call("luna://org.webosports.service.devmode/getStatus", "{}",
+                  _handleGetStatus, _handleServiceUnavailable);
+    }
+
+    function _handleGetStatus(message) {
+        if (!message || !message.payload)
+            return;
+
+        var response = JSON.parse(message.payload);
+        if (!response.returnValue) {
+            pageRoot.serviceAvailable = false;
+            return;
+        }
+
+        pageRoot.devModeEnabled = response.status === "enabled";
+        pageRoot.usbDebuggingEnabled = response.usbDebugging === "enabled";
+        pageRoot.serviceAvailable = true;
+    }
+
+    function _handleServiceUnavailable(message) {
+        console.warn("Developer mode service did not answer: " + message);
+        pageRoot.serviceAvailable = false;
+    }
+
+    function setDevMode(on) {
+        // Turning developer mode off stops adbd in the service, so show that
+        // here straight away rather than leaving a switch on for the second
+        // it takes getStatus to come back and say otherwise.
+        pageRoot.devModeEnabled = on;
+        if (!on)
+            pageRoot.usbDebuggingEnabled = false;
+
+        _setStatus({"status": on ? "enabled" : "disabled"});
+    }
+
+    function setUsbDebugging(on) {
+        pageRoot.usbDebuggingEnabled = on;
+        _setStatus({"usbDebugging": on ? "enabled" : "disabled"});
+    }
+
+    function _setStatus(params) {
+        luna.call("luna://org.webosports.service.devmode/setStatus",
+                  JSON.stringify(params),
+                  _handleSetStatus, _handleSetStatusError);
+    }
+
+    function _handleSetStatus(message) {
+        // See the file header: returnValue is not reliable for the
+        // usbDebugging path, so ask what the state actually is.
         retrieveProperties();
     }
 
-    /*
-     * Need some models for combos or lists ? Let's declare it before the UI.
-     */
-    ListModel {
-        id: aggressivityModel
-        ListElement { level: "Low" }
-        ListElement { level: "Medium" }
-        ListElement { level: "High" }
-        ListElement { level: "Fatal" }
-    }
-
-    /* A settings page has a vertical layout: put everything in a Column */
-    Column {
-        width: parent.width
-
-        /* GroupBoxes look good! */
-        GroupBox {
-            width: parent.width
-
-            title: "Productivity"
-            Column {
-                width: parent.width
-
-                Switch {
-                    id: hourlyCoffeeSwitch
-                    width: parent.width
-                    text: "Hourly Coffee"
-                    font.weight: Font.Normal
-                    LayoutMirroring.enabled: true // by default the switch is on the left in Qt, not very webOS-ish
-
-                    LuneOSSwitch.labelOn: "On"
-                    LuneOSSwitch.labelOff: "Off"
-                }
-                Rectangle { color: "silver"; width: parent.width; height: 2 }
-                Switch {
-                    id: wikiSearchSwitch
-                    width: parent.width
-                    text: "Search in Wikipedia"
-                    font.weight: Font.Normal
-                    LayoutMirroring.enabled: true
-
-                    LuneOSSwitch.labelOn: "Yes"
-                    LuneOSSwitch.labelOff: "No"
-                }
-            }
-        }
-
-        GroupBox {
-            width: parent.width
-
-            title: "Advertising"
-            Column {
-                width: parent.width
-
-                TextField {
-                    id: publicNameTextField
-                    width: parent.width
-                    placeholderText: "Public name..."
-                    text: "Default Name"
-                }
-                Rectangle { color: "silver"; width: parent.width; height: 2 }
-                ComboBox {
-                    id: aggressivityCombo
-                    width: parent.width
-                    textRole: "level"
-                    model: aggressivityModel
-                }
-            }
-        }
-    }
-
-    /*
-     * Bindings with LuneOS settings
-     */
-    // Initialization and eventual subscription
-    function retrieveProperties() {
-        luna.call("palm://com.webos.service.systemservice/getCoffeePreference", '{"subscribe": "true"}', _handleGetCoffeePreference, _handleGetError);
-        luna.call("palm://com.webos.service.systemservice/getAggressivity", '{}', _handleGetAggressivity, _handleGetError);
-    }
-    function _handleGetCoffeePreference(message) {
-        if(message && message.payload) {
-            payloadValue = JSON.parse(message.payload);
-            if(typeof payloadValue.hourly !== 'undefined') {
-                pageRoot.hourlyCoffee = payloadValue.hourly;
-            }
-        }
-    }
-    function _handleGetAggressivity(message) {
-        if(message && message.payload) {
-            payloadValue = JSON.parse(message.payload);
-            if(typeof payloadValue.value !== 'undefined') {
-                pageRoot.aggressivity = payloadValue.value;
-            }
-        }
-    }
-    // Push changes to LuneOS
-    onHourlyCoffeeChanged: {
-        luna.call("palm://com.webos.service.systemservice/setCoffeePreference", '{"hourly": "'+hourlyCoffee+'"}', _handleSetSuccess, _handleSetError);
-    }
-    onAggressivityChanged: {
-        luna.call("palm://com.webos.service.systemservice/setAggressivity", '{"value": "'+aggressivity+'"}', _handleSetSuccess, _handleSetError);
+    function _handleSetStatusError(message) {
+        console.warn("Cannot change developer mode: " + message);
+        retrieveProperties();
     }
 }

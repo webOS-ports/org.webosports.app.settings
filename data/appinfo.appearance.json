@@ -1,6 +1,6 @@
 {
-    "title": "Developer Mode",
-    "id": "org.webosports.app.settings.devmodeswitcher",
+    "title": "Appearance",
+    "id": "org.webosports.app.settings.appearance",
     "category": "Settings",
     "trustLevel": "trusted",
     "version": "0.4.0",
@@ -9,10 +9,12 @@
     "type": "qml",
     "useLuneOSStyle": true,
     "main": "qml/GenericCategoryWindow.qml",
-    "icon": "qml/images/icons/icon-devmodeswitcher.png",
+    "icon": "qml/images/icons/icon-appearance.png",
     "uiRevision": "2",
     "visible": true,
     "requiredPermissions": [
-        "devmode-service.operation"
+        "systemsettings.query",
+        "systemsettings.management",
+        "tweaks-service.operation"
     ]
 }

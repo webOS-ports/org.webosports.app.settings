@@ -1,0 +1,11 @@
+{
+    "id": "org.webosports.app.settings.dictionary:1",
+    "owner": "org.webosports.app.settings.textassist",
+    "sync": true,
+    "indexes": [{
+        "name": "word",
+        "props": [{
+            "name": "word"
+        }]
+    }]
+}
