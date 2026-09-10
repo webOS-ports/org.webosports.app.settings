@@ -109,6 +109,12 @@ GenericCategoryWindow {
         }
 
         ListElement {
+            title: "Applications"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.applications"
+        }
+
+        ListElement {
             title: "Battery"
             categorySection: "General"
             appId: "org.webosports.app.settings.battery"

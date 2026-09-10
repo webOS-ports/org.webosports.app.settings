@@ -63,6 +63,11 @@ WebOSWindow {
             "icon": "images/icons/icon-cellbroadcast.png",
             "title": "Emergency Broadcast"
         },
+        "org.webosports.app.settings.applications": {
+            "source": "General/ApplicationsPage.qml",
+            "icon": "images/icons/icon-applications.png",
+            "title": "Applications"
+        },
         "org.webosports.app.settings.bluetooth": {
             "source": "Connectivity/BluetoothPage.qml",
             "icon": "images/icons/icon-bluetooth.png",

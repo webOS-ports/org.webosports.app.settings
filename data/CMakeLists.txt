@@ -6,6 +6,7 @@ endmacro(install_symlink)
 # For each category, install the appinfo and the LS2 json files
 foreach(CATEGORY
   appearance
+  applications
   battery
   bluetooth
   cellbroadcast
