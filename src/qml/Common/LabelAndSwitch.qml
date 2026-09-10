@@ -41,6 +41,22 @@ Switch {
     // Qt puts the indicator on the left, which is not very webOS-ish
     LayoutMirroring.enabled: true
 
+    /*
+     * The style gives a Switch padding: 6 on all four sides, which pushed
+     * this row's label six pixels right of every other row's - a
+     * LabelAndValue, LabelAndSelector or LabelAndSlider anchors its label
+     * straight to the left edge. On a page that mixes them, and Display
+     * mixes three, the labels visibly failed to line up, and the gap grew
+     * with the interface scale.
+     *
+     * Only the horizontal padding goes. The vertical padding is what gives
+     * the row its height, and dropping that would leave switch rows shorter
+     * than the rows around them - trading a sideways misalignment for a
+     * vertical one.
+     */
+    leftPadding: 0
+    rightPadding: 0
+
     font.pixelSize: FontUtils.sizeToPixels("16pt")
     font.weight: Font.Normal
 
