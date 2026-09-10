@@ -218,6 +218,9 @@ BasePage {
 
     WiFiNetworkInfoPopup {
         id: networkInfoPopup
+        // For the dBm reading and the channel width, which connman has no
+        // way to report - see the popup for why.
+        luna: wifiPageId.luna
         // Nothing to keep once it is off screen, and holding the service
         // would keep this pinned to a network the list may have dropped.
         onClosed: service = null

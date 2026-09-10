@@ -24,6 +24,8 @@ import QtQuick.Controls.LuneOS 2.0
 import LunaNext.Common 0.1
 // Connman
 import Connman 0.2
+// LS2 access
+import LuneOS.Service 1.0
 
 import "../Common"
 
@@ -36,12 +38,18 @@ import "../Common"
  * hangs off press-and-hold instead, so it works for any network in the list
  * and leaves plain tap as connect/disconnect.
  *
- * Note that connman as built for LuneOS does not report BSSID, Frequency,
- * MaxRate or EncryptionMode at all - those service properties come from
- * Sailfish's connman fork, not from upstream, so libconnman-qt offers them
- * but they arrive empty here. The rows are kept because they cost nothing
- * and come alive by themselves if that ever changes; today they simply drop
- * out along with everything else that has nothing to say.
+ * Two sources, because neither answers everything. connman is the primary
+ * one and is bound directly, so it stays live. But stock connman publishes
+ * no BSSID, Frequency, MaxRate or EncryptionMode at all - those are Sailfish
+ * connman-fork properties that libconnman-qt offers and upstream never fills
+ * in - and it normalises signal strength to a percentage, with no notion of
+ * channel width whatsoever.
+ *
+ * So the dBm reading and the channel width come from com.palm.wifi/getstatus's
+ * apInfo instead, which reads them off wpa_supplicant, and that also stands in
+ * for BSSID and channel where connman is silent. Every row either side feeds
+ * is optional: on a device with neither addition this degrades to name,
+ * signal percentage and security, which is what it showed before.
  *
  * Everything comes off the NetworkService the list delegate was showing, so
  * it stays live while open: connect from underneath the popup and the
@@ -57,6 +65,22 @@ Popup {
     id: networkInfoPopup
 
     property NetworkService service: null
+
+    /*
+     * The page's LunaService, for the two things connman structurally cannot
+     * answer. Optional: without it the rows those feed simply do not appear.
+     */
+    property LunaService luna: null
+
+    /*
+     * com.palm.wifi/getstatus's apInfo. ConnMan normalises Strength to a
+     * percentage and has no notion of channel width, so the dBm reading and
+     * the width come from the wifi service instead, which reads them off
+     * wpa_supplicant. Subscribed rather than fetched once: the signal moves
+     * constantly, and a details page showing the value from the moment it
+     * opened would be quietly wrong the whole time it is up.
+     */
+    property var apInfo: null
 
     modal: true
     dim: true
@@ -166,7 +190,51 @@ Popup {
     property string editDns1: ""
     property string editDns2: ""
 
-    onOpened: _loadIpConfig()
+    onOpened: {
+        _loadIpConfig();
+        _subscribeApInfo();
+    }
+
+    onClosed: {
+        // Nothing on screen to keep it fresh for, and getstatus pushes on
+        // every signal change - subscribe() hands back the call itself to
+        // cancel, there is no token to keep.
+        if (_apInfoCall)
+            _apInfoCall.cancel();
+        _apInfoCall = null;
+        apInfo = null;
+    }
+
+    property var _apInfoCall: null
+
+    /*
+     * Only the connected network has an access point to describe, and
+     * getstatus only ever describes that one - asking about any other row
+     * would return this one's details under the wrong name.
+     */
+    function _subscribeApInfo() {
+        apInfo = null;
+        if (!luna || !service || !service.connected)
+            return;
+
+        _apInfoCall = luna.subscribe("luna://com.palm.wifi/getstatus",
+                                      JSON.stringify({"subscribe": true}),
+                                      _handleWifiStatus, _handleWifiStatusError);
+    }
+
+    function _handleWifiStatus(message) {
+        if (!message || !message.payload)
+            return;
+
+        var response = JSON.parse(message.payload);
+        // Absent whenever the wifi service predates apInfo, which is the
+        // whole reason every row it feeds is optional.
+        apInfo = response.returnValue && response.apInfo ? response.apInfo : null;
+    }
+
+    function _handleWifiStatusError(message) {
+        apInfo = null;
+    }
 
     /*
      * Seed the editor from what is configured, falling back to what is in
@@ -266,19 +334,45 @@ Popup {
         if (!service)
             return rows;
 
-        _addRow(rows, "Signal", service.strength + "%");
+        /*
+         * connman's Strength is a normalised percentage; apInfo carries the
+         * real dBm, which is the figure legacy showed and the one worth
+         * anything for comparing two access points.
+         */
+        var dbm = apInfo && apInfo.signalLevel !== undefined ? apInfo.signalLevel : undefined;
+        _addRow(rows, "Signal", dbm !== undefined
+                ? service.strength + "% (" + dbm + " dBm)"
+                : service.strength + "%");
+
         _addRow(rows, "Security", _securityName(service.securityType));
         // Only meaningful on a secured network, and connman leaves it empty
         // until it has associated and knows the cipher in use.
         _addRow(rows, "Encryption", service.encryptionMode.toUpperCase());
-        _addRow(rows, "BSSID", service.bssid);
 
-        var channel = _channel(service.frequency);
-        var band = _bandName(service.frequency);
+        /*
+         * Prefer connman for anything it has: it is bound directly and
+         * updates itself, whereas apInfo only ever describes the connected
+         * network. Falling back to apInfo is what makes this work on a build
+         * that has the wifi service's half but not connman's.
+         */
+        _addRow(rows, "BSSID", service.bssid || (apInfo ? apInfo.bssid : ""));
+
+        var frequency = service.frequency > 0 ? service.frequency
+                        : (apInfo && apInfo.frequency ? apInfo.frequency : 0);
+        var channel = _channel(frequency);
+        if (channel === 0 && apInfo && apInfo.channel)
+            channel = apInfo.channel;
+
+        var band = _bandName(frequency);
         if (channel > 0)
             _addRow(rows, "Channel", band !== "" ? channel + " (" + band + ")" : String(channel));
-        if (service.frequency > 0)
-            _addRow(rows, "Frequency", service.frequency + " MHz");
+        if (frequency > 0)
+            _addRow(rows, "Frequency", frequency + " MHz");
+
+        // 8080 is how apInfo encodes two 80MHz segments rather than a width.
+        if (apInfo && apInfo.channelWidth > 0)
+            _addRow(rows, "Channel width", apInfo.channelWidth === 8080
+                    ? "80+80 MHz" : apInfo.channelWidth + " MHz");
 
         // connman reports MaxRate in bit/s.
         if (service.maxRate > 0)
