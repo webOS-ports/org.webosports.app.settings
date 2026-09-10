@@ -48,6 +48,16 @@ WebOSWindow {
             "icon": "images/icons/icon-appearance.png",
             "title": "Appearance"
         },
+        "org.webosports.app.settings.tethering": {
+            "source": "Connectivity/TetheringPage.qml",
+            "icon": "images/icons/icon-tethering.png",
+            "title": "Tethering"
+        },
+        "org.webosports.app.settings.usb": {
+            "source": "Connectivity/UsbPage.qml",
+            "icon": "images/icons/icon-usb.png",
+            "title": "USB"
+        },
         "org.webosports.app.settings.bluetooth": {
             "source": "Connectivity/BluetoothPage.qml",
             "icon": "images/icons/icon-bluetooth.png",

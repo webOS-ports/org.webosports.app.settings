@@ -26,8 +26,10 @@ foreach(CATEGORY
   screenlock
   searchpreferences
   soundsandalerts
+  tethering
   textassist
   updates
+  usb
   vpn
   wifi)
   # for a new category, just add the name up there.

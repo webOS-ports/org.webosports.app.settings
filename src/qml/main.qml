@@ -73,6 +73,18 @@ GenericCategoryWindow {
         }
 
         ListElement {
+            title: "Tethering"
+            categorySection: "Connectivity"
+            appId: "org.webosports.app.settings.tethering"
+        }
+
+        ListElement {
+            title: "USB"
+            categorySection: "Connectivity"
+            appId: "org.webosports.app.settings.usb"
+        }
+
+        ListElement {
             title: "VPN"
             categorySection: "Connectivity"
             appId: "org.webosports.app.settings.vpn"
