@@ -32,8 +32,16 @@ import "../Common"
  * configured - the legacy app's "config" scene, which it pushed when you
  * tapped a network you were already on (its "Access Point Info" group behind
  * the app menu held BSSID / Signal / Channel, and the "IP address" group the
- * addressing). Here it hangs off press-and-hold instead, so it works for any
- * network in the list and leaves plain tap as connect/disconnect.
+ * addressing, editable behind an "Automatic IP settings" toggle). Here it
+ * hangs off press-and-hold instead, so it works for any network in the list
+ * and leaves plain tap as connect/disconnect.
+ *
+ * Note that connman as built for LuneOS does not report BSSID, Frequency,
+ * MaxRate or EncryptionMode at all - those service properties come from
+ * Sailfish's connman fork, not from upstream, so libconnman-qt offers them
+ * but they arrive empty here. The rows are kept because they cost nothing
+ * and come alive by themselves if that ever changes; today they simply drop
+ * out along with everything else that has nothing to say.
  *
  * Everything comes off the NetworkService the list delegate was showing, so
  * it stays live while open: connect from underneath the popup and the
@@ -138,6 +146,121 @@ Popup {
 
     readonly property bool forgettable: !!service && (service.saved || service.favorite)
 
+    /*
+     * Addressing is only worth offering for a network the device has a
+     * relationship with - one it has never joined has nothing to apply the
+     * configuration to yet.
+     */
+    readonly property bool configurable: !!service && (service.saved || service.favorite || service.connected)
+
+    /*
+     * Whether the user has the manual fields open. Deliberately NOT bound to
+     * the service: it is what the switch has been set to, which is the thing
+     * being edited, and a binding would snap it back every time connman
+     * re-reported the service mid-edit. Seeded in _loadIpConfig().
+     */
+    property bool manualAddressing: false
+    property string editAddress: ""
+    property string editNetmask: ""
+    property string editGateway: ""
+    property string editDns1: ""
+    property string editDns2: ""
+
+    onOpened: _loadIpConfig()
+
+    /*
+     * Seed the editor from what is configured, falling back to what is in
+     * use: switching a DHCP network to manual should start from the address
+     * it actually has, which is nearly always what you want to keep.
+     */
+    function _loadIpConfig() {
+        if (!service) {
+            manualAddressing = false;
+            return;
+        }
+        var config = service.ipv4Config || ({});
+        var inUse = service.ipv4 || ({});
+        manualAddressing = (_mapValue(config, "Method") === "manual");
+
+        editAddress = _mapValue(config, "Address") || _mapValue(inUse, "Address");
+        editNetmask = _mapValue(config, "Netmask") || _mapValue(inUse, "Netmask");
+        editGateway = _mapValue(config, "Gateway") || _mapValue(inUse, "Gateway");
+
+        // Nameservers.Configuration is empty on a DHCP network, so fall back
+        // to the ones actually in use rather than presenting empty boxes.
+        var servers = service.nameserversConfig && service.nameserversConfig.length > 0
+                      ? service.nameserversConfig : (service.nameservers || []);
+        editDns1 = servers.length > 0 ? servers[0] : "";
+        editDns2 = servers.length > 1 ? servers[1] : "";
+    }
+
+    function _isIPv4(text) {
+        var parts = String(text).split(".");
+        if (parts.length !== 4)
+            return false;
+        for (var i = 0; i < parts.length; i++) {
+            // Reject "1.2.3.04" and "" as well as out-of-range: connman
+            // takes these as strings and a malformed one fails at apply
+            // time, long after the popup has closed.
+            if (!/^(0|[1-9][0-9]{0,2})$/.test(parts[i]) || parseInt(parts[i], 10) > 255)
+                return false;
+        }
+        return true;
+    }
+
+    readonly property bool addressValid: _isIPv4(editAddress)
+    readonly property bool netmaskValid: _isIPv4(editNetmask)
+    readonly property bool gatewayValid: _isIPv4(editGateway)
+    // Optional, but if something has been typed it has to be an address.
+    readonly property bool dns1Valid: editDns1 === "" || _isIPv4(editDns1)
+    readonly property bool dns2Valid: editDns2 === "" || _isIPv4(editDns2)
+
+    readonly property bool manualEntryValid: addressValid && netmaskValid && gatewayValid
+                                             && dns1Valid && dns2Valid
+
+    // Nothing to write unless the manual fields are open and complete, or the
+    // switch has just been put back to automatic.
+    readonly property bool ipConfigDirty: {
+        if (!service || !configurable)
+            return false;
+        var wasManual = _mapValue(service.ipv4Config, "Method") === "manual";
+        if (manualAddressing !== wasManual)
+            return true;
+        if (!manualAddressing)
+            return false;
+        return editAddress !== _mapValue(service.ipv4Config, "Address")
+               || editNetmask !== _mapValue(service.ipv4Config, "Netmask")
+               || editGateway !== _mapValue(service.ipv4Config, "Gateway")
+               || _editedNameservers().join(",") !== (service.nameserversConfig || []).join(",");
+    }
+
+    function _editedNameservers() {
+        var servers = [];
+        if (editDns1 !== "") servers.push(editDns1);
+        if (editDns2 !== "") servers.push(editDns2);
+        return servers;
+    }
+
+    /*
+     * connman keeps the addressing and the resolvers as separate properties,
+     * so going back to automatic has to clear both - leaving a manual
+     * nameserver list behind would quietly override what DHCP hands out.
+     */
+    function _applyIpConfig() {
+        if (!service)
+            return;
+        if (manualAddressing) {
+            service.setIpv4Config({"Method": "manual",
+                                   "Address": editAddress,
+                                   "Netmask": editNetmask,
+                                   "Gateway": editGateway});
+            service.setNameserversConfig(_editedNameservers());
+        } else {
+            service.setIpv4Config({"Method": "dhcp"});
+            service.setNameserversConfig([]);
+        }
+    }
+
     readonly property var accessPointRows: {
         var rows = [];
         if (!service)
@@ -219,9 +342,9 @@ Popup {
     // The groups are identical in shape, so they are laid out from a list
     // rather than written out three times over.
     readonly property var infoGroups: [
-        {"groupTitle": "Access Point Info", "groupRows": accessPointRows},
-        {"groupTitle": "IP Address",        "groupRows": addressingRows},
-        {"groupTitle": "Interface",         "groupRows": interfaceRows}
+        {"groupTitle": "Access Point Info", "groupRows": accessPointRows, "addressing": false},
+        {"groupTitle": "IP Address",        "groupRows": addressingRows,  "addressing": true},
+        {"groupTitle": "Interface",         "groupRows": interfaceRows,   "addressing": false}
     ]
 
     ColumnLayout {
@@ -287,27 +410,119 @@ Popup {
                         // Repeater's delegate "modelData" is the row, and
                         // would shadow the group it came from.
                         readonly property var groupRows: modelData.groupRows
+                        readonly property bool addressing: modelData.addressing
+                        // The switch belongs to the addressing group only,
+                        // and only where there is something to apply it to.
+                        readonly property bool showsSwitch: addressing && networkInfoPopup.configurable
+                        readonly property bool showsEditor: showsSwitch && networkInfoPopup.manualAddressing
 
                         width: parent.width
                         title: modelData.groupTitle
-                        visible: groupRows.length > 0
+                        visible: groupRows.length > 0 || showsSwitch
 
                         Column {
                             width: parent.width
+
+                            LabelAndSwitch {
+                                id: automaticSwitch
+                                visible: infoGroupBox.showsSwitch
+                                label: "Automatic IP settings"
+                                checked: !networkInfoPopup.manualAddressing
+                                onToggled: networkInfoPopup.manualAddressing = !checked
+
+                                /*
+                                 * Flipping a Switch assigns checked from C++,
+                                 * which drops the binding above for good. Put
+                                 * the value back by hand whenever the popup
+                                 * reseeds itself, or opening this on a second
+                                 * network would show the previous one's
+                                 * setting while describing this one's.
+                                 */
+                                Connections {
+                                    target: networkInfoPopup
+                                    function onManualAddressingChanged() {
+                                        automaticSwitch.checked = !networkInfoPopup.manualAddressing;
+                                    }
+                                }
+                            }
+
+                            /*
+                             * What connman currently has. Stood down while
+                             * the manual fields are up, so the same numbers
+                             * are not on screen twice saying different
+                             * things - the rows are what is in use, the
+                             * fields are what is being asked for.
+                             */
                             Repeater {
-                                model: infoGroupBox.groupRows
+                                model: infoGroupBox.showsEditor ? [] : infoGroupBox.groupRows
                                 delegate: Column {
                                     width: parent.width
 
                                     HorizontalSeparator {
                                         width: parent.width
-                                        visible: index > 0
+                                        visible: index > 0 || infoGroupBox.showsSwitch
                                     }
                                     LabelAndValue {
                                         width: parent.width
                                         label: modelData.rowLabel
                                         value: modelData.rowValue
                                     }
+                                }
+                            }
+
+                            Column {
+                                width: parent.width
+                                visible: infoGroupBox.showsEditor
+
+                                HorizontalSeparator { width: parent.width }
+                                LabelAndTextField {
+                                    width: parent.width
+                                    label: "Address"
+                                    text: networkInfoPopup.editAddress
+                                    placeholderText: "192.168.1.42"
+                                    acceptable: networkInfoPopup.addressValid
+                                    inputMethodHints: Qt.ImhPreferNumbers | Qt.ImhNoPredictiveText
+                                    onEdited: (value) => networkInfoPopup.editAddress = value
+                                }
+                                HorizontalSeparator { width: parent.width }
+                                LabelAndTextField {
+                                    width: parent.width
+                                    label: "Subnet"
+                                    text: networkInfoPopup.editNetmask
+                                    placeholderText: "255.255.255.0"
+                                    acceptable: networkInfoPopup.netmaskValid
+                                    inputMethodHints: Qt.ImhPreferNumbers | Qt.ImhNoPredictiveText
+                                    onEdited: (value) => networkInfoPopup.editNetmask = value
+                                }
+                                HorizontalSeparator { width: parent.width }
+                                LabelAndTextField {
+                                    width: parent.width
+                                    label: "Gateway"
+                                    text: networkInfoPopup.editGateway
+                                    placeholderText: "192.168.1.1"
+                                    acceptable: networkInfoPopup.gatewayValid
+                                    inputMethodHints: Qt.ImhPreferNumbers | Qt.ImhNoPredictiveText
+                                    onEdited: (value) => networkInfoPopup.editGateway = value
+                                }
+                                HorizontalSeparator { width: parent.width }
+                                LabelAndTextField {
+                                    width: parent.width
+                                    label: "DNS Server"
+                                    text: networkInfoPopup.editDns1
+                                    placeholderText: "192.168.1.1"
+                                    acceptable: networkInfoPopup.dns1Valid
+                                    inputMethodHints: Qt.ImhPreferNumbers | Qt.ImhNoPredictiveText
+                                    onEdited: (value) => networkInfoPopup.editDns1 = value
+                                }
+                                HorizontalSeparator { width: parent.width }
+                                LabelAndTextField {
+                                    width: parent.width
+                                    label: "DNS Server"
+                                    text: networkInfoPopup.editDns2
+                                    placeholderText: "optional"
+                                    acceptable: networkInfoPopup.dns2Valid
+                                    inputMethodHints: Qt.ImhPreferNumbers | Qt.ImhNoPredictiveText
+                                    onEdited: (value) => networkInfoPopup.editDns2 = value
                                 }
                             }
                         }
@@ -354,11 +569,24 @@ Popup {
                     networkInfoPopup.close();
                 }
             }
+            /*
+             * Legacy's "Done" wrote the static IP out and left, so this is
+             * the same button doing the same job - it just says which of the
+             * two it is about to do, and refuses while the addresses typed
+             * in would not survive the trip to connman.
+             */
             Button {
                 Layout.fillWidth: true
-                text: "Done"
+                text: networkInfoPopup.ipConfigDirty ? "Save" : "Done"
+                enabled: !networkInfoPopup.ipConfigDirty
+                         || !networkInfoPopup.manualAddressing
+                         || networkInfoPopup.manualEntryValid
                 LuneOSButton.mainColor: LuneOSButton.affirmativeColor
-                onClicked: networkInfoPopup.close()
+                onClicked: {
+                    if (networkInfoPopup.ipConfigDirty)
+                        networkInfoPopup._applyIpConfig();
+                    networkInfoPopup.close();
+                }
             }
         }
     }
