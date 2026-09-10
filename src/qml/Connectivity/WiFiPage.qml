@@ -14,7 +14,8 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick 2.9
+// 2.12 for TapHandler, which the network rows need - see the delegate
+import QtQuick 2.12
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
 
@@ -131,9 +132,48 @@ BasePage {
                         width: parent.width
                     }
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
+                    /*
+                     * A TapHandler and not a MouseArea, because this row
+                     * lives in a ListView.
+                     *
+                     * MouseArea.pressAndHold does not survive being inside a
+                     * Flickable: the list filters its children's mouse
+                     * events, and the first move takes the grab away and
+                     * cancels the hold timer with it. Measured with a
+                     * synthesised press: perfectly still, the hold fires;
+                     * four pixels of movement during it, and it never does -
+                     * and four pixels is less than the ten pixel drag
+                     * threshold, so the list does not even scroll. A finger
+                     * planted on glass reports no movement, which is why
+                     * this worked on a device and not with a mouse.
+                     *
+                     * A pointer handler is built to share a press with a
+                     * Flickable rather than lose it, so the hold survives
+                     * the drift and a real drag still scrolls the list.
+                     */
+                    TapHandler {
+                        id: networkTap
+
+                        // Set once the hold has fired, so the release that
+                        // follows does not also toggle the connection - what
+                        // MouseArea used to do for free by suppressing
+                        // clicked() after pressAndHold().
+                        property bool heldOpen: false
+
+                        longPressThreshold: 0.8
+
+                        onPressedChanged: if (pressed) networkTap.heldOpen = false
+
+                        onLongPressed: {
+                            networkTap.heldOpen = true;
+                            networkInfoPopup.service = delegateService;
+                            networkInfoPopup.open();
+                        }
+
+                        onTapped: {
+                            if (networkTap.heldOpen)
+                                return;
+
                             if(delegateService.connected) {
                                 delegateService.requestDisconnect();
                             }
@@ -175,7 +215,10 @@ BasePage {
         width: parent.width
         wrapMode: Label.WordWrap
         font.italic: true
-        text: "Your device automatically connects to known networks."
+        // Press-and-hold is worth saying out loud: there is nothing on the
+        // row itself to suggest a network has a details page behind it.
+        text: "Your device automatically connects to known networks. "
+              + "Touch and hold a network to see its details."
     }
 
     UserAgent {
@@ -203,6 +246,16 @@ BasePage {
         // there is no request left to answer), which is exactly what
         // "entered a password and nothing happened" looks like from here.
         onUserInputCanceled: popupLoader.source = ""
+    }
+
+    WiFiNetworkInfoPopup {
+        id: networkInfoPopup
+        // For the dBm reading and the channel width, which connman has no
+        // way to report - see the popup for why.
+        luna: wifiPageId.luna
+        // Nothing to keep once it is off screen, and holding the service
+        // would keep this pinned to a network the list may have dropped.
+        onClosed: service = null
     }
 
     Loader {
