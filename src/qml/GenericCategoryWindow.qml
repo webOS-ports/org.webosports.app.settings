@@ -78,6 +78,16 @@ WebOSWindow {
             "icon": "images/icons/icon-encryption.png",
             "title": "Encryption"
         },
+        "org.webosports.app.settings.notifications": {
+            "source": "General/NotificationsPage.qml",
+            "icon": "images/icons/icon-notifications.png",
+            "title": "Notifications"
+        },
+        "org.webosports.app.settings.accessibility": {
+            "source": "General/AccessibilityPage.qml",
+            "icon": "images/icons/icon-accessibility.png",
+            "title": "Accessibility"
+        },
         "org.webosports.app.settings.bluetooth": {
             "source": "Connectivity/BluetoothPage.qml",
             "icon": "images/icons/icon-bluetooth.png",

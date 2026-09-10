@@ -103,6 +103,12 @@ GenericCategoryWindow {
         }
 
         ListElement {
+            title: "Accessibility"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.accessibility"
+        }
+
+        ListElement {
             title: "Appearance"
             categorySection: "General"
             appId: "org.webosports.app.settings.appearance"
@@ -184,6 +190,12 @@ GenericCategoryWindow {
             title: "Location Services"
             categorySection: "General"
             appId: "org.webosports.app.settings.location"
+        }
+
+        ListElement {
+            title: "Notifications"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.notifications"
         }
 
         ListElement {
