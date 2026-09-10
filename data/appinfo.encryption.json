@@ -1,0 +1,19 @@
+{
+    "title": "Encryption",
+    "id": "org.webosports.app.settings.encryption",
+    "category": "Settings",
+    "trustLevel": "trusted",
+    "version": "0.4.0",
+    "vendor": "WebOS Ports",
+    "vendorurl": "https://github.com/webOS-ports/org.webosports.app.settings",
+    "type": "qml",
+    "useLuneOSStyle": true,
+    "main": "qml/GenericCategoryWindow.qml",
+    "icon": "qml/images/icons/icon-encryption.png",
+    "uiRevision": "2",
+    "visible": true,
+    "requiredPermissions": [
+        "storaged.operation",
+        "application.launcher"
+    ]
+}
