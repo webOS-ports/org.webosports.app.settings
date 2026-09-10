@@ -38,6 +38,16 @@ WebOSWindow {
             "icon": "images/icons/icon-battery.png",
             "title": "Battery"
         },
+        "org.webosports.app.settings.display": {
+            "source": "General/DisplayPage.qml",
+            "icon": "images/icons/icon-display.png",
+            "title": "Display"
+        },
+        "org.webosports.app.settings.appearance": {
+            "source": "General/AppearancePage.qml",
+            "icon": "images/icons/icon-appearance.png",
+            "title": "Appearance"
+        },
         "org.webosports.app.settings.bluetooth": {
             "source": "Connectivity/BluetoothPage.qml",
             "icon": "images/icons/icon-bluetooth.png",

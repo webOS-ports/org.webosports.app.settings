@@ -29,19 +29,19 @@ import "../Common"
  * Screen & Lock, after the webOS 3.0.5 app of the same name
  * (com.palm.app.screenlock).
  *
- * Same rows in the same order as the original: Auto Dim, Brightness and Turn
- * off After; the wallpaper; Advanced Gestures; Secure Unlock with its Lock
- * After row; and the two notification switches.
+ * The original also held Auto Dim, Brightness and Turn off After at the top
+ * and the wallpaper below them, because on a Pre the screen turning itself
+ * off and the screen locking itself were one idea. They are two ideas
+ * everywhere else - SFOS, UBports and GNOME/Phosh all separate them - so what
+ * dims and blanks the screen is now on the Display panel and the wallpaper is
+ * on Appearance. What is left here is what locks the screen and what it shows
+ * while locked: Advanced Gestures, Secure Unlock with its Lock After row, the
+ * two biometric groups and the notification switches.
  *
  * Most of it lands on services LuneOS has:
- *  - brightness and the display timeout are com.palm.display control
- *    properties, the same ones the shell's device menu moves.
- *  - enableALS, sysUiEnableNextPrevGestures, showAlertsWhenLocked,
- *    BlinkNotifications and lockTimeout are systemservice preferences that
- *    luna-sysmgr-common has always read.
- *  - the wallpaper goes through systemservice's wallpaper/importWallpaper,
- *    which LuneOS keeps patched back in, and then into the wallpaper
- *    preference the card shell draws from.
+ *  - sysUiEnableNextPrevGestures, showAlertsWhenLocked, BlinkNotifications
+ *    and lockTimeout are systemservice preferences that luna-sysmgr-common
+ *    has always read.
  *
  * Secure Unlock talks to com.palm.systemmanager, which - despite what an
  * earlier version of this comment said - never actually left: luna-sysmgr
@@ -77,17 +77,11 @@ import "../Common"
 BasePage {
     id: pageRoot
 
-    // Display
-    property bool autoDim: true
-    property int brightness: 100
-    property int displayTimeout: 60
-
     // Preferences
     property bool gesturesEnabled: true
     property bool showAlertsWhenLocked: true
     property bool blinkNotifications: false
     property int lockTimeout: 0
-    property var wallpaper: ({})
 
     // Secure unlock
     property bool lockServiceAvailable: false
@@ -96,10 +90,6 @@ BasePage {
     property string pendingLockMode: ""
 
     property bool prefsLoaded: false
-
-    // The choices the original offered, in seconds.
-    readonly property var displayTimeouts: [60, 120, 300, 600]
-    readonly property var displayTimeoutLabels: ["1 minute", "2 minutes", "5 minutes", "10 minutes"]
 
     readonly property var lockTimeouts: [0, 30, 60, 120, 180, 300, 600, 1800]
     readonly property var lockTimeoutLabels: ["Screen turns off", "30 seconds", "1 minute",
@@ -129,92 +119,35 @@ BasePage {
     }
 
     SettingsPageContent {
+        /*
+         * Signposts, at the top rather than the bottom: someone looking for
+         * brightness on this page is looking for it where the legacy app kept
+         * it, which was above everything else.
+         */
         GroupBox {
             width: parent.width
 
-            Column {
+            Row {
                 width: parent.width
+                spacing: Units.gu(1)
 
-                LabelAndSwitch {
-                    id: autoDimSwitch
-                    label: "Auto Dim"
-
-                    checked: pageRoot.autoDim
-                    Connections {
-                        target: pageRoot
-                        function onAutoDimChanged() {
-                            autoDimSwitch.checked = pageRoot.autoDim;
-                        }
-                    }
-                    onToggled: pageRoot.setAutoDim(checked)
+                Button {
+                    text: "Display"
+                    LuneOSButton.mainColor: LuneOSButton.secondaryColor
+                    onClicked: pageRoot.openDisplaySettings()
                 }
 
-                HorizontalSeparator {
-                    width: parent.width
-                }
-
-                LabelAndSlider {
-                    id: brightnessSlider
-                    width: parent.width
-                    label: "Brightness"
-                    // Fully dark is not a brightness anyone wants to be stuck
-                    // at, so the original started its slider at 10 as well.
-                    from: 10
-
-                    value: pageRoot.brightness
-                    Connections {
-                        target: pageRoot
-                        function onBrightnessChanged() {
-                            if (!brightnessSlider.pressed)
-                                brightnessSlider.value = pageRoot.brightness;
-                        }
-                    }
-
-                    onMoved: (newBrightness) => pageRoot.applyBrightness(newBrightness)
-                    onReleased: (newBrightness) => pageRoot.applyBrightness(newBrightness)
-                }
-
-                HorizontalSeparator {
-                    width: parent.width
-                }
-
-                LabelAndSelector {
-                    id: displayTimeoutSelector
-                    width: parent.width
-                    label: "Turn off After"
-                    model: pageRoot.displayTimeoutLabels
-
-                    currentIndex: pageRoot._indexOf(pageRoot.displayTimeouts,
-                                                    pageRoot.displayTimeout, 0)
-                    Connections {
-                        target: pageRoot
-                        function onDisplayTimeoutChanged() {
-                            displayTimeoutSelector.currentIndex =
-                                pageRoot._indexOf(pageRoot.displayTimeouts,
-                                                  pageRoot.displayTimeout, 0);
-                        }
-                    }
-                    onActivated: (index) => pageRoot.setDisplayTimeout(pageRoot.displayTimeouts[index])
+                Button {
+                    text: "Appearance"
+                    LuneOSButton.mainColor: LuneOSButton.secondaryColor
+                    onClicked: pageRoot.openAppearanceSettings()
                 }
             }
         }
 
-        GroupBox {
-            width: parent.width
-            title: "Wallpaper"
-
-            LabelAndPicker {
-                width: parent.width
-                label: "Change Wallpaper"
-                value: pageRoot.wallpaperName()
-                placeholder: "Pick a picture"
-
-                onClicked: {
-                    wallpaperPicker.currentPath = pageRoot.wallpaper
-                                                  ? (pageRoot.wallpaper.wallpaperFile || "") : "";
-                    wallpaperPicker.open();
-                }
-            }
+        ExplanationText {
+            text: "Brightness, Auto Dim and how long before the screen turns " +
+                  "off are on the Display panel. The wallpaper is on Appearance."
         }
 
         GroupBox {
@@ -498,12 +431,6 @@ BasePage {
         }
     }
 
-    WallpaperPickerPopup {
-        id: wallpaperPicker
-
-        onWallpaperSelected: (path) => pageRoot.importWallpaper(path)
-    }
-
     PasscodePopup {
         id: passcodePopup
 
@@ -604,59 +531,17 @@ BasePage {
     }
 
     /*
-     * Wallpaper
-     */
-    function wallpaperName() {
-        if (!wallpaper || !wallpaper.wallpaperName)
-            return "";
-
-        var name = wallpaper.wallpaperName;
-        var dot = name.lastIndexOf(".");
-        return dot > 0 ? name.substring(0, dot) : name;
-    }
-
-    function importWallpaper(path) {
-        // systemservice crops and scales the picture for the screen and hands
-        // back the wallpaper object to store; the shell draws whatever the
-        // preference points at.
-        luna.call("luna://com.webos.service.systemservice/wallpaper/importWallpaper",
-                  JSON.stringify({"target": path}),
-                  _handleWallpaperImported, _handleSetError);
-    }
-
-    function _handleWallpaperImported(message) {
-        if (!message || !message.payload)
-            return;
-
-        var response = JSON.parse(message.payload);
-        if (!response.returnValue || !response.wallpaper) {
-            console.warn("Cannot import the wallpaper: " + message.payload);
-            return;
-        }
-
-        pageRoot.wallpaper = response.wallpaper;
-        _setPreference("wallpaper", response.wallpaper);
-    }
-
-    /*
      * Bindings with LuneOS settings
      */
     function retrieveProperties() {
         luna.subscribe("luna://com.webos.service.systemservice/getPreferences",
-                       JSON.stringify({"keys": ["enableALS", "sysUiEnableNextPrevGestures",
+                       JSON.stringify({"keys": ["sysUiEnableNextPrevGestures",
                                                 "showAlertsWhenLocked", "BlinkNotifications",
-                                                "lockTimeout", "wallpaper",
+                                                "lockTimeout",
                                                 "enableFingerprintUnlock",
                                                 "enableFaceUnlock"],
                                        "subscribe": true}),
                        _handleGetPreferences, _handleGetError);
-
-        // com.palm.display has no subscription for these, so they are read
-        // once; the shell's device menu is the only other thing that moves
-        // them and it does not run at the same time as this page.
-        luna.call("luna://com.palm.display/control/getProperty",
-                  JSON.stringify({"properties": ["timeout", "maximumBrightness"]}),
-                  _handleGetDisplayProperties, _handleGetError);
 
         retrieveLockMode();
 
@@ -684,8 +569,6 @@ BasePage {
 
         var response = JSON.parse(message.payload);
 
-        if (response.hasOwnProperty("enableALS"))
-            pageRoot.autoDim = response.enableALS;
         if (response.hasOwnProperty("sysUiEnableNextPrevGestures"))
             pageRoot.gesturesEnabled = response.sysUiEnableNextPrevGestures;
         if (response.hasOwnProperty("showAlertsWhenLocked"))
@@ -694,8 +577,6 @@ BasePage {
             pageRoot.blinkNotifications = response.BlinkNotifications;
         if (response.hasOwnProperty("lockTimeout"))
             pageRoot.lockTimeout = response.lockTimeout;
-        if (response.hasOwnProperty("wallpaper") && response.wallpaper)
-            pageRoot.wallpaper = response.wallpaper;
         if (response.hasOwnProperty("enableFingerprintUnlock"))
             pageRoot.fingerprintUnlockEnabled = response.enableFingerprintUnlock;
         if (response.hasOwnProperty("enableFaceUnlock"))
@@ -743,17 +624,6 @@ BasePage {
         pageRoot.fingerprintSensorAvailable = false;
     }
 
-    function _handleGetDisplayProperties(message) {
-        if (!message || !message.payload)
-            return;
-
-        var response = JSON.parse(message.payload);
-        if (response.hasOwnProperty("timeout"))
-            pageRoot.displayTimeout = response.timeout;
-        if (response.hasOwnProperty("maximumBrightness"))
-            pageRoot.brightness = response.maximumBrightness;
-    }
-
     function _handleGetLockMode(message) {
         if (!message || !message.payload)
             return;
@@ -784,28 +654,6 @@ BasePage {
         params[key] = value;
         luna.call("luna://com.webos.service.systemservice/setPreferences", JSON.stringify(params),
                   _handleSetSuccess, _handleSetError);
-    }
-
-    function _setDisplayProperty(key, value) {
-        var params = {};
-        params[key] = value;
-        luna.call("luna://com.palm.display/control/setProperty", JSON.stringify(params),
-                  _handleSetSuccess, _handleSetError);
-    }
-
-    function setAutoDim(on) {
-        pageRoot.autoDim = on;
-        _setPreference("enableALS", on);
-    }
-
-    function applyBrightness(value) {
-        pageRoot.brightness = value;
-        _setDisplayProperty("maximumBrightness", Math.round(value));
-    }
-
-    function setDisplayTimeout(seconds) {
-        pageRoot.displayTimeout = seconds;
-        _setDisplayProperty("timeout", seconds);
     }
 
     function setGesturesEnabled(on) {
@@ -841,6 +689,18 @@ BasePage {
     // Each settings category is its own launchable application on the
     // device; this is how one of them opens another, the way the legacy
     // Help menu items opened com.palm.app.help.
+    function openDisplaySettings() {
+        luna.call("luna://com.webos.service.applicationManager/launch",
+                  JSON.stringify({"id": "org.webosports.app.settings.display"}),
+                  _handleSetSuccess, _handleSetError);
+    }
+
+    function openAppearanceSettings() {
+        luna.call("luna://com.webos.service.applicationManager/launch",
+                  JSON.stringify({"id": "org.webosports.app.settings.appearance"}),
+                  _handleSetSuccess, _handleSetError);
+    }
+
     function openFingerprintSettings() {
         luna.call("luna://com.webos.service.applicationManager/launch",
                   JSON.stringify({"id": "org.webosports.app.settings.fingerprint"}),

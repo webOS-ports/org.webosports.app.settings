@@ -1,0 +1,21 @@
+{
+    "title": "Display",
+    "id": "org.webosports.app.settings.display",
+    "category": "Settings",
+    "trustLevel": "trusted",
+    "version": "0.4.0",
+    "vendor": "WebOS Ports",
+    "vendorurl": "https://github.com/webOS-ports/org.webosports.app.settings",
+    "type": "qml",
+    "useLuneOSStyle": true,
+    "main": "qml/GenericCategoryWindow.qml",
+    "icon": "qml/images/icons/icon-display.png",
+    "uiRevision": "2",
+    "visible": true,
+    "requiredPermissions": [
+        "systemsettings.query",
+        "systemsettings.management",
+        "display.operation",
+        "application.launcher"
+    ]
+}

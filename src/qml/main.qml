@@ -85,6 +85,12 @@ GenericCategoryWindow {
         }
 
         ListElement {
+            title: "Appearance"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.appearance"
+        }
+
+        ListElement {
             title: "Battery"
             categorySection: "General"
             appId: "org.webosports.app.settings.battery"
@@ -112,6 +118,12 @@ GenericCategoryWindow {
             title: "Device Info"
             categorySection: "General"
             appId: "org.webosports.app.settings.deviceinfo"
+        }
+
+        ListElement {
+            title: "Display"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.display"
         }
 
         ListElement {
