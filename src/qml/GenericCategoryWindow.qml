@@ -33,6 +33,11 @@ WebOSWindow {
             "icon": "Testing/test-category.png",
             "title": "Settings Example"
         },
+        "org.webosports.app.settings.battery": {
+            "source": "General/BatteryPage.qml",
+            "icon": "images/icons/icon-battery.png",
+            "title": "Battery"
+        },
         "org.webosports.app.settings.bluetooth": {
             "source": "Connectivity/BluetoothPage.qml",
             "icon": "images/icons/icon-bluetooth.png",

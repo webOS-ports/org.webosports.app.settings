@@ -1,0 +1,20 @@
+{
+    "title": "Battery",
+    "id": "org.webosports.app.settings.battery",
+    "category": "Settings",
+    "trustLevel": "trusted",
+    "version": "0.4.0",
+    "vendor": "WebOS Ports",
+    "vendorurl": "https://github.com/webOS-ports/org.webosports.app.settings",
+    "type": "qml",
+    "useLuneOSStyle": true,
+    "main": "qml/GenericCategoryWindow.qml",
+    "icon": "qml/images/icons/icon-battery.png",
+    "uiRevision": "2",
+    "visible": true,
+    "requiredPermissions": [
+        "batteryd.management",
+        "servicebus.communication",
+        "application.launcher"
+    ]
+}

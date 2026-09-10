@@ -85,6 +85,12 @@ GenericCategoryWindow {
         }
 
         ListElement {
+            title: "Battery"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.battery"
+        }
+
+        ListElement {
             title: "Certificate Manager"
             categorySection: "General"
             appId: "org.webosports.app.settings.certificate"
