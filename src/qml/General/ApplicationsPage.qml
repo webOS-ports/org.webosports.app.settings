@@ -52,9 +52,17 @@ import "../Common"
  * visible: false, and a list that led with those would be useless. They are
  * worth being able to see, though, which is why the switch is there.
  *
- * Removal is a sideways swipe, the webOS delete gesture, the same as removing
- * a keyboard on the Regional Settings page - so it takes a deliberate
- * movement rather than one mistaken tap.
+ * Removal is a sideways swipe, the webOS delete gesture, so it takes a
+ * deliberate movement rather than one mistaken tap - and the swipe only
+ * uncovers a Cancel and a Delete button, so the row still has to be chosen
+ * twice before anything goes.
+ *
+ * Written out here rather than using the Common/SwipeRow component, for the
+ * same reason DictionaryPopup stopped using it: SwipeRow is a QtQuick
+ * SwipeDelegate, whose drag never arrives with a mouse on a desktop, and
+ * whose swipe.behind covers the whole row with one red confirm panel rather
+ * than offering a choice. Pressing, moving and releasing works on both a
+ * mouse and a finger, and is what the rest of this app already does.
  */
 BasePage {
     id: pageRoot
@@ -150,25 +158,81 @@ BasePage {
                     delegate: Column {
                         width: parent.width
 
-                        SwipeRow {
+                        Item {
                             id: appRow
-                            text: modelData.title ? modelData.title : modelData.id
+                            width: parent.width
+                            height: Units.gu(6)
 
-                            // SAM decides this, not the page.
-                            swipe.enabled: modelData.removable === true
-                            LuneOSSwipeDelegate.confirmText: "Remove"
-                            LuneOSSwipeDelegate.onConfirmed: pageRoot.removeApp(modelData.id)
+                            property bool pendingDelete: false
 
-                            onClicked: pageRoot.expandedId =
-                                       (pageRoot.expandedId === modelData.id ? "" : modelData.id)
+                            Item {
+                                anchors.fill: parent
+                                visible: !appRow.pendingDelete
 
-                            Label {
-                                anchors.right: parent.right
-                                anchors.rightMargin: Units.gu(1)
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: modelData.version ? modelData.version : ""
-                                color: "#666666"
-                                font.pixelSize: FontUtils.sizeToPixels("small")
+                                Label {
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: Units.gu(1)
+                                    anchors.right: versionLabel.left
+                                    anchors.rightMargin: Units.gu(1)
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    elide: Text.ElideRight
+                                    text: modelData.title ? modelData.title : modelData.id
+                                    font.pixelSize: FontUtils.sizeToPixels("16pt")
+                                }
+
+                                Label {
+                                    id: versionLabel
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: Units.gu(1)
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: modelData.version ? modelData.version : ""
+                                    color: "#666666"
+                                    font.pixelSize: FontUtils.sizeToPixels("small")
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+
+                                    property real _pressX: 0
+
+                                    onPressed: (mouse) => { _pressX = mouse.x; }
+                                    onReleased: (mouse) => {
+                                        if (Math.abs(mouse.x - _pressX) > Units.gu(4)) {
+                                            // Whether it may go at all is SAM's
+                                            // answer, not this page's.
+                                            if (modelData.removable === true)
+                                                appRow.pendingDelete = true;
+                                        } else {
+                                            pageRoot.expandedId =
+                                                (pageRoot.expandedId === modelData.id
+                                                 ? "" : modelData.id);
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Delete confirmation: Cancel (grey) + Delete (red),
+                            // centred, matching the legacy webOS swipe-to-delete.
+                            Row {
+                                anchors.centerIn: parent
+                                spacing: Units.gu(2)
+                                visible: appRow.pendingDelete
+
+                                Button {
+                                    text: "Cancel"
+                                    LuneOSButton.mainColor: LuneOSButton.secondaryColor
+                                    onClicked: appRow.pendingDelete = false
+                                }
+
+                                Button {
+                                    text: "Delete"
+                                    LuneOSButton.mainColor: "#be0003"
+                                    LuneOSButton.textColor: "white"
+                                    onClicked: {
+                                        pageRoot.removeApp(modelData.id);
+                                        appRow.pendingDelete = false;
+                                    }
+                                }
                             }
                         }
 
