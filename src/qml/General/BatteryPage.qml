@@ -73,7 +73,9 @@ BasePage {
     property int temperature: 0
     property int current: 0
     property int voltage: 0
-    property real capacity: 0
+    // -1 until something answers, and left at -1 by a device whose driver
+    // reports neither charge_now nor charge_counter.
+    property real capacity: -1
 
     // Empty on a single-battery device; one entry per pack otherwise.
     property var batteries: []
@@ -273,16 +275,24 @@ BasePage {
 
                 LabelAndValue {
                     width: parent.width
-                    label: "Capacity"
+                    // Only where the pack reports it. A device whose driver
+                    // has neither charge_now nor charge_counter answers -1,
+                    // and an empty row says more than a wrong one.
+                    visible: pageRoot.capacity >= 0
+                    height: visible ? Units.gu(6) : 0
+                    label: "Charge"
                     value: Math.round(pageRoot.capacity) + " mAh"
                 }
             }
         }
 
         ExplanationText {
-            text: "Capacity is what the pack reports it can still hold. A " +
-                  "figure well under what the device shipped with is a pack " +
-                  "that is wearing out."
+            visible: pageRoot.capacity >= 0
+            text: "Charge is how much is in the pack at this moment - the " +
+                  "figure the percentage above is a proportion of. It is not " +
+                  "the size of the pack: batteryd reads that from the battery " +
+                  "but does not publish it, so there is nothing here to " +
+                  "compare it against yet."
         }
 
         GroupBox {
