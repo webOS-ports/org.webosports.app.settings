@@ -74,6 +74,7 @@ BasePage {
     property bool showGestureArea: true
     property string tabTitleCase: "capitalizedCase"
     property string tabIndicatorNumber: "default"
+    property bool showAndroidTab: true
 
     readonly property string tweakOwner: "luna-next-cardshell"
 
@@ -372,14 +373,31 @@ BasePage {
                     onActivated: (index) => pageRoot.setTweak("tabIndicatorNumber",
                                                               pageRoot.tabIndicatorValues[index])
                 }
+
+                HorizontalSeparator {
+                    width: parent.width
+                }
+
+                LabelAndSwitch {
+                    id: androidTabSwitch
+                    label: "Android Tab"
+
+                    checked: pageRoot.showAndroidTab
+                    Connections {
+                        target: pageRoot
+                        function onShowAndroidTabChanged() {
+                            androidTabSwitch.checked = pageRoot.showAndroidTab;
+                        }
+                    }
+                    onToggled: pageRoot.setTweak("showAndroidTab", checked)
+                }
             }
         }
 
         ExplanationText {
             visible: pageRoot.tweaksAvailable
-            text: "The shell reads most of these once, when it starts. A " +
-                  "change to anything but the tab settings shows up the next " +
-                  "time it does."
+            text: "The shell reads these once, when it starts. A change " +
+                  "shows up the next time it does."
         }
     }
 
@@ -443,7 +461,7 @@ BasePage {
                                            "useCustomCarrierString", "carrierString",
                                            "tapRippleSupport", "stackedCardSupport",
                                            "showGestureArea", "tabTitleCase",
-                                           "tabIndicatorNumber"]}),
+                                           "tabIndicatorNumber", "showAndroidTab"]}),
                   _handleGetTweaks, _handleTweaksUnavailable);
     }
 
@@ -500,6 +518,8 @@ BasePage {
         pageRoot.tabTitleCase = _asString(response.tabTitleCase, pageRoot.tabTitleCase);
         pageRoot.tabIndicatorNumber = _asString(response.tabIndicatorNumber,
                                                 pageRoot.tabIndicatorNumber);
+        pageRoot.showAndroidTab = _asBool(response.showAndroidTab,
+                                          pageRoot.showAndroidTab);
 
         pageRoot.tweaksAvailable = true;
     }

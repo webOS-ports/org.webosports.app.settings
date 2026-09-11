@@ -73,10 +73,117 @@ BasePage {
     property int temperature: 0
     property int current: 0
     property int voltage: 0
-    property real capacity: 0
+    // -1 until something answers, and left at -1 by a device whose driver
+    // reports neither charge_now nor charge_counter.
+    property real capacity: -1
+
+    // What the gauge believes the pack holds when full, and what it held when
+    // it was made. Both -1 where the driver is silent.
+    property real capacityFull: -1
+    property real capacityDesign: -1
+
+    // The driver's own verdict, as batteryd's word for it.
+    property string health: "unknown"
+
+    readonly property bool healthKnown: pageRoot.healthIsKnown(pageRoot.health)
+
+    /*
+     * Wear is only knowable when both capacities are, and only meaningful
+     * when they differ. A gauge that does no capacity learning reports the
+     * design figure for both - the tissot does - and dividing one by the
+     * other there produces a confident 100% that is arithmetic, not a
+     * measurement. That is worth saying rather than showing.
+     */
+    function wearIsKnown(full, design) {
+        return full > 0 && design > 0 && full !== design;
+    }
+
+    function gaugeLearns(full, design) {
+        return !(full > 0 && design > 0 && full === design);
+    }
+
+    function wearPercentOf(full, design) {
+        return pageRoot.wearIsKnown(full, design)
+               ? Math.round(100 * full / design) : -1;
+    }
+
+    readonly property bool wearKnown: pageRoot.wearIsKnown(pageRoot.capacityFull,
+                                                           pageRoot.capacityDesign)
+
+    readonly property bool gaugeDoesNotLearn: !pageRoot.gaugeLearns(pageRoot.capacityFull,
+                                                                    pageRoot.capacityDesign)
+
+    readonly property int wearPercent: pageRoot.wearPercentOf(pageRoot.capacityFull,
+                                                              pageRoot.capacityDesign)
+
+    /*
+     * The readings, formatted. Taken as arguments rather than read off this
+     * page, because the same rows are shown for the primary battery from the
+     * top level of the reply and for each pack from the "batteries" array,
+     * and two copies of "is a negative current discharging?" is how the two
+     * end up disagreeing.
+     */
+    function temperatureText(celsius) {
+        return celsius + " \u00b0C";
+    }
+
+    function voltageText(millivolts) {
+        // Reported in millivolts; volts is what a datasheet and every other
+        // settings app show.
+        return (millivolts / 1000).toFixed(2) + " V";
+    }
+
+    function currentText(milliamps) {
+        // Signed: negative is the pack being drained, positive is it being
+        // filled. Spell that out rather than leaving a bare minus sign to be
+        // read as an error.
+        return milliamps + " mA" +
+               (milliamps < 0 ? " (discharging)"
+                              : (milliamps > 0 ? " (charging)" : ""));
+    }
+
+    function chargeText(mAh) {
+        return Math.round(mAh) + " mAh";
+    }
+
+    function capacityText(full, design) {
+        return Math.round(full) + " of " + Math.round(design) + " mAh";
+    }
+
+    function healthIsKnown(health) {
+        return health !== undefined && health !== "" && health !== "unknown";
+    }
+
+    /*
+     * The kernel's POWER_SUPPLY_HEALTH_* set, as batteryd spells it. Said in
+     * words rather than repeated as a code, because this is the one line on
+     * the page a person reads when they think something is wrong.
+     */
+    function conditionTextOf(health) {
+        switch (health) {
+        case "good":        return "Good";
+        case "overheat":    return "Too hot";
+        case "hot":         return "Hot";
+        case "warm":        return "Warm";
+        case "cool":        return "Cool";
+        case "cold":        return "Too cold";
+        case "dead":        return "Failed";
+        case "overvoltage": return "Over voltage";
+        case "overcurrent": return "Over current";
+        case "failure":     return "Failed, cause unknown";
+        case "watchdog":    return "Charging watchdog expired";
+        case "safetytimer": return "Charging safety timer expired";
+        case "calibrate":   return "Needs calibrating";
+        case "nobattery":   return "No battery";
+        default:            return "Unknown";
+        }
+    }
 
     // Empty on a single-battery device; one entry per pack otherwise.
     property var batteries: []
+
+    // Which pack's readings are open, by sysfs node name. Only one at a time.
+    property string expandedBattery: ""
 
     // Charger
     property bool charging: false
@@ -190,6 +297,12 @@ BasePage {
          * Only on a device that reported more than one pack. The primary one
          * is repeated here so the group reads as a complete list rather than
          * as "the other batteries".
+         *
+         * Every pack carries the same readings the primary one does, health
+         * included, so tapping one opens them rather than leaving a second
+         * battery as a bare percentage with everything below this group
+         * describing only the first. Only one is open at a time: this is a
+         * list to look down, not a set of panels to leave open.
          */
         GroupBox {
             width: parent.width
@@ -212,17 +325,126 @@ BasePage {
                             height: visible ? 1 : 0
                         }
 
-                        LabelAndValue {
+                        Item {
                             width: parent.width
-                            label: pageRoot.batteryLabel(modelData)
-                            value: modelData.present === false
-                                   ? "Not present"
-                                   : (modelData.percent_ui + "%" +
-                                      (modelData.charging ? ", charging" : ""))
+                            height: Units.gu(6)
+
+                            LabelAndValue {
+                                anchors.fill: parent
+                                label: pageRoot.batteryLabel(modelData)
+                                value: modelData.present === false
+                                       ? "Not present"
+                                       : (modelData.percent_ui + "%" +
+                                          (modelData.charging ? ", charging" : ""))
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                // A pack that is not there has nothing to open.
+                                enabled: modelData.present !== false
+                                onClicked: pageRoot.expandedBattery =
+                                    (pageRoot.expandedBattery === modelData.name
+                                     ? "" : modelData.name)
+                            }
+                        }
+
+                        Column {
+                            width: parent.width - Units.gu(2)
+                            x: Units.gu(1)
+                            visible: pageRoot.expandedBattery === modelData.name &&
+                                     modelData.present !== false
+
+                            LabelAndValue {
+                                width: parent.width
+                                visible: modelData.temperature_C !== undefined
+                                height: visible ? Units.gu(6) : 0
+                                label: "Temperature"
+                                value: modelData.temperature_C !== undefined
+                                       ? pageRoot.temperatureText(modelData.temperature_C) : ""
+                            }
+
+                            LabelAndValue {
+                                width: parent.width
+                                visible: modelData.voltage_mV !== undefined
+                                height: visible ? Units.gu(6) : 0
+                                label: "Voltage"
+                                value: modelData.voltage_mV !== undefined
+                                       ? pageRoot.voltageText(modelData.voltage_mV) : ""
+                            }
+
+                            LabelAndValue {
+                                width: parent.width
+                                visible: modelData.current_mA !== undefined
+                                height: visible ? Units.gu(6) : 0
+                                label: "Current"
+                                value: modelData.current_mA !== undefined
+                                       ? pageRoot.currentText(modelData.current_mA) : ""
+                            }
+
+                            LabelAndValue {
+                                width: parent.width
+                                visible: modelData.capacity_mAh !== undefined &&
+                                         modelData.capacity_mAh >= 0
+                                height: visible ? Units.gu(6) : 0
+                                label: "Charge"
+                                value: modelData.capacity_mAh !== undefined
+                                       ? pageRoot.chargeText(modelData.capacity_mAh) : ""
+                            }
+
+                            LabelAndValue {
+                                width: parent.width
+                                visible: pageRoot.healthIsKnown(modelData.health)
+                                height: visible ? Units.gu(6) : 0
+                                label: "Condition"
+                                value: pageRoot.conditionTextOf(modelData.health)
+                            }
+
+                            LabelAndValue {
+                                width: parent.width
+                                visible: pageRoot.wearIsKnown(modelData.capacity_full_mAh,
+                                                              modelData.capacity_design_mAh)
+                                height: visible ? Units.gu(6) : 0
+                                label: "Capacity"
+                                value: pageRoot.capacityText(modelData.capacity_full_mAh,
+                                                             modelData.capacity_design_mAh)
+                            }
+
+                            LabelAndValue {
+                                width: parent.width
+                                visible: pageRoot.wearIsKnown(modelData.capacity_full_mAh,
+                                                              modelData.capacity_design_mAh)
+                                height: visible ? Units.gu(6) : 0
+                                label: "Of its original"
+                                value: pageRoot.wearPercentOf(modelData.capacity_full_mAh,
+                                                              modelData.capacity_design_mAh) + "%"
+                            }
+
+                            // Same reasoning as the primary battery's Health
+                            // group: a gauge repeating its design figure is
+                            // not a pack in perfect condition.
+                            Label {
+                                width: parent.width
+                                visible: !pageRoot.gaugeLearns(modelData.capacity_full_mAh,
+                                                               modelData.capacity_design_mAh)
+                                topPadding: Units.gu(0.5)
+                                bottomPadding: Units.gu(0.5)
+                                wrapMode: Text.WordWrap
+                                text: "This pack reports the same capacity it " +
+                                      "shipped with, so how worn it is cannot " +
+                                      "be told from here."
+                                color: "#666666"
+                                font.pixelSize: FontUtils.sizeToPixels("small")
+                            }
                         }
                     }
                 }
             }
+        }
+
+        ExplanationText {
+            visible: pageRoot.batteryServiceAvailable && pageRoot.batteries.length > 1
+            text: "Tap a battery for its readings. Everything below describes " +
+                  "the primary one."
         }
 
         GroupBox {
@@ -237,7 +459,7 @@ BasePage {
                 LabelAndValue {
                     width: parent.width
                     label: "Temperature"
-                    value: pageRoot.temperature + " °C"
+                    value: pageRoot.temperatureText(pageRoot.temperature)
                 }
 
                 HorizontalSeparator {
@@ -247,9 +469,7 @@ BasePage {
                 LabelAndValue {
                     width: parent.width
                     label: "Voltage"
-                    // Reported in millivolts; volts is what a datasheet and
-                    // every other settings app show.
-                    value: (pageRoot.voltage / 1000).toFixed(2) + " V"
+                    value: pageRoot.voltageText(pageRoot.voltage)
                 }
 
                 HorizontalSeparator {
@@ -259,12 +479,7 @@ BasePage {
                 LabelAndValue {
                     width: parent.width
                     label: "Current"
-                    // Signed: negative is the pack being drained, positive is
-                    // it being filled. Spell that out rather than leaving a
-                    // bare minus sign to be read as an error.
-                    value: pageRoot.current + " mA" +
-                           (pageRoot.current < 0 ? " (discharging)"
-                                                 : (pageRoot.current > 0 ? " (charging)" : ""))
+                    value: pageRoot.currentText(pageRoot.current)
                 }
 
                 HorizontalSeparator {
@@ -273,16 +488,87 @@ BasePage {
 
                 LabelAndValue {
                     width: parent.width
-                    label: "Capacity"
-                    value: Math.round(pageRoot.capacity) + " mAh"
+                    // Only where the pack reports it. A device whose driver
+                    // has neither charge_now nor charge_counter answers -1,
+                    // and an empty row says more than a wrong one.
+                    visible: pageRoot.capacity >= 0
+                    height: visible ? Units.gu(6) : 0
+                    label: "Charge"
+                    value: pageRoot.chargeText(pageRoot.capacity)
                 }
             }
         }
 
         ExplanationText {
-            text: "Capacity is what the pack reports it can still hold. A " +
-                  "figure well under what the device shipped with is a pack " +
-                  "that is wearing out."
+            visible: pageRoot.capacity >= 0
+            text: "Charge is how much is in the pack at this moment - the " +
+                  "figure the percentage above is a proportion of."
+        }
+
+        GroupBox {
+            width: parent.width
+            visible: pageRoot.batteryServiceAvailable &&
+                     (pageRoot.healthKnown || pageRoot.wearKnown ||
+                      pageRoot.gaugeDoesNotLearn)
+
+            title: "Health"
+
+            Column {
+                width: parent.width
+
+                LabelAndValue {
+                    width: parent.width
+                    visible: pageRoot.healthKnown
+                    height: visible ? Units.gu(6) : 0
+                    label: "Condition"
+                    value: pageRoot.conditionTextOf(pageRoot.health)
+                }
+
+                HorizontalSeparator {
+                    width: parent.width
+                    visible: pageRoot.healthKnown && pageRoot.wearKnown
+                    height: visible ? 1 : 0
+                }
+
+                LabelAndValue {
+                    width: parent.width
+                    visible: pageRoot.wearKnown
+                    height: visible ? Units.gu(6) : 0
+                    label: "Capacity"
+                    value: pageRoot.capacityText(pageRoot.capacityFull,
+                                                 pageRoot.capacityDesign)
+                }
+
+                HorizontalSeparator {
+                    width: parent.width
+                    visible: pageRoot.wearKnown
+                    height: visible ? 1 : 0
+                }
+
+                LabelAndValue {
+                    width: parent.width
+                    visible: pageRoot.wearKnown
+                    height: visible ? Units.gu(6) : 0
+                    label: "Of its original"
+                    value: pageRoot.wearPercent + "%"
+                }
+            }
+        }
+
+        ExplanationText {
+            visible: pageRoot.wearKnown
+            text: "A pack holds less as it ages. Well under what it shipped " +
+                  "with means shorter days between charges, and is the point " +
+                  "at which replacing it is worth more than any setting on " +
+                  "this page."
+        }
+
+        ExplanationText {
+            visible: !pageRoot.wearKnown && pageRoot.gaugeDoesNotLearn
+            text: "This device reports the same capacity it shipped with, " +
+                  "which is what a gauge that does not measure wear does " +
+                  "rather than a sign of a pack in perfect condition. How " +
+                  "worn the battery is cannot be told from here."
         }
 
         GroupBox {
@@ -408,6 +694,12 @@ BasePage {
             pageRoot.voltage = response.voltage_mV;
         if (response.hasOwnProperty("capacity_mAh"))
             pageRoot.capacity = response.capacity_mAh;
+        if (response.hasOwnProperty("capacity_full_mAh"))
+            pageRoot.capacityFull = response.capacity_full_mAh;
+        if (response.hasOwnProperty("capacity_design_mAh"))
+            pageRoot.capacityDesign = response.capacity_design_mAh;
+        if (response.hasOwnProperty("health"))
+            pageRoot.health = response.health;
 
         pageRoot.batteries = response.hasOwnProperty("batteries") && response.batteries
                              ? response.batteries : [];
