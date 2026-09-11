@@ -204,6 +204,14 @@ BasePage {
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
 
+                /*
+                 * Centred and equally wide, the way every other pair of
+                 * buttons in this application sits. A fixed gu(20) each was
+                 * wider than the group box could hold on a phone, so the
+                 * pair was pushed off the right edge by the spacer that was
+                 * meant to align it; filling the width and capping it lets
+                 * them shrink to whatever is there instead.
+                 */
                 RowLayout {
                     Layout.fillWidth: true
                     visible: !faceUnlockPageId.enrolling
@@ -214,17 +222,25 @@ BasePage {
                     Button {
                         text: faceUnlockPageId.faceEnrolled ? "Set up again" : "Set up"
                         Layout.preferredHeight: Units.gu(5.5)
-                        Layout.preferredWidth: Units.gu(20)
+                        Layout.fillWidth: true
+                        Layout.maximumWidth: Units.gu(20)
                         onClicked: faceUnlockPageId.startEnroll()
                     }
 
                     Button {
                         text: "Remove"
                         visible: faceUnlockPageId.faceEnrolled
+                        // The red this application uses wherever something is
+                        // about to be thrown away.
+                        LuneOSButton.mainColor: "#be0003"
+                        LuneOSButton.textColor: "white"
                         Layout.preferredHeight: Units.gu(5.5)
-                        Layout.preferredWidth: Units.gu(20)
+                        Layout.fillWidth: true
+                        Layout.maximumWidth: Units.gu(20)
                         onClicked: faceUnlockPageId.clearFace()
                     }
+
+                    Item { Layout.fillWidth: true }
                 }
 
                 ColumnLayout {
@@ -260,6 +276,7 @@ BasePage {
                             enabled: !cancelGuard.running
                             Layout.preferredHeight: Units.gu(5.5)
                             Layout.preferredWidth: Units.gu(20)
+                            Layout.maximumWidth: Units.gu(20)
                             onClicked: faceUnlockPageId.cancelEnroll()
                         }
                     }
