@@ -128,22 +128,33 @@ BasePage {
 
             delegate: Column {
                 width: parent.width
-                spacing: Units.gu(1)
 
                 GroupBox {
                     width: parent.width
                     title: pageRoot.volumeName(modelData)
 
+                    /*
+                     * No spacing: the rows are gu(6) like every other list in
+                     * this application and the separators are what divides
+                     * them. Spacing here put a gap above and below each
+                     * separator as well, which made a four-row volume half
+                     * again as tall as the same four rows anywhere else and
+                     * pushed the third volume off the screen.
+                     */
                     Column {
                         width: parent.width
-                        spacing: Units.gu(1)
 
+                        // The bar carries its own room underneath instead,
+                        // so it does not sit directly on the first row.
                         Item {
                             width: parent.width
-                            height: Units.gu(3)
+                            height: Units.gu(4)
 
                             Rectangle {
-                                anchors.fill: parent
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.top: parent.top
+                                height: Units.gu(2.5)
                                 radius: Units.gu(0.6)
                                 color: "#ffffff"
                                 border.color: "#9a9a9a"
@@ -153,7 +164,7 @@ BasePage {
                             Rectangle {
                                 x: 1
                                 y: 1
-                                height: parent.height - 2
+                                height: Units.gu(2.5) - 2
                                 width: pageRoot.usedFraction(modelData) * (parent.width - 2)
                                 radius: Units.gu(0.5)
                                 // Amber once there is little room left, red
