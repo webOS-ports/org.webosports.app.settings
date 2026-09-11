@@ -77,6 +77,62 @@ BasePage {
     // reports neither charge_now nor charge_counter.
     property real capacity: -1
 
+    // What the gauge believes the pack holds when full, and what it held when
+    // it was made. Both -1 where the driver is silent.
+    property real capacityFull: -1
+    property real capacityDesign: -1
+
+    // The driver's own verdict, as batteryd's word for it.
+    property string health: "unknown"
+
+    readonly property bool healthKnown: pageRoot.health !== "" &&
+                                        pageRoot.health !== "unknown"
+
+    /*
+     * Wear is only knowable when both capacities are, and only meaningful
+     * when they differ. A gauge that does no capacity learning reports the
+     * design figure for both - the tissot does - and dividing one by the
+     * other there produces a confident 100% that is arithmetic, not a
+     * measurement. That is worth saying rather than showing.
+     */
+    readonly property bool wearKnown: pageRoot.capacityFull > 0 &&
+                                      pageRoot.capacityDesign > 0 &&
+                                      pageRoot.capacityFull !== pageRoot.capacityDesign
+
+    readonly property bool gaugeDoesNotLearn: pageRoot.capacityFull > 0 &&
+                                              pageRoot.capacityDesign > 0 &&
+                                              pageRoot.capacityFull === pageRoot.capacityDesign
+
+    readonly property int wearPercent:
+        pageRoot.wearKnown
+        ? Math.round(100 * pageRoot.capacityFull / pageRoot.capacityDesign)
+        : -1
+
+    /*
+     * The kernel's POWER_SUPPLY_HEALTH_* set, as batteryd spells it. Said in
+     * words rather than repeated as a code, because this is the one line on
+     * the page a person reads when they think something is wrong.
+     */
+    function conditionText() {
+        switch (pageRoot.health) {
+        case "good":        return "Good";
+        case "overheat":    return "Too hot";
+        case "hot":         return "Hot";
+        case "warm":        return "Warm";
+        case "cool":        return "Cool";
+        case "cold":        return "Too cold";
+        case "dead":        return "Failed";
+        case "overvoltage": return "Over voltage";
+        case "overcurrent": return "Over current";
+        case "failure":     return "Failed, cause unknown";
+        case "watchdog":    return "Charging watchdog expired";
+        case "safetytimer": return "Charging safety timer expired";
+        case "calibrate":   return "Needs calibrating";
+        case "nobattery":   return "No battery";
+        default:            return "Unknown";
+        }
+    }
+
     // Empty on a single-battery device; one entry per pack otherwise.
     property var batteries: []
 
@@ -289,10 +345,73 @@ BasePage {
         ExplanationText {
             visible: pageRoot.capacity >= 0
             text: "Charge is how much is in the pack at this moment - the " +
-                  "figure the percentage above is a proportion of. It is not " +
-                  "the size of the pack: batteryd reads that from the battery " +
-                  "but does not publish it, so there is nothing here to " +
-                  "compare it against yet."
+                  "figure the percentage above is a proportion of."
+        }
+
+        GroupBox {
+            width: parent.width
+            visible: pageRoot.batteryServiceAvailable &&
+                     (pageRoot.healthKnown || pageRoot.wearKnown ||
+                      pageRoot.gaugeDoesNotLearn)
+
+            title: "Health"
+
+            Column {
+                width: parent.width
+
+                LabelAndValue {
+                    width: parent.width
+                    visible: pageRoot.healthKnown
+                    height: visible ? Units.gu(6) : 0
+                    label: "Condition"
+                    value: pageRoot.conditionText()
+                }
+
+                HorizontalSeparator {
+                    width: parent.width
+                    visible: pageRoot.healthKnown && pageRoot.wearKnown
+                    height: visible ? 1 : 0
+                }
+
+                LabelAndValue {
+                    width: parent.width
+                    visible: pageRoot.wearKnown
+                    height: visible ? Units.gu(6) : 0
+                    label: "Capacity"
+                    value: Math.round(pageRoot.capacityFull) + " of " +
+                           Math.round(pageRoot.capacityDesign) + " mAh"
+                }
+
+                HorizontalSeparator {
+                    width: parent.width
+                    visible: pageRoot.wearKnown
+                    height: visible ? 1 : 0
+                }
+
+                LabelAndValue {
+                    width: parent.width
+                    visible: pageRoot.wearKnown
+                    height: visible ? Units.gu(6) : 0
+                    label: "Of its original"
+                    value: pageRoot.wearPercent + "%"
+                }
+            }
+        }
+
+        ExplanationText {
+            visible: pageRoot.wearKnown
+            text: "A pack holds less as it ages. Well under what it shipped " +
+                  "with means shorter days between charges, and is the point " +
+                  "at which replacing it is worth more than any setting on " +
+                  "this page."
+        }
+
+        ExplanationText {
+            visible: !pageRoot.wearKnown && pageRoot.gaugeDoesNotLearn
+            text: "This device reports the same capacity it shipped with, " +
+                  "which is what a gauge that does not measure wear does " +
+                  "rather than a sign of a pack in perfect condition. How " +
+                  "worn the battery is cannot be told from here."
         }
 
         GroupBox {
@@ -418,6 +537,12 @@ BasePage {
             pageRoot.voltage = response.voltage_mV;
         if (response.hasOwnProperty("capacity_mAh"))
             pageRoot.capacity = response.capacity_mAh;
+        if (response.hasOwnProperty("capacity_full_mAh"))
+            pageRoot.capacityFull = response.capacity_full_mAh;
+        if (response.hasOwnProperty("capacity_design_mAh"))
+            pageRoot.capacityDesign = response.capacity_design_mAh;
+        if (response.hasOwnProperty("health"))
+            pageRoot.health = response.health;
 
         pageRoot.batteries = response.hasOwnProperty("batteries") && response.batteries
                              ? response.batteries : [];
