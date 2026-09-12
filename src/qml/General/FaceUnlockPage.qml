@@ -46,12 +46,69 @@ BasePage {
 
     // The Cancel button appears exactly where Set up sat, so the second half of
     // a double-tap would abort the enrollment it just started.
-    onEnrollingChanged: if (enrolling) cancelGuard.restart();
+    // displayKeepAwake rides along on the same transition: enrollment takes no
+    // touch input, so nothing resets the display inactivity timer while it runs.
+    onEnrollingChanged: {
+        if (enrolling) {
+            cancelGuard.restart();
+            displayKeepAwake.start();
+        } else {
+            displayKeepAwake.stop();
+        }
+    }
+
+    // Leaving the panel mid-enrollment must not leave the keepalive running.
+    Component.onDestruction: displayKeepAwake.stop()
 
     Timer {
         id: cancelGuard
         interval: 800
         repeat: false
+    }
+
+    /*
+     * Hold the screen on for the length of the enrollment.
+     *
+     * Capturing a face needs the user to sit still and look at the screen, so
+     * the panel receives no touch events at all, and nothing resets the display
+     * inactivity timer (com.palm.display's "timeout" property - 120s by default,
+     * and DisplayPage offers 60s as its shortest setting). When it fires the
+     * screen blanks, the settings card drops behind the passcode lock, and the
+     * capture stalls with no useful feedback.
+     *
+     * Devices with a proximity or ambient light sensor are no better off here -
+     * and some have neither: tissot reports NYX_OPEN_ERR for both
+     * nyxSensorProximityScreen and nyxSensorAlsDefault, so there is nothing to
+     * infer "user is still present" from either.
+     *
+     * setState "on" is the same call phone's MissedCallAlert.qml uses to wake
+     * the screen, and re-issuing it is what defers the timeout; 15s leaves a
+     * wide margin under the 60s shortest setting. triggeredOnStart so the first
+     * one lands as enrollment begins rather than 15s into it.
+     *
+     * setProperty {"blockDisplay": "true"} would be the tidier way to say this
+     * and does not work: the call returns success but the property does not
+     * hold - status keeps reporting blockDisplay false and getProperty will not
+     * read it back.
+     */
+    Timer {
+        id: displayKeepAwake
+        interval: 15000
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: faceUnlockPageId.keepDisplayAwake()
+    }
+
+    function keepDisplayAwake() {
+        luna.call("luna://com.palm.display/control/setState",
+                  JSON.stringify({"state": "on"}),
+                  null, _handleKeepAwakeError);
+    }
+
+    function _handleKeepAwakeError(message) {
+        // Not fatal: the screen may blank, but the enrollment itself is
+        // unaffected, so do not interrupt it over this.
+        console.warn("Face unlock display keepalive error: " + message);
     }
 
     Timer {
