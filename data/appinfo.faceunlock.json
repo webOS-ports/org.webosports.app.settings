@@ -13,6 +13,7 @@
     "visible": true,
     "requiredPermissions": [
         "faceunlock.operation",
-        "faceunlock.query"
+        "faceunlock.query",
+        "display.operation"
     ]
 }
