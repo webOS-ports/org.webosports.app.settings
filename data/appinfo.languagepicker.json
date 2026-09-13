@@ -14,7 +14,8 @@
     "visible": true,
     "requiredPermissions": [
         "systemsettings.query",
-        "systemsettings.management"
+        "systemsettings.management",
+        "sleep.management"
     ]
 }
 
