@@ -33,8 +33,39 @@ BasePage {
     property alias softwareBuildNumber:    softwareBuildNumberLabel.value
     property alias softwareAndroidVersion: softwareAndroidVersionLabel.value
 
+    /* Candidates for the device name, best first. The two service calls that
+       supply them are asynchronous and either can answer first, so collect them
+       and let _updateDeviceName() apply the precedence, rather than letting
+       arrival order decide it as it used to.
+
+       com.palm.properties.deviceName is the real answer: luneos-device-config's
+       90-prefs-properties generator writes it at boot - from the adaptation's
+       deviceinfo_name where there is one, otherwise from the same Android
+       properties read below, or from the device tree's model on a mainline
+       device. machineName is the Yocto MACHINE and only a last resort; it is
+       what made this field read "pinephonepro". */
+    property string _nameFromPrefs:   ""
+    property string _nameFromAndroid: ""
+    property string _nameFromMachine: ""
+
+    /* What luna-prefs-data bakes into /etc/prefs/properties/deviceName when
+       nothing overrides it. Seeing it means the generator did not run, and the
+       Android properties are then a better answer than the placeholder. */
+    readonly property string _unconfiguredName: "LuneOS Device"
+
     Component.onCompleted: {
         retrieveProperties();
+    }
+
+    function _updateDeviceName() {
+        if (_nameFromPrefs && _nameFromPrefs !== _unconfiguredName)
+            deviceName = _nameFromPrefs;
+        else if (_nameFromAndroid)
+            deviceName = _nameFromAndroid;
+        else if (_nameFromPrefs)
+            deviceName = _nameFromPrefs;
+        else if (_nameFromMachine)
+            deviceName = _nameFromMachine;
     }
 
     /* A settings page has a vertical layout: put everything in a Column */
@@ -137,7 +168,7 @@ BasePage {
                   '{"keys":["ro.serialno","ro.product.model","ro.product.manufacturer","ro.build.version.release"]}',
                   _handleGetProperty, _handleGetError);
         luna.call("luna://com.palm.connectionmanager/getinfo", '{}', _handleGetInfo, _handleGetError);
-        luna.call("luna://com.palm.preferences/systemProperties/getSomeSysProperties", '[{"key":"com.palm.properties.nduid"}, {"key":"com.palm.properties.buildName"}, {"key":"com.palm.properties.buildNumber"}, {"key":"com.palm.properties.machineName"}, {"key":"com.palm.properties.browserOsName"}, {"key":"com.palm.properties.version"}]', _handleGetProperties, _handleGetError );
+        luna.call("luna://com.palm.preferences/systemProperties/getSomeSysProperties", '[{"key":"com.palm.properties.nduid"}, {"key":"com.palm.properties.buildName"}, {"key":"com.palm.properties.buildNumber"}, {"key":"com.palm.properties.deviceName"}, {"key":"com.palm.properties.machineName"}, {"key":"com.palm.properties.browserOsName"}, {"key":"com.palm.properties.version"}]', _handleGetProperties, _handleGetError );
     }
 
     function _handleRetrieveVersion(message) {
@@ -185,7 +216,15 @@ BasePage {
                         softwareAndroidVersion = property["ro.build.version.release"];
                     }
                 }
-                deviceName = manufacturer + " " + model;
+                if (model) {
+                    /* Some vendors already put the brand in the model, so
+                       concatenating unconditionally gave "Google Google Pixel
+                       6a". The generator applies the same rule. */
+                    _nameFromAndroid = (manufacturer && model.indexOf(manufacturer) !== 0)
+                                     ? manufacturer + " " + model
+                                     : model;
+                    _updateDeviceName();
+                }
             }
         }
     }
@@ -202,8 +241,13 @@ BasePage {
                 else if (property["com.palm.properties.buildName"] && !softwareBuildTree) {
                     softwareBuildTree = property["com.palm.properties.buildName"];
                 }
-                else if (property["com.palm.properties.machineName"] && !deviceName) {
-                    deviceName = property["com.palm.properties.machineName"];
+                else if (property["com.palm.properties.deviceName"]) {
+                    _nameFromPrefs = property["com.palm.properties.deviceName"];
+                    _updateDeviceName();
+                }
+                else if (property["com.palm.properties.machineName"]) {
+                    _nameFromMachine = property["com.palm.properties.machineName"];
+                    _updateDeviceName();
                 }
             }
         }
