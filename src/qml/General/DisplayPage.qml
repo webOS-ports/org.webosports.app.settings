@@ -60,6 +60,16 @@ import "../Common"
  * Text size is not here. Scaling the interface is an accessibility setting and
  * lives on that panel; this one links across rather than keeping a second
  * copy.
+ *
+ * The E Ink group is only there on a device with an E Ink panel. It talks to
+ * org.webosports.service.eink, which lists the modes it offers - the labels
+ * come from the service, not from here, so a panel with a different set of
+ * waveforms needs no change on this page - and applies and persists the
+ * choice. The modes mirror what the Minimal Phone MP01's own quick settings
+ * offer: Slow for reading, Ultra for anything that moves. "Refresh Screen Now"
+ * is the full clear that removes ghosting. The group hides itself when the
+ * service is absent or answers available:false, which is every device that is
+ * not E Ink.
  */
 BasePage {
     id: pageRoot
@@ -84,7 +94,21 @@ BasePage {
     readonly property var displayTimeouts: [60, 120, 300, 600]
     readonly property var displayTimeoutLabels: ["1 minute", "2 minutes", "5 minutes", "10 minutes"]
 
-    Component.onCompleted: retrieveProperties();
+    // org.webosports.service.eink - mirrors getStatus
+    property bool einkAvailable: false
+    property string einkMode: ""
+    // [{id, label, description}], as the service lists them
+    property var einkModes: []
+
+    readonly property var einkModeLabels: einkModes.map(function (m) { return m.label; })
+    readonly property int einkModeIndex: einkModes.map(function (m) { return m.id; }).indexOf(einkMode)
+    readonly property string einkModeDescription:
+        einkModeIndex >= 0 ? einkModes[einkModeIndex].description : ""
+
+    Component.onCompleted: {
+        retrieveProperties();
+        subscribeEink();
+    }
 
     function _indexOf(values, value, fallback) {
         var at = values.indexOf(value);
@@ -201,6 +225,49 @@ BasePage {
 
         GroupBox {
             width: parent.width
+            visible: pageRoot.einkAvailable
+
+            title: "E Ink"
+
+            Column {
+                width: parent.width
+
+                LabelAndSelector {
+                    id: einkModeSelector
+                    width: parent.width
+                    label: "Refresh Speed"
+                    model: pageRoot.einkModeLabels
+
+                    currentIndex: pageRoot.einkModeIndex
+                    Connections {
+                        target: pageRoot
+                        function onEinkModeIndexChanged() {
+                            einkModeSelector.currentIndex = pageRoot.einkModeIndex;
+                        }
+                    }
+                    onActivated: (index) => pageRoot.setEinkMode(pageRoot.einkModes[index].id)
+                }
+
+                HorizontalSeparator {
+                    width: parent.width
+                }
+
+                Button {
+                    text: "Refresh Screen Now"
+                    LuneOSButton.mainColor: LuneOSButton.secondaryColor
+                    onClicked: pageRoot.refreshEink()
+                }
+            }
+        }
+
+        ExplanationText {
+            visible: pageRoot.einkAvailable
+            text: pageRoot.einkModeDescription + " Refresh Screen Now clears " +
+                  "the ghosting left behind by earlier screens."
+        }
+
+        GroupBox {
+            width: parent.width
 
             Column {
                 width: parent.width
@@ -300,6 +367,50 @@ BasePage {
         // freezes at whatever is on screen and only reads this as a yes or no.
         pageRoot.rotationLockAngle = locked ? 0 : pageRoot.rotationUnlocked;
         _setPreference("rotationLock", pageRoot.rotationLockAngle);
+    }
+
+    /*
+     * E Ink. A failed subscribe is the normal answer on every non-E Ink device
+     * - there is no service to reach - so it is not logged as an error: the
+     * group simply stays hidden.
+     */
+    function subscribeEink() {
+        luna.subscribe("luna://org.webosports.service.eink/getStatus",
+                       JSON.stringify({"subscribe": true}),
+                       _handleEinkStatus, _handleEinkUnavailable);
+    }
+
+    function _handleEinkStatus(message) {
+        if (!message || !message.payload)
+            return;
+
+        var response = JSON.parse(message.payload);
+        if (!response.returnValue) {
+            _handleEinkUnavailable(message);
+            return;
+        }
+
+        if (response.hasOwnProperty("modes"))
+            pageRoot.einkModes = response.modes;
+        if (response.hasOwnProperty("mode"))
+            pageRoot.einkMode = response.mode;
+        pageRoot.einkAvailable = response.available === true;
+    }
+
+    function _handleEinkUnavailable(message) {
+        pageRoot.einkAvailable = false;
+    }
+
+    function setEinkMode(id) {
+        pageRoot.einkMode = id;
+        luna.call("luna://org.webosports.service.eink/setMode",
+                  JSON.stringify({"mode": id}),
+                  _handleSetSuccess, _handleSetError);
+    }
+
+    function refreshEink() {
+        luna.call("luna://org.webosports.service.eink/refresh", "{}",
+                  _handleSetSuccess, _handleSetError);
     }
 
     // Each settings category is its own launchable application on the device.

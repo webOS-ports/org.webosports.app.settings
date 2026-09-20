@@ -16,6 +16,7 @@
         "systemsettings.query",
         "systemsettings.management",
         "display.operation",
+        "eink.operation",
         "application.launcher"
     ]
 }
