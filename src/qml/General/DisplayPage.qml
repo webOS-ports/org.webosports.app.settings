@@ -294,12 +294,19 @@ BasePage {
                                        "subscribe": true}),
                        _handleGetPreferences, _handleGetError);
 
-        // com.palm.display has no subscription for these, so they are read
-        // once; the shell's device menu is the only other thing that moves
-        // them and it does not run at the same time as this page.
-        luna.call("luna://com.palm.display/control/getProperty",
-                  JSON.stringify({"properties": ["timeout", "maximumBrightness"]}),
-                  _handleGetDisplayProperties, _handleGetError);
+        // com.palm.display posts maximumBrightness to subscribers now, so follow
+        // it rather than reading it once. The old assumption - that the shell's
+        // device menu is the only other thing that moves these and does not run
+        // at the same time as this page - does not hold: the system menu pulls
+        // down over this page, and the ALS moves brightness on its own.
+        //
+        // timeout has no notifier yet, so it still only arrives in the first
+        // reply. _handleGetDisplayProperties checks each field before using it,
+        // so a push carrying only maximumBrightness is handled correctly.
+        luna.subscribe("luna://com.palm.display/control/getProperty",
+                       JSON.stringify({"properties": ["timeout", "maximumBrightness"],
+                                       "subscribe": true}),
+                       _handleGetDisplayProperties, _handleGetError);
     }
 
     function _handleGetPreferences(message) {

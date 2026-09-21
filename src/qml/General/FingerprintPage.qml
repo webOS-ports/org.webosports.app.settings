@@ -209,7 +209,13 @@ BasePage {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.bottomMargin: fingerprintPageId.editingIndex >= 0
+        // Keyed on the keyboard actually being up, not only on a row being in
+        // edit mode. editingIndex is cleared when a rename is committed or when
+        // the tap lands elsewhere, but not when the keyboard is simply
+        // dismissed - so binding the margin to editingIndex alone left the page
+        // permanently short by a keyboard's height, and the list inside it short
+        // enough that three entries began to scroll.
+        anchors.bottomMargin: (fingerprintPageId.editingIndex >= 0 && Qt.inputMethod.visible)
                               ? Qt.inputMethod.keyboardRectangle.height : 0
         spacing: Units.gu(1)
 
