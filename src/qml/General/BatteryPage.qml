@@ -93,13 +93,33 @@ BasePage {
      * design figure for both - the tissot does - and dividing one by the
      * other there produces a confident 100% that is arithmetic, not a
      * measurement. That is worth saying rather than showing.
+     *
+     * The pair also has to be physically possible. A pack holds somewhere
+     * between a worn-out fraction of what it shipped with and a little over
+     * it, never several times it, so a ratio outside that band is two
+     * different units rather than a measurement. nyx rejects that case at
+     * the point it can see the sysfs attributes, and this is the same check
+     * again at the point of display: a MediaTek Halium port and a radon both
+     * reported charge_full_design a factor of ten low, and this page showed
+     * the result as "2951 of 295 mAh" and a battery at 1000% of its original
+     * capacity. A page that will not print a figure like that whatever it is
+     * handed is worth the three lines.
      */
+    readonly property real wearRatioMin: 0.2
+    readonly property real wearRatioMax: 2.0
+
+    function capacitiesAgree(full, design) {
+        return full > 0 && design > 0 &&
+               full <= design * pageRoot.wearRatioMax &&
+               full >= design * pageRoot.wearRatioMin;
+    }
+
     function wearIsKnown(full, design) {
-        return full > 0 && design > 0 && full !== design;
+        return pageRoot.capacitiesAgree(full, design) && full !== design;
     }
 
     function gaugeLearns(full, design) {
-        return !(full > 0 && design > 0 && full === design);
+        return !(pageRoot.capacitiesAgree(full, design) && full === design);
     }
 
     function wearPercentOf(full, design) {
