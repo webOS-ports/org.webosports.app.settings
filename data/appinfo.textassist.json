@@ -15,7 +15,8 @@
     "requiredPermissions": [
         "systemsettings.query",
         "systemsettings.management",
-        "database.operation"
+        "database.operation",
+        "ime.query",
+        "ime.operation"
     ]
 }
-

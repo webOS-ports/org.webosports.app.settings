@@ -74,6 +74,17 @@ BasePage {
     property string keyboardLayout: "LuneOS"
     property string keyboardSize: "M"
 
+    /*
+     * The physical keyboard, from com.webos.service.ime rather than the
+     * systemservice preferences above. It is not a preference: whether one is
+     * attached is a fact about the hardware, and the input method is what knows
+     * it - see MImHwKeyboardTracker.
+     */
+    property bool hardwareKeyboardPresent: false
+    property bool hardwareKeyboardSlider: false
+    property string hardwareKeyboardLayout: ""
+    property bool onScreenKeyboardForced: false
+
     // Kept whole: keyPressFeedback, enabledLanguages and activeLanguage in
     // here belong to other pages, and writing the object back without them
     // would wipe them.
@@ -90,6 +101,7 @@ BasePage {
 
     Component.onCompleted: {
         retrieveProperties();
+        retrieveKeyboardStatus();
         ensureDictionaryKinds();
     }
 
@@ -241,6 +253,57 @@ BasePage {
             }
         }
 
+        /*
+         * Only where there is one. On a device with no physical keyboard every
+         * row here would describe something that is not there, and the switch
+         * would turn off a keyboard that is the only way to type.
+         */
+        GroupBox {
+            width: parent.width
+            title: "Hardware Keyboard"
+            visible: pageRoot.hardwareKeyboardPresent
+
+            Column {
+                width: parent.width
+
+                LabelAndValue {
+                    width: parent.width
+                    label: "Layout"
+                    value: pageRoot.hardwareKeyboardLayout !== ""
+                           && pageRoot.hardwareKeyboardLayout !== "Unknown"
+                           ? pageRoot.hardwareKeyboardLayout : "Not stated"
+                }
+
+                HorizontalSeparator {
+                    width: parent.width
+                }
+
+                LabelAndSwitch {
+                    id: onScreenKeyboardSwitch
+                    label: "On-Screen Keyboard"
+
+                    checked: pageRoot.onScreenKeyboardForced
+                    Connections {
+                        target: pageRoot
+                        function onOnScreenKeyboardForcedChanged() {
+                            onScreenKeyboardSwitch.checked = pageRoot.onScreenKeyboardForced;
+                        }
+                    }
+                    onToggled: pageRoot.setOnScreenKeyboardForced(checked)
+                }
+            }
+        }
+
+        ExplanationText {
+            visible: pageRoot.hardwareKeyboardPresent
+            text: pageRoot.hardwareKeyboardSlider
+                  ? "The on-screen keyboard stays out of the way while the keyboard"
+                    + " is open. Turn it on to reach characters the keys do not have."
+                  : "The on-screen keyboard stays out of the way while a physical"
+                    + " keyboard is attached. Turn it on to reach characters the keys"
+                    + " do not have. The suggestion strip is shown either way."
+        }
+
         ExplanationText {
             text: "Which languages the keyboard offers is set under Regional Settings."
         }
@@ -333,6 +396,54 @@ BasePage {
 
         luna.call("luna://com.webos.service.systemservice/setPreferences",
                   JSON.stringify({"keyboard": prefs}),
+                  _handleSetSuccess, _handleSetError);
+    }
+
+    /*
+     * The physical keyboard
+     *
+     * com.webos.service.ime is started on demand, so failing to reach it is
+     * ordinary rather than broken - the group simply stays hidden, which is the
+     * right answer for a device with no physical keyboard anyway.
+     */
+    function retrieveKeyboardStatus() {
+        luna.subscribe("luna://com.webos.service.ime/getKeyboardStatus",
+                       JSON.stringify({"subscribe": true}),
+                       _handleKeyboardStatus, _handleKeyboardStatusError);
+    }
+
+    function _handleKeyboardStatus(message) {
+        if (!message || !message.payload)
+            return;
+
+        var response = JSON.parse(message.payload);
+
+        // A refused call arrives here rather than at the error handler, carrying
+        // returnValue false - so it has to be read, or a denial looks like
+        // silence and the group just never appears.
+        if (!response.returnValue)
+            return;
+
+        if (response.hardwareKeyboard !== undefined) {
+            pageRoot.hardwareKeyboardPresent = response.hardwareKeyboard.present === true;
+            pageRoot.hardwareKeyboardSlider = response.hardwareKeyboard.slider === true;
+            pageRoot.hardwareKeyboardLayout = response.hardwareKeyboard.layout !== undefined
+                                              ? response.hardwareKeyboard.layout : "";
+        }
+
+        if (response.onScreenKeyboardForced !== undefined)
+            pageRoot.onScreenKeyboardForced = response.onScreenKeyboardForced === true;
+    }
+
+    function _handleKeyboardStatusError(message) {
+        console.warn("Cannot reach the input method: " + message);
+    }
+
+    function setOnScreenKeyboardForced(forced) {
+        // Not set locally first: the switch follows the subscription, so what it
+        // shows is what the input method actually did rather than what was asked.
+        luna.call("luna://com.webos.service.ime/setOnScreenKeyboardForced",
+                  JSON.stringify({"forced": forced}),
                   _handleSetSuccess, _handleSetError);
     }
 
