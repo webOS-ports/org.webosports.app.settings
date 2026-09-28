@@ -74,6 +74,44 @@ BasePage {
     property string keyboardLayout: "LuneOS"
     property string keyboardSize: "M"
 
+    /*
+     * The physical keyboard, from com.webos.service.ime rather than the
+     * systemservice preferences above. It is not a preference: whether one is
+     * attached is a fact about the hardware, and the input method is what knows
+     * it - see MImHwKeyboardTracker.
+     */
+    property bool hardwareKeyboardPresent: false
+    property bool hardwareKeyboardSlider: false
+    //! What the layout is taken to be, after everything has had its say.
+    property string hardwareKeyboardLayout: ""
+    //! What has been set here, as opposed to worked out. Empty means automatic.
+    property string hardwareKeyboardLayoutOverride: ""
+    property bool telephoneKeypadCounts: false
+    property bool onScreenKeyboardForced: false
+
+    /*
+     * The layouts legacy named, from the com.palm.properties.KEYoBRD token that
+     * luna-sysmgr-common's DeviceInfo.cpp mapped into
+     * PalmSystem.deviceInfo.keyboardType - plus an Automatic entry, which is the
+     * empty override and what almost every device should be on.
+     */
+    readonly property var hwLayoutValues: ["", "QWERTY", "QWERTZ", "AZERTY",
+                                           "AZERTY_FR", "QWERTZ_DE"]
+
+    /*
+     * The first entry names what was worked out, so choosing Automatic does not
+     * hide the answer - "Automatic (QWERTY)" says both what is in force and
+     * where it came from. Empty or "Unknown" means nothing identified the
+     * keyboard, which is the ordinary case for one plugged in over USB: its
+     * layout lives in the compositor's xkb keymap and nothing here can see it.
+     */
+    readonly property var hwLayoutLabels: [
+        pageRoot.hardwareKeyboardLayout !== ""
+            && pageRoot.hardwareKeyboardLayout !== "Unknown"
+            ? "Automatic (" + pageRoot.hardwareKeyboardLayout + ")"
+            : "Automatic",
+        "QWERTY", "QWERTZ", "AZERTY", "AZERTY (French)", "QWERTZ (German)"]
+
     // Kept whole: keyPressFeedback, enabledLanguages and activeLanguage in
     // here belong to other pages, and writing the object back without them
     // would wipe them.
@@ -90,6 +128,7 @@ BasePage {
 
     Component.onCompleted: {
         retrieveProperties();
+        retrieveKeyboardStatus();
         ensureDictionaryKinds();
     }
 
@@ -241,6 +280,102 @@ BasePage {
             }
         }
 
+        /*
+         * Only where there is one. On a device with no physical keyboard every
+         * row here would describe something that is not there, and the switch
+         * would turn off a keyboard that is the only way to type.
+         */
+        GroupBox {
+            width: parent.width
+            title: "Hardware Keyboard"
+            visible: pageRoot.hardwareKeyboardPresent
+
+            Column {
+                width: parent.width
+
+                LabelAndSelector {
+                    id: hwLayoutSelector
+                    width: parent.width
+                    label: "Layout"
+                    model: pageRoot.hwLayoutLabels
+
+                    currentIndex: pageRoot._indexOf(pageRoot.hwLayoutValues,
+                                                    pageRoot.hardwareKeyboardLayoutOverride, 0)
+                    Connections {
+                        target: pageRoot
+                        function onHardwareKeyboardLayoutOverrideChanged() {
+                            hwLayoutSelector.currentIndex =
+                                pageRoot._indexOf(pageRoot.hwLayoutValues,
+                                                  pageRoot.hardwareKeyboardLayoutOverride, 0);
+                        }
+                    }
+                    onActivated: (index) => pageRoot.setHardwareKeyboardLayout(
+                                     pageRoot.hwLayoutValues[index])
+                }
+
+                HorizontalSeparator {
+                    width: parent.width
+                }
+
+                /*
+                 * Only worth offering where a keypad is what is attached. On a
+                 * QWERTY this decides nothing, and it reads as a question about
+                 * a keyboard the device does not have.
+                 */
+                LabelAndSwitch {
+                    id: keypadCountsSwitch
+                    label: "Type on the Keypad"
+                    visible: pageRoot.hardwareKeyboardLayout === ""
+                             || pageRoot.hardwareKeyboardLayout === "Unknown"
+
+                    checked: pageRoot.telephoneKeypadCounts
+                    Connections {
+                        target: pageRoot
+                        function onTelephoneKeypadCountsChanged() {
+                            keypadCountsSwitch.checked = pageRoot.telephoneKeypadCounts;
+                        }
+                    }
+                    onToggled: pageRoot.setTelephoneKeypadCounts(checked)
+                }
+
+                HorizontalSeparator {
+                    width: parent.width
+                    visible: keypadCountsSwitch.visible
+                }
+
+                LabelAndSwitch {
+                    id: onScreenKeyboardSwitch
+                    label: "On-Screen Keyboard"
+
+                    checked: pageRoot.onScreenKeyboardForced
+                    Connections {
+                        target: pageRoot
+                        function onOnScreenKeyboardForcedChanged() {
+                            onScreenKeyboardSwitch.checked = pageRoot.onScreenKeyboardForced;
+                        }
+                    }
+                    onToggled: pageRoot.setOnScreenKeyboardForced(checked)
+                }
+            }
+        }
+
+        ExplanationText {
+            visible: keypadCountsSwitch.visible
+            text: "A keypad has the digits and none of the letters. Turn this on to"
+                  + " type words on it by pressing a key repeatedly; leave it off"
+                  + " and the on-screen keyboard stays."
+        }
+
+        ExplanationText {
+            visible: pageRoot.hardwareKeyboardPresent
+            text: pageRoot.hardwareKeyboardSlider
+                  ? "The on-screen keyboard stays out of the way while the keyboard"
+                    + " is open. Turn it on to reach characters the keys do not have."
+                  : "The on-screen keyboard stays out of the way while a physical"
+                    + " keyboard is attached. Turn it on to reach characters the keys"
+                    + " do not have. The suggestion strip is shown either way."
+        }
+
         ExplanationText {
             text: "Which languages the keyboard offers is set under Regional Settings."
         }
@@ -333,6 +468,70 @@ BasePage {
 
         luna.call("luna://com.webos.service.systemservice/setPreferences",
                   JSON.stringify({"keyboard": prefs}),
+                  _handleSetSuccess, _handleSetError);
+    }
+
+    /*
+     * The physical keyboard
+     *
+     * com.webos.service.ime is started on demand, so failing to reach it is
+     * ordinary rather than broken - the group simply stays hidden, which is the
+     * right answer for a device with no physical keyboard anyway.
+     */
+    function retrieveKeyboardStatus() {
+        luna.subscribe("luna://com.webos.service.ime/getKeyboardStatus",
+                       JSON.stringify({"subscribe": true}),
+                       _handleKeyboardStatus, _handleKeyboardStatusError);
+    }
+
+    function _handleKeyboardStatus(message) {
+        if (!message || !message.payload)
+            return;
+
+        var response = JSON.parse(message.payload);
+
+        // A refused call arrives here rather than at the error handler, carrying
+        // returnValue false - so it has to be read, or a denial looks like
+        // silence and the group just never appears.
+        if (!response.returnValue)
+            return;
+
+        if (response.hardwareKeyboard !== undefined) {
+            pageRoot.hardwareKeyboardPresent = response.hardwareKeyboard.present === true;
+            pageRoot.hardwareKeyboardSlider = response.hardwareKeyboard.slider === true;
+            pageRoot.hardwareKeyboardLayout = response.hardwareKeyboard.layout !== undefined
+                                              ? response.hardwareKeyboard.layout : "";
+            pageRoot.hardwareKeyboardLayoutOverride =
+                response.hardwareKeyboard.layoutOverride !== undefined
+                    ? response.hardwareKeyboard.layoutOverride : "";
+            pageRoot.telephoneKeypadCounts = response.hardwareKeyboard.keypadCounts === true;
+        }
+
+        if (response.onScreenKeyboardForced !== undefined)
+            pageRoot.onScreenKeyboardForced = response.onScreenKeyboardForced === true;
+    }
+
+    function _handleKeyboardStatusError(message) {
+        console.warn("Cannot reach the input method: " + message);
+    }
+
+    function setHardwareKeyboardLayout(layout) {
+        luna.call("luna://com.webos.service.ime/setHardwareKeyboardLayout",
+                  JSON.stringify({"layout": layout}),
+                  _handleSetSuccess, _handleSetError);
+    }
+
+    function setTelephoneKeypadCounts(counts) {
+        luna.call("luna://com.webos.service.ime/setTelephoneKeypadCounts",
+                  JSON.stringify({"counts": counts}),
+                  _handleSetSuccess, _handleSetError);
+    }
+
+    function setOnScreenKeyboardForced(forced) {
+        // Not set locally first: the switch follows the subscription, so what it
+        // shows is what the input method actually did rather than what was asked.
+        luna.call("luna://com.webos.service.ime/setOnScreenKeyboardForced",
+                  JSON.stringify({"forced": forced}),
                   _handleSetSuccess, _handleSetError);
     }
 
