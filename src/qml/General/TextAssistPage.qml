@@ -82,8 +82,35 @@ BasePage {
      */
     property bool hardwareKeyboardPresent: false
     property bool hardwareKeyboardSlider: false
+    //! What the layout is taken to be, after everything has had its say.
     property string hardwareKeyboardLayout: ""
+    //! What has been set here, as opposed to worked out. Empty means automatic.
+    property string hardwareKeyboardLayoutOverride: ""
+    property bool telephoneKeypadCounts: false
     property bool onScreenKeyboardForced: false
+
+    /*
+     * The layouts legacy named, from the com.palm.properties.KEYoBRD token that
+     * luna-sysmgr-common's DeviceInfo.cpp mapped into
+     * PalmSystem.deviceInfo.keyboardType - plus an Automatic entry, which is the
+     * empty override and what almost every device should be on.
+     */
+    readonly property var hwLayoutValues: ["", "QWERTY", "QWERTZ", "AZERTY",
+                                           "AZERTY_FR", "QWERTZ_DE"]
+
+    /*
+     * The first entry names what was worked out, so choosing Automatic does not
+     * hide the answer - "Automatic (QWERTY)" says both what is in force and
+     * where it came from. Empty or "Unknown" means nothing identified the
+     * keyboard, which is the ordinary case for one plugged in over USB: its
+     * layout lives in the compositor's xkb keymap and nothing here can see it.
+     */
+    readonly property var hwLayoutLabels: [
+        pageRoot.hardwareKeyboardLayout !== ""
+            && pageRoot.hardwareKeyboardLayout !== "Unknown"
+            ? "Automatic (" + pageRoot.hardwareKeyboardLayout + ")"
+            : "Automatic",
+        "QWERTY", "QWERTZ", "AZERTY", "AZERTY (French)", "QWERTZ (German)"]
 
     // Kept whole: keyPressFeedback, enabledLanguages and activeLanguage in
     // here belong to other pages, and writing the object back without them
@@ -266,16 +293,54 @@ BasePage {
             Column {
                 width: parent.width
 
-                LabelAndValue {
+                LabelAndSelector {
+                    id: hwLayoutSelector
                     width: parent.width
                     label: "Layout"
-                    value: pageRoot.hardwareKeyboardLayout !== ""
-                           && pageRoot.hardwareKeyboardLayout !== "Unknown"
-                           ? pageRoot.hardwareKeyboardLayout : "Not stated"
+                    model: pageRoot.hwLayoutLabels
+
+                    currentIndex: pageRoot._indexOf(pageRoot.hwLayoutValues,
+                                                    pageRoot.hardwareKeyboardLayoutOverride, 0)
+                    Connections {
+                        target: pageRoot
+                        function onHardwareKeyboardLayoutOverrideChanged() {
+                            hwLayoutSelector.currentIndex =
+                                pageRoot._indexOf(pageRoot.hwLayoutValues,
+                                                  pageRoot.hardwareKeyboardLayoutOverride, 0);
+                        }
+                    }
+                    onActivated: (index) => pageRoot.setHardwareKeyboardLayout(
+                                     pageRoot.hwLayoutValues[index])
                 }
 
                 HorizontalSeparator {
                     width: parent.width
+                }
+
+                /*
+                 * Only worth offering where a keypad is what is attached. On a
+                 * QWERTY this decides nothing, and it reads as a question about
+                 * a keyboard the device does not have.
+                 */
+                LabelAndSwitch {
+                    id: keypadCountsSwitch
+                    label: "Type on the Keypad"
+                    visible: pageRoot.hardwareKeyboardLayout === ""
+                             || pageRoot.hardwareKeyboardLayout === "Unknown"
+
+                    checked: pageRoot.telephoneKeypadCounts
+                    Connections {
+                        target: pageRoot
+                        function onTelephoneKeypadCountsChanged() {
+                            keypadCountsSwitch.checked = pageRoot.telephoneKeypadCounts;
+                        }
+                    }
+                    onToggled: pageRoot.setTelephoneKeypadCounts(checked)
+                }
+
+                HorizontalSeparator {
+                    width: parent.width
+                    visible: keypadCountsSwitch.visible
                 }
 
                 LabelAndSwitch {
@@ -292,6 +357,13 @@ BasePage {
                     onToggled: pageRoot.setOnScreenKeyboardForced(checked)
                 }
             }
+        }
+
+        ExplanationText {
+            visible: keypadCountsSwitch.visible
+            text: "A keypad has the digits and none of the letters. Turn this on to"
+                  + " type words on it by pressing a key repeatedly; leave it off"
+                  + " and the on-screen keyboard stays."
         }
 
         ExplanationText {
@@ -429,6 +501,10 @@ BasePage {
             pageRoot.hardwareKeyboardSlider = response.hardwareKeyboard.slider === true;
             pageRoot.hardwareKeyboardLayout = response.hardwareKeyboard.layout !== undefined
                                               ? response.hardwareKeyboard.layout : "";
+            pageRoot.hardwareKeyboardLayoutOverride =
+                response.hardwareKeyboard.layoutOverride !== undefined
+                    ? response.hardwareKeyboard.layoutOverride : "";
+            pageRoot.telephoneKeypadCounts = response.hardwareKeyboard.keypadCounts === true;
         }
 
         if (response.onScreenKeyboardForced !== undefined)
@@ -437,6 +513,18 @@ BasePage {
 
     function _handleKeyboardStatusError(message) {
         console.warn("Cannot reach the input method: " + message);
+    }
+
+    function setHardwareKeyboardLayout(layout) {
+        luna.call("luna://com.webos.service.ime/setHardwareKeyboardLayout",
+                  JSON.stringify({"layout": layout}),
+                  _handleSetSuccess, _handleSetError);
+    }
+
+    function setTelephoneKeypadCounts(counts) {
+        luna.call("luna://com.webos.service.ime/setTelephoneKeypadCounts",
+                  JSON.stringify({"counts": counts}),
+                  _handleSetSuccess, _handleSetError);
     }
 
     function setOnScreenKeyboardForced(forced) {
