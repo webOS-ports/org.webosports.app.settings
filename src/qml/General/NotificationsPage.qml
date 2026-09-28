@@ -56,6 +56,16 @@ import "../Common"
  * they show on the lock screen, and whether the centre button blinks - have
  * been on Screen & Lock since that page was ported, and this one links there
  * rather than growing a second copy.
+ *
+ * The notification LED's colours are here, though, rather than in a panel of
+ * their own. Choosing one is a per-application choice about notifications, and
+ * the list of applications - and the filtering in listedApps() that decides
+ * which of them are worth offering - already exists on this page; a second
+ * panel would repeat both. The LED's on/off switch stays where it is, on
+ * Screen & Lock: that switch writes BlinkNotifications, which is the key legacy
+ * Preferences.cpp read into m_ledThrobberEnabled and the one the shell now
+ * checks before lighting the LED. It is read here only to say why a colour
+ * would have no effect.
  */
 BasePage {
     id: pageRoot
@@ -67,7 +77,72 @@ BasePage {
     property var blockedApps: []
     property var apps: []
 
+    // Whether the LED blinks at all, owned by Screen & Lock; read only here.
+    property bool blinkNotifications: true
+
+    /*
+     * The notificationLedColors preference verbatim: application id to colour
+     * string, with "*" for the colour every other application falls back to.
+     *
+     * Held as the whole object because one preference holds every
+     * application's colour, so a change is a read-modify-write and dropping a
+     * key this page did not know about would lose somebody else's setting.
+     * "*" cannot collide with an application id - those are reverse-DNS names -
+     * which is why this stays a flat map rather than a nested object.
+     */
+    property var ledColors: ({})
+
+    // Preferences arrive asynchronously; do not write before the first read
+    // has landed or the default above would overwrite the device.
+    property bool ledPrefsLoaded: false
+
+    readonly property string defaultLedColorKey: "*"
+
+    /*
+     * The colours on offer, a fixed short list rather than a full picker.
+     * These LEDs are a few millimetres of diffused plastic: telling red from
+     * orange on one is realistic, telling apart two neighbouring shades of
+     * teal is not, and a picker would suggest otherwise.
+     *
+     * "" means nothing set, which on an application row is "use the default"
+     * and on the default row is the shell's own white. Values are the plain
+     * six-digit hex the shell hands to nyx.
+     */
+    readonly property var ledColorChoices: [
+        { "key": "",        "label": "Default" },
+        { "key": "#ffffff", "label": "White"   },
+        { "key": "#ff0000", "label": "Red"     },
+        { "key": "#ff6000", "label": "Orange"  },
+        { "key": "#ffd000", "label": "Yellow"  },
+        { "key": "#00ff00", "label": "Green"   },
+        { "key": "#00ffd0", "label": "Cyan"    },
+        { "key": "#0000ff", "label": "Blue"    },
+        { "key": "#8000ff", "label": "Purple"  },
+        { "key": "#ff00c0", "label": "Magenta" }
+    ]
+
     Component.onCompleted: retrieveProperties();
+
+    // Colour stored for an application, or "" when it has none of its own.
+    function ledColorFor(appId) {
+        if (pageRoot.ledColors && pageRoot.ledColors.hasOwnProperty(appId))
+            return pageRoot.ledColors[appId];
+        return "";
+    }
+
+    /*
+     * The colour an application will actually blink in, following the same
+     * fallback the shell applies, so that the swatch shown is the truth rather
+     * than an empty circle for every application that has not been set.
+     */
+    function effectiveLedColorFor(appId) {
+        var own = ledColorFor(appId);
+        if (own !== "")
+            return own;
+
+        var fallback = ledColorFor(pageRoot.defaultLedColorKey);
+        return fallback !== "" ? fallback : "#ffffff";
+    }
 
     /*
      * Only what a person would recognise. A notification comes from an
@@ -125,6 +200,45 @@ BasePage {
 
         GroupBox {
             width: parent.width
+            title: "Notification LED"
+
+            Column {
+                width: parent.width
+
+                LedColorRow {
+                    width: parent.width
+                    label: "Default colour"
+                    colorChoices: pageRoot.ledColorChoices
+                    colorValue: pageRoot.ledColorFor(pageRoot.defaultLedColorKey)
+                    effectiveColor: pageRoot.effectiveLedColorFor(pageRoot.defaultLedColorKey)
+                    // With nothing stored this row resolves to the shell's own
+                    // white, so that is what it says.
+                    placeholder: "White"
+                    onClicked: ledColorPicker.openFor(pageRoot.defaultLedColorKey,
+                                                      "Default colour")
+                }
+
+                ExplanationText {
+                    text: "Used for any application without a colour of its own."
+                }
+
+                /*
+                 * Says plainly why the colours would do nothing, rather than
+                 * leaving the user to wonder. Empty text hides itself, so the
+                 * ordinary case costs no gap in the column.
+                 */
+                ExplanationText {
+                    text: !pageRoot.blinkNotifications
+                          ? "The notification LED is switched off: turn on " +
+                            "Blink Notifications in Screen & Lock to use these " +
+                            "colours."
+                          : ""
+                }
+            }
+        }
+
+        GroupBox {
+            width: parent.width
             visible: pageRoot.notificationServiceAvailable &&
                      pageRoot.appServiceAvailable
 
@@ -157,6 +271,26 @@ BasePage {
                                 }
                             }
                             onToggled: pageRoot.setAllowed(modelData.id, checked)
+                        }
+
+                        /*
+                         * Inset under the application's own switch, so it reads
+                         * as belonging to it rather than as another application.
+                         * Hidden when the application may not show a
+                         * notification at all, since then there is nothing for
+                         * the LED to blink for.
+                         */
+                        LedColorRow {
+                            x: Units.gu(2)
+                            width: parent.width - Units.gu(2)
+                            visible: appSwitch.checked
+                            label: "LED colour"
+                            colorChoices: pageRoot.ledColorChoices
+                            colorValue: pageRoot.ledColorFor(modelData.id)
+                            effectiveColor: pageRoot.effectiveLedColorFor(modelData.id)
+                            onClicked: ledColorPicker.openFor(
+                                           modelData.id,
+                                           modelData.title ? modelData.title : modelData.id)
                         }
                     }
                 }
@@ -197,8 +331,27 @@ BasePage {
 
         ExplanationText {
             text: "Whether notifications show on the lock screen, and whether " +
-                  "the centre button blinks for them, are set there."
+                  "the notification LED blinks for them at all, are set there."
         }
+    }
+
+    ListPickerPopup {
+        id: ledColorPicker
+
+        // Which row opened it: an application id, or "*" for the default.
+        property string targetAppId: ""
+
+        entries: pageRoot.ledColorChoices
+        currentKey: pageRoot.ledColorFor(targetAppId)
+        emptyText: "No colours available."
+
+        function openFor(appId, rowTitle) {
+            targetAppId = appId;
+            title = rowTitle;
+            open();
+        }
+
+        onPicked: (key, entry) => pageRoot.setLedColorFor(ledColorPicker.targetAppId, key)
     }
 
     /*
@@ -215,6 +368,46 @@ BasePage {
         luna.subscribe("luna://com.webos.service.applicationManager/listApps",
                        JSON.stringify({"subscribe": true}),
                        _handleListApps, _handleAppServiceUnavailable);
+
+        // Subscribed so that the swatches follow a colour changed elsewhere,
+        // and so that turning the LED off on Screen & Lock shows up here.
+        luna.subscribe("luna://com.webos.service.systemservice/getPreferences",
+                       JSON.stringify({"keys": ["BlinkNotifications", "notificationLedColors"],
+                                       "subscribe": true}),
+                       _handleGetPreferences, _handleGetError);
+    }
+
+    function _handleGetPreferences(message) {
+        if (!message || !message.payload)
+            return;
+
+        var response = JSON.parse(message.payload);
+
+        if (response.hasOwnProperty("BlinkNotifications"))
+            pageRoot.blinkNotifications = response.BlinkNotifications;
+
+        if (response.hasOwnProperty("notificationLedColors")) {
+            var colors = response.notificationLedColors;
+
+            /*
+             * Tolerated for the same reason the shell tolerates it: a
+             * preference is whatever was last written, so a hand-edited string
+             * or a value left over from an earlier shape must not break the
+             * page. Anything that is not an object is treated as nothing set.
+             */
+            if (typeof colors === "string") {
+                try {
+                    colors = JSON.parse(colors);
+                } catch (e) {
+                    console.warn("Stored notification LED colours are not valid JSON: " + colors);
+                    colors = null;
+                }
+            }
+
+            pageRoot.ledColors = (colors && typeof colors === "object") ? colors : ({});
+        }
+
+        pageRoot.ledPrefsLoaded = true;
     }
 
     function _handleToastSettings(message) {
@@ -281,6 +474,43 @@ BasePage {
             console.warn("Cannot change notifications for that application: " +
                          message.payload);
         }
+    }
+
+    /*
+     * One preference holds every application's colour, so this is a
+     * read-modify-write of the object the subscription last gave us.
+     *
+     * An unset row deletes its key rather than storing "": that keeps the
+     * stored object down to the applications that actually have a colour, and
+     * leaves the shell's own fallback to decide what the rest blink in.
+     *
+     * The local copy is replaced rather than mutated, because QML only
+     * re-evaluates the swatches and names bound to ledColors when the property
+     * itself changes; mutating it in place would leave every row showing the
+     * old colour until the subscription replied.
+     */
+    function setLedColorFor(appId, color) {
+        if (!pageRoot.ledPrefsLoaded) {
+            console.log("Trying to set preferences before reading them first: ignoring.");
+            return;
+        }
+
+        var updated = {};
+        for (var key in pageRoot.ledColors) {
+            if (pageRoot.ledColors.hasOwnProperty(key))
+                updated[key] = pageRoot.ledColors[key];
+        }
+
+        if (color === "")
+            delete updated[appId];
+        else
+            updated[appId] = color;
+
+        pageRoot.ledColors = updated;
+
+        luna.call("luna://com.webos.service.systemservice/setPreferences",
+                  JSON.stringify({"notificationLedColors": updated}),
+                  _handleSetSuccess, _handleSetError);
     }
 
     // Each settings category is its own launchable application on the device.
