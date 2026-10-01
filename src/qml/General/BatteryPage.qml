@@ -72,6 +72,7 @@ BasePage {
     property int percentUi: -1
     property int temperature: 0
     property int current: 0
+    property int avgCurrent: 0
     property int voltage: 0
     // -1 until something answers, and left at -1 by a device whose driver
     // reports neither charge_now nor charge_counter.
@@ -153,10 +154,33 @@ BasePage {
         return (millivolts / 1000).toFixed(2) + " V";
     }
 
+    /*
+     * batteryd publishes both the instantaneous reading and the averaged one
+     * because neither is reliably the better answer: some gauges carry the
+     * figure on one node and not the other. The MindPhone's MT6739 pins
+     * current_now to a permanent zero while current_avg follows the charge, so
+     * showing current_mA outright reported no current on a pack taking 228 mA.
+     *
+     * Prefer the instantaneous reading where it says something and fall back to
+     * the average where it does not, so a device with only the one node reads
+     * exactly as before.
+     */
+    function pickCurrent(instant, average) {
+        if (instant !== undefined && instant !== 0)
+            return instant;
+
+        if (average !== undefined && average !== 0)
+            return average;
+
+        return instant !== undefined ? instant : 0;
+    }
+
     function currentText(milliamps) {
         // Signed: negative is the pack being drained, positive is it being
-        // filled. Spell that out rather than leaving a bare minus sign to be
-        // read as an error.
+        // filled. nyx normalises which way round that is against the driver's
+        // own status, so the sign can be read at face value here rather than
+        // second-guessed per driver. Spell it out rather than leaving a bare
+        // minus sign to be read as an error.
         return milliamps + " mA" +
                (milliamps < 0 ? " (discharging)"
                               : (milliamps > 0 ? " (charging)" : ""));
@@ -398,7 +422,9 @@ BasePage {
                                 height: visible ? Units.gu(6) : 0
                                 label: "Current"
                                 value: modelData.current_mA !== undefined
-                                       ? pageRoot.currentText(modelData.current_mA) : ""
+                                       ? pageRoot.currentText(pageRoot.pickCurrent(
+                                             modelData.current_mA,
+                                             modelData.avg_current_mA)) : ""
                             }
 
                             LabelAndValue {
@@ -499,7 +525,8 @@ BasePage {
                 LabelAndValue {
                     width: parent.width
                     label: "Current"
-                    value: pageRoot.currentText(pageRoot.current)
+                    value: pageRoot.currentText(pageRoot.pickCurrent(
+                               pageRoot.current, pageRoot.avgCurrent))
                 }
 
                 HorizontalSeparator {
@@ -710,6 +737,9 @@ BasePage {
             pageRoot.temperature = response.temperature_C;
         if (response.hasOwnProperty("current_mA"))
             pageRoot.current = response.current_mA;
+
+        if (response.hasOwnProperty("avg_current_mA"))
+            pageRoot.avgCurrent = response.avg_current_mA;
         if (response.hasOwnProperty("voltage_mV"))
             pageRoot.voltage = response.voltage_mV;
         if (response.hasOwnProperty("capacity_mAh"))
