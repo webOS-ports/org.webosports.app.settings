@@ -121,8 +121,10 @@ BasePage {
     property var words: []
     property var shortcuts: []
 
-    // The layouts and sizes webos-keyboard accepts.
-    readonly property var layoutValues: ["LuneOS", "Dvorak", "Thumb"]
+    // The layouts and sizes webos-keyboard accepts. A layout a language or
+    // form factor has no file for falls back to the stock one there; Dvorak
+    // and Thumb are tablet layouts, the two Pre ones phone layouts.
+    readonly property var layoutValues: ["LuneOS", "Dvorak", "Thumb", "Pre (Orange)", "Pre (White)"]
     readonly property var sizeValues: ["XS", "S", "M", "L"]
     readonly property var sizeLabels: ["Extra small", "Small", "Medium", "Large"]
 
