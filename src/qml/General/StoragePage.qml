@@ -170,9 +170,12 @@ BasePage {
                                 // Amber once there is little room left, red
                                 // when there is almost none - the point at
                                 // which an update or a photo starts failing.
-                                color: pageRoot.usedFraction(modelData) > 0.95 ? "#be0003"
-                                       : (pageRoot.usedFraction(modelData) > 0.85 ? "#d08b00"
-                                                                                  : "#3f9c35")
+                                // Tints are the green, amber and red of
+                                // legacy's status bar battery, so a filling disk
+                                // and a draining battery look alike.
+                                color: pageRoot.usedFraction(modelData) > 0.95 ? "#922b1c"
+                                       : (pageRoot.usedFraction(modelData) > 0.85 ? "#ffc61b"
+                                                                                  : "#1cb81c")
                             }
                         }
 
