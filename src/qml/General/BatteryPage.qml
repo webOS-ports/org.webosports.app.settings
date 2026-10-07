@@ -244,10 +244,12 @@ BasePage {
     /*
      * The gauge is the project's own status bar battery artwork (the @4x set
      * from the wiki's Graphics Work page, the same twenty-six frames
-     * luna-next-cardshell draws in the status bar - byte for byte the same
-     * files). Reusing it rather than drawing a bar here means the charge on
-     * this page and the charge in the status bar are never two different
-     * pictures of the same number.
+     * luna-next-cardshell draws in the status bar). Reusing it rather than
+     * drawing a bar here means the charge on this page and the charge in the
+     * status bar are never two different pictures of the same number. The
+     * green, red and amber frames here are recoloured to legacy's tints
+     * (fill #1cb81c/#31cd31, red hue 10, amber #ffc61b), so unlike the rest
+     * they are no longer byte for byte cardshell's files.
      *
      * The frame is picked exactly the way cardshell's BatteryIndicator picks
      * it: a 0-12 level floored out of the percentage, clamped to the eleventh
