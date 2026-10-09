@@ -484,8 +484,10 @@ BasePage {
         if (!message || !message.payload)
             return;
 
+        // Only the first reply carries returnValue; the pushes that follow a
+        // change are just the changed keys, and were all thrown away here.
         var response = JSON.parse(message.payload);
-        if (!response.returnValue)
+        if (response.returnValue === false)
             return;
 
         if (response.hasOwnProperty("autoLocate"))

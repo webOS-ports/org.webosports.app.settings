@@ -209,6 +209,17 @@ Column {
                        });
     }
 
+    // Nothing reports an answer given elsewhere - an application's own
+    // permission question, or the other page - so read the list again
+    // whenever the page comes back to the front.
+    Connections {
+        target: Qt.application
+        function onStateChanged() {
+            if (Qt.application.state === Qt.ApplicationActive)
+                permissionList.refresh();
+        }
+    }
+
     ServiceUnavailableNotice {
         visible: !permissionList.available
         serviceName: "com.webos.service.webappmanager"
