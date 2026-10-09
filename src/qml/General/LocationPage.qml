@@ -63,24 +63,23 @@ import "../Common"
  *     one row per appId or per site with a permissionState - see
  *     LocationCategoryHandler.cpp in the Pre3 mojolocation decompile).
  *
- *     So this page now does two real things instead of pretending at one
- *     fake service:
+ *     So this page now does real things instead of pretending at one fake
+ *     service:
  *       - autoLocate / webSetting / geotagPhotos are ordinary preferences
  *         (com.webos.service.systemservice), the same mechanism
  *         TextAssistPage's keyboard settings use - always available, no
  *         "service unavailable" gating needed for these three switches
  *         any more.
- *       - Granted Access is new, genuinely per-app/per-site, and goes
- *         further than the legacy app's shipped UI ever did - it is what
- *         mojolocation's own data model always supported but nothing put in
- *         front of a user. Stored as ordinary db8 records (com.palm.db),
- *         org.webosports.app.settings.locationgrants:1, one row per grant -
- *         the same "own kind, own namespace" pattern TextAssistPage's user
- *         dictionary already uses. Nothing on LuneOS today prompts a user
- *         for location and writes a grant here yet - db8 is genuinely empty
- *         on a fresh device, same as it would be on a fresh legacy one - but
- *         the list, and revoking one entry at a time, work end to end
- *         against whatever any future permission prompt puts there.
+ *       - Application Access is genuinely per-app, and goes further than the
+ *         legacy app's shipped UI ever did. It is what each web application
+ *         was answered when it asked for the location through the
+ *         Geolocation API: the web runtime (WebAppMgr) asks, and keeps the
+ *         answer in the browser engine's own per-application settings, which
+ *         is also what decides the next request. The list reads and changes
+ *         those through WebAppMgr (Common/AppPermissionList.qml) rather than
+ *         keeping a copy here. Applications that call
+ *         com.webos.service.location directly are not asked and so are not
+ *         listed; their access is their appinfo.json's requiredPermissions.
  *
  * The methods this page uses on com.webos.service.location, confirmed by
  * introspection and by calling them against sargo and mindphone:
@@ -111,16 +110,11 @@ BasePage {
 
     // The real, live service: GPS Status and Locate Me Using.
     readonly property string gpsService: "com.webos.service.location"
-    // Where Granted Access lives - com.palm.db is the same real db8 bus
-    // TextAssistPage's dictionary uses, not a placeholder.
-    readonly property string grantsKind: "org.webosports.app.settings.locationgrants:1"
 
     property bool autoLocate: true
     property bool webSetting: true
     property bool geotagPhotos: false
     property bool cameraAvailable: true
-
-    property var locationGrants: []
 
     // GPS Status: independent of the preferences above, and of whether they
     // ever arrive - com.webos.service.location already answers this today.
@@ -144,7 +138,6 @@ BasePage {
     Component.onCompleted: {
         retrieveProperties();
         retrieveLocationHandlers();
-        retrieveLocationGrants();
     }
 
     SettingsPageContent {
@@ -258,148 +251,59 @@ BasePage {
 
             title: "For Applications"
 
-            LabelAndSelector {
-                id: autoLocateSelector
-                width: parent.width
+            /*
+             * The master switch WebAppMgr obeys: off, an application's
+             * request for the location is refused without asking. On is the
+             * default, and means asked, not handed out - nothing gets the
+             * location without an answer or a system grant.
+             */
+            LabelAndSwitch {
+                id: autoLocateSwitch
                 label: "Location"
-                model: ["Always Ask", "Auto Locate"]
 
-                currentIndex: pageRoot.autoLocate ? 1 : 0
+                checked: pageRoot.autoLocate
                 Connections {
                     target: pageRoot
                     function onAutoLocateChanged() {
-                        autoLocateSelector.currentIndex = pageRoot.autoLocate ? 1 : 0;
+                        autoLocateSwitch.checked = pageRoot.autoLocate;
                     }
                 }
-                onActivated: (index) => pageRoot.setAutoLocate(index === 1)
+                onToggled: pageRoot.setAutoLocate(checked)
             }
         }
 
         ExplanationText {
             text: pageRoot.autoLocate
-                  ? "Your location will be automatically provided to applications that request it."
-                  : "You will be asked for authorization when an application requests your location."
+                  ? "Applications are asked before they can use your location."
+                  : "Applications cannot use your location."
         }
 
         /*
-         * Genuinely per-app/per-site, unlike the three groups above - the
-         * legacy app never showed this even though its own data model
-         * supported it. Empty until something writes a grant here (nothing
-         * on LuneOS prompts for location yet), same as it would be on a
-         * freshly flashed legacy device too.
+         * Genuinely per-app, unlike the three groups above - the legacy app
+         * never showed this even though its own data model supported it.
          */
         GroupBox {
             width: parent.width
+            // Greyed out rather than hidden while For Applications is off:
+            // the answers are kept and apply again once it is back on.
+            enabled: pageRoot.autoLocate
 
-            title: "Granted Access"
-            Column {
+            title: "Application Access"
+
+            AppPermissionList {
+                id: locationAccessList
                 width: parent.width
-
-                Label {
-                    width: parent.width
-                    visible: pageRoot.locationGrants.length === 0
-                    height: visible ? Units.gu(6) : 0
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WordWrap
-                    text: "No app or website has been given your location yet."
-                    color: "#666666"
-                    font.pixelSize: FontUtils.sizeToPixels("medium")
-                }
-
-                Repeater {
-                    model: pageRoot.locationGrants
-
-                    delegate: Column {
-                        id: grantRow
-                        width: parent.width
-
-                        readonly property var grant: modelData
-                        property bool pendingDelete: false
-
-                        // Normal row: what it is and what kind of grant.
-                        // Swipe sideways to ask for delete confirmation
-                        // (webOS delete gesture).
-                        Item {
-                            width: parent.width
-                            height: Units.gu(7)
-                            visible: !grantRow.pendingDelete
-
-                            Column {
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.leftMargin: Units.gu(1)
-                                anchors.rightMargin: Units.gu(1)
-
-                                Label {
-                                    width: parent.width
-                                    text: grantRow.grant.displayName ||
-                                          grantRow.grant.appId || grantRow.grant.url
-                                    elide: Text.ElideRight
-                                    font.pixelSize: FontUtils.sizeToPixels("16pt")
-                                }
-                                Label {
-                                    width: parent.width
-                                    text: grantRow.grant.url ? "Website" : "Application"
-                                    elide: Text.ElideRight
-                                    color: "#666666"
-                                    font.pixelSize: FontUtils.sizeToPixels("small")
-                                }
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-
-                                property real _pressX: 0
-
-                                onPressed: (mouse) => { _pressX = mouse.x; }
-                                onReleased: (mouse) => {
-                                    if (Math.abs(mouse.x - _pressX) > Units.gu(4))
-                                        grantRow.pendingDelete = true;
-                                }
-                            }
-                        }
-
-                        Row {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            height: Units.gu(7)
-                            spacing: Units.gu(2)
-                            visible: grantRow.pendingDelete
-
-                            Button {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: "Cancel"
-                                LuneOSButton.mainColor: LuneOSButton.secondaryColor
-                                onClicked: grantRow.pendingDelete = false
-                            }
-                            Button {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: "Revoke"
-                                LuneOSButton.mainColor: "#be0003"
-                                LuneOSButton.textColor: "white"
-                                onClicked: {
-                                    pageRoot.removeGrant(grantRow.grant._id);
-                                    grantRow.pendingDelete = false;
-                                }
-                            }
-                        }
-
-                        HorizontalSeparator {
-                            width: parent.width
-                        }
-                    }
-                }
-
-                ItemDelegate {
-                    width: parent.width
-                    height: Units.gu(6)
-                    visible: pageRoot.locationGrants.length > 0
-                    text: "Revoke All"
-                    font.pixelSize: FontUtils.sizeToPixels("16pt")
-
-                    onClicked: clearDataDialog.open()
-                }
+                permission: "geolocation"
+                luna: pageRoot.luna
+                emptyText: "No application has asked for your location yet."
             }
+        }
+
+        ExplanationText {
+            text: pageRoot.autoLocate
+                  ? ""
+                  : "These answers are kept, but none of them applies while " +
+                    "For Applications is off."
         }
 
         /*
@@ -500,10 +404,8 @@ BasePage {
     }
 
     /*
-     * Forgetting what websites/applications were told is not reversible, so
-     * it is asked about first - the original opened a dialog here too.
-     * Reused for both "Clear My Location Data" (web setting group) and
-     * "Revoke All" (Granted Access) - either way, every stored grant goes.
+     * Forgetting what applications were told is not reversible, so it is asked
+     * about first - the original opened a dialog here too.
      */
     /*
      * A Popup, not a Dialog: QtQuick.Controls.LuneOS has no styled Dialog at
@@ -539,8 +441,8 @@ BasePage {
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 horizontalAlignment: Text.AlignHCenter
-                text: "Every website and application that has been given your " +
-                      "location will be asked about it again the next time they want it."
+                text: "Every application that has been given or refused your " +
+                      "location will be asked about it again the next time it wants it."
                 font.pixelSize: FontUtils.sizeToPixels("medium")
             }
 
@@ -557,7 +459,7 @@ BasePage {
                     text: "Clear"
                     LuneOSButton.mainColor: LuneOSButton.negativeColor
                     onClicked: {
-                        pageRoot.clearAllGrants();
+                        locationAccessList.resetAll();
                         clearDataDialog.close();
                     }
                 }
@@ -582,8 +484,10 @@ BasePage {
         if (!message || !message.payload)
             return;
 
+        // Only the first reply carries returnValue; the pushes that follow a
+        // change are just the changed keys, and were all thrown away here.
         var response = JSON.parse(message.payload);
-        if (!response.returnValue)
+        if (response.returnValue === false)
             return;
 
         if (response.hasOwnProperty("autoLocate"))
@@ -610,51 +514,6 @@ BasePage {
         pageRoot.geotagPhotos = on;
         luna.call("luna://com.webos.service.systemservice/setPreferences",
                   JSON.stringify({"geotagPhotos": on}), _handleSetSuccess, _handleSetError);
-    }
-
-    /*
-     * Granted Access - org.webosports.app.settings.locationgrants:1, own
-     * kind and own namespace, the same pattern TextAssistPage's user
-     * dictionary already uses for db8 data this app owns.
-     */
-    function retrieveLocationGrants() {
-        // "sync": true so this travels with a db8 backup/restore, the same
-        // flag TextAssistPage's dictionary kinds set and for the same
-        // reason - nothing else has to know this exists.
-        luna.call("luna://com.palm.db/putKind",
-                  JSON.stringify({"id": pageRoot.grantsKind, "owner": appId,
-                                  "indexes": [{"name": "appId", "props": [{"name": "appId"}]},
-                                              {"name": "url", "props": [{"name": "url"}]}],
-                                  "sync": true}),
-                  _loadLocationGrants,
-                  // Already registered is the usual answer here, and it is
-                  // not a problem: read the list either way.
-                  function(message) { _loadLocationGrants(null); });
-    }
-
-    function _loadLocationGrants(message) {
-        luna.call("luna://com.palm.db/find",
-                  JSON.stringify({"query": {"from": pageRoot.grantsKind, "orderBy": "grantedAt"}}),
-                  _handleLocationGrants, _handleGetError);
-    }
-
-    function _handleLocationGrants(message) {
-        if (!message || !message.payload)
-            return;
-
-        var response = JSON.parse(message.payload);
-        pageRoot.locationGrants = response.results !== undefined ? response.results : [];
-    }
-
-    function removeGrant(id) {
-        luna.call("luna://com.palm.db/del", JSON.stringify({"ids": [id]}),
-                  _loadLocationGrants, _handleSetError);
-    }
-
-    function clearAllGrants() {
-        luna.call("luna://com.palm.db/del",
-                  JSON.stringify({"query": {"from": pageRoot.grantsKind}}),
-                  _loadLocationGrants, _handleSetError);
     }
 
     function _handleGetError(message) {
