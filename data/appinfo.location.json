@@ -14,7 +14,9 @@
     "visible": true,
     "requiredPermissions": [
         "location.query",
-        "location.operation"
+        "location.operation",
+        "application.operation",
+        "webapplication.permissions"
     ]
 }
 

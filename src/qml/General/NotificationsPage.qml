@@ -315,6 +315,30 @@ BasePage {
                   "whatever is set."
         }
 
+        /*
+         * A different question from the switches above: those decide whether
+         * an application's banners reach the screen at all, this is what a
+         * web application was answered when it asked to use the HTML5
+         * Notification API. See Common/AppPermissionList.qml.
+         */
+        GroupBox {
+            width: parent.width
+
+            title: "Web Applications"
+
+            AppPermissionList {
+                width: parent.width
+                permission: "notifications"
+                luna: pageRoot.luna
+                emptyText: "No web application has asked to show notifications yet."
+            }
+        }
+
+        ExplanationText {
+            text: "A web application asks before it shows notifications. " +
+                  "Ask Again forgets the answer, so it asks the next time."
+        }
+
         GroupBox {
             width: parent.width
 

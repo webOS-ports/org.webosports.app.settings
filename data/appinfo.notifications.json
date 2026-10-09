@@ -17,6 +17,7 @@
         "application.operation",
         "application.launcher",
         "systemsettings.query",
-        "systemsettings.management"
+        "systemsettings.management",
+        "webapplication.permissions"
     ]
 }
