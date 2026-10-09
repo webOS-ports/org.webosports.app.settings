@@ -78,6 +78,8 @@ Column {
 
         for (i = 0; i < permissionList.apps.length; i++) {
             var app = permissionList.apps[i];
+            if (!app.id)
+                continue;
             titles[app.id.toLowerCase()] = app.title ? app.title : app.id;
         }
 
@@ -99,6 +101,8 @@ Column {
 
         for (i = 0; i < permissionList.apps.length; i++) {
             var candidate = permissionList.apps[i];
+            if (!candidate.id)
+                continue;
             var perms = candidate.webAppPermissions;
             if (!perms || perms.indexOf(permissionList.permission) < 0)
                 continue;
@@ -192,10 +196,25 @@ Column {
             return;
 
         var response = JSON.parse(message.payload);
-        // SAM sends no "apps" while it is still starting up, and only the
-        // changed entries afterwards; neither is an empty device.
-        if (response.returnValue && response.hasOwnProperty("apps") && response.apps)
+        if (!response.returnValue)
+            return;
+        // The whole list comes as "apps"; SAM leaves it out while it is still
+        // starting up, which is not an empty device.
+        if (response.apps) {
             permissionList.apps = response.apps;
+            return;
+        }
+        // One installed, updated or removed application comes alone, as
+        // "app" with "change": "added", "updated" or "removed".
+        if (!response.app || !response.app.id)
+            return;
+        var id = response.app.id.toLowerCase();
+        var apps = permissionList.apps.filter(function(app) {
+            return !app.id || app.id.toLowerCase() !== id;
+        });
+        if (response.change !== "removed")
+            apps.push(response.app);
+        permissionList.apps = apps;
     }
 
     Component.onCompleted: {
