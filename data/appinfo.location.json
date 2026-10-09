@@ -16,7 +16,9 @@
         "location.query",
         "location.operation",
         "application.operation",
-        "webapplication.permissions"
+        "webapplication.permissions",
+        "systemsettings.query",
+        "systemsettings.management"
     ]
 }
 

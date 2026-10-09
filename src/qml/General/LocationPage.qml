@@ -251,27 +251,31 @@ BasePage {
 
             title: "For Applications"
 
-            LabelAndSelector {
-                id: autoLocateSelector
-                width: parent.width
+            /*
+             * The master switch WebAppMgr obeys: off, an application's
+             * request for the location is refused without asking. On is the
+             * default, and means asked, not handed out - nothing gets the
+             * location without an answer or a system grant.
+             */
+            LabelAndSwitch {
+                id: autoLocateSwitch
                 label: "Location"
-                model: ["Always Ask", "Auto Locate"]
 
-                currentIndex: pageRoot.autoLocate ? 1 : 0
+                checked: pageRoot.autoLocate
                 Connections {
                     target: pageRoot
                     function onAutoLocateChanged() {
-                        autoLocateSelector.currentIndex = pageRoot.autoLocate ? 1 : 0;
+                        autoLocateSwitch.checked = pageRoot.autoLocate;
                     }
                 }
-                onActivated: (index) => pageRoot.setAutoLocate(index === 1)
+                onToggled: pageRoot.setAutoLocate(checked)
             }
         }
 
         ExplanationText {
             text: pageRoot.autoLocate
-                  ? "Your location will be automatically provided to applications that request it."
-                  : "You will be asked for authorization when an application requests your location."
+                  ? "Applications are asked before they can use your location."
+                  : "Applications cannot use your location."
         }
 
         /*
@@ -280,6 +284,9 @@ BasePage {
          */
         GroupBox {
             width: parent.width
+            // Greyed out rather than hidden while For Applications is off:
+            // the answers are kept and apply again once it is back on.
+            enabled: pageRoot.autoLocate
 
             title: "Application Access"
 
@@ -290,6 +297,13 @@ BasePage {
                 luna: pageRoot.luna
                 emptyText: "No application has asked for your location yet."
             }
+        }
+
+        ExplanationText {
+            text: pageRoot.autoLocate
+                  ? ""
+                  : "These answers are kept, but none of them applies while " +
+                    "For Applications is off."
         }
 
         /*
