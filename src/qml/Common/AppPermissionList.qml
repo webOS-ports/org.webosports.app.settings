@@ -90,6 +90,8 @@ Column {
 
         for (i = 0; i < permissionList.entries.length; i++) {
             var entry = permissionList.entries[i];
+            if (typeof entry.appId !== "string" || entry.appId === "")
+                continue;
             // WebAppMgr's own system rows are the same appinfo.json grant
             // this list works out below; let that one stand for both.
             if (entry.system === true)
@@ -104,7 +106,7 @@ Column {
             if (!candidate.id)
                 continue;
             var perms = candidate.webAppPermissions;
-            if (!perms || perms.indexOf(permissionList.permission) < 0)
+            if (!Array.isArray(perms) || perms.indexOf(permissionList.permission) < 0)
                 continue;
             var isSystem = candidate.systemApp === true;
             // Location is asked of every application that is not part of
@@ -123,7 +125,8 @@ Column {
         // not report.
         for (i = 0; i < permissionList.entries.length; i++) {
             var sys = permissionList.entries[i];
-            if (sys.system !== true || seen[sys.appId.toLowerCase()])
+            if (sys.system !== true || typeof sys.appId !== "string" ||
+                    sys.appId === "" || seen[sys.appId.toLowerCase()])
                 continue;
             seen[sys.appId.toLowerCase()] = true;
             out.push({ "appId": sys.appId, "title": titleFor(sys.appId),
