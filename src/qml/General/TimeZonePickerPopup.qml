@@ -15,27 +15,21 @@
  */
 
 import QtQuick 2.9
-import QtQuick.Controls 2.2
-import QtQuick.Layouts 1.3
-
-// Theme specific properties
-import QtQuick.Controls.LuneOS 2.0
 // Units & font sizes
 import LunaNext.Common 0.1
 
-import "../Common"
 import LuneOS.Forms 1.0
 
 /*
  * The time zone list, after the second scene of the legacy Date & Time app.
  *
- * Same shape as the original: a search box that filters on both country and
- * city, a row per zone showing the country over the city with the zone's
- * description on the right, and Cancel at the bottom. The list comes from
+ * Same shape as the original - a search box, a row per zone showing the
+ * country over the city with the zone's description on the right, and Cancel
+ * at the bottom - as LuneOS.Forms' ListPickerPopup. The list comes from
  * systemservice's own getPreferenceValues, so it is exactly the set of zones
  * the device can be put into.
  */
-Popup {
+ListPickerPopup {
     id: timeZonePicker
 
     // The zone objects as systemservice hands them out
@@ -45,137 +39,33 @@ Popup {
 
     signal zoneSelected(var zone)
 
-    modal: true
-    focus: true
-    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-
     width: Math.min(parent.width - Units.gu(4), Units.gu(50))
-    height: Math.min(parent.height - Units.gu(4), Units.gu(70))
 
-    onOpened: searchField.text = ""
+    title: "Time Zone"
+    currentKey: currentZoneId
+    loading: zones.length === 0
+    // Always searchable: there are hundreds
+    searchThreshold: 0
 
-    // Country first, city second, the order the legacy list was sorted in.
-    readonly property var sortedZones: {
+    // Country first, city second, the order the legacy list was sorted in;
+    // the search finds a zone by country, city or description
+    entries: {
         var sorted = zones.slice();
         sorted.sort(function(a, b) {
             var left = (a.Country || "") + " " + (a.City || "");
             var right = (b.Country || "") + " " + (b.City || "");
             return left.toLowerCase().localeCompare(right.toLowerCase());
         });
-        return sorted;
+        return sorted.map(function(zone) {
+            return {
+                "key": zone.ZoneID,
+                "label": zone.Country ? zone.Country : zone.Description,
+                "sublabel": zone.City ? zone.City : "",
+                "note": zone.Description ? zone.Description : "",
+                "zone": zone
+            };
+        });
     }
 
-    readonly property var visibleZones: {
-        var filter = searchField.text.toLowerCase().trim();
-        if (filter === "")
-            return sortedZones;
-
-        var matches = [];
-        for (var i = 0; i < sortedZones.length; i++) {
-            var zone = sortedZones[i];
-            if ((zone.Country || "").toLowerCase().indexOf(filter) >= 0 ||
-                (zone.City || "").toLowerCase().indexOf(filter) >= 0 ||
-                (zone.Description || "").toLowerCase().indexOf(filter) >= 0)
-                matches.push(zone);
-        }
-        return matches;
-    }
-
-    ColumnLayout {
-        anchors.fill: parent
-        spacing: Units.gu(1)
-
-        Label {
-            Layout.fillWidth: true
-            text: "Time Zone"
-            horizontalAlignment: Text.AlignHCenter
-            font.pixelSize: FontUtils.sizeToPixels("18pt")
-            font.weight: Font.Bold
-        }
-
-        TextField {
-            id: searchField
-            Layout.fillWidth: true
-            Layout.preferredHeight: Units.gu(5)
-            placeholderText: "Search"
-            inputMethodHints: Qt.ImhNoPredictiveText | Qt.ImhNoAutoUppercase
-        }
-
-        Label {
-            Layout.fillWidth: true
-            visible: timeZonePicker.visibleZones.length === 0
-            Layout.preferredHeight: visible ? Units.gu(6) : 0
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-            text: timeZonePicker.zones.length === 0 ? "Loading time zones..."
-                                                    : "No matching time zone"
-            color: "#666666"
-            font.pixelSize: FontUtils.sizeToPixels("medium")
-        }
-
-        ListView {
-            id: zoneList
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            clip: true
-
-            model: timeZonePicker.visibleZones
-
-            delegate: ItemDelegate {
-                width: ListView.view.width
-                height: Units.gu(8)
-
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: Units.gu(1)
-                    anchors.rightMargin: Units.gu(1)
-                    spacing: Units.gu(1)
-
-                    Column {
-                        Layout.fillWidth: true
-
-                        Label {
-                            width: parent.width
-                            text: modelData.Country ? modelData.Country : modelData.Description
-                            elide: Text.ElideRight
-                            font.pixelSize: FontUtils.sizeToPixels("medium")
-                            font.bold: modelData.ZoneID === timeZonePicker.currentZoneId
-                        }
-                        Label {
-                            width: parent.width
-                            visible: !!modelData.City
-                            height: visible ? implicitHeight : 0
-                            text: modelData.City ? modelData.City : ""
-                            elide: Text.ElideRight
-                            color: "#666666"
-                            font.pixelSize: FontUtils.sizeToPixels("small")
-                        }
-                    }
-
-                    Label {
-                        text: modelData.Description ? modelData.Description : ""
-                        horizontalAlignment: Text.AlignRight
-                        color: "#666666"
-                        font.pixelSize: FontUtils.sizeToPixels("small")
-                    }
-                }
-
-                HorizontalSeparator {
-                    anchors.bottom: parent.bottom
-                    width: parent.width
-                }
-
-                onClicked: {
-                    timeZonePicker.zoneSelected(modelData);
-                    timeZonePicker.close();
-                }
-            }
-        }
-
-        Button {
-            Layout.fillWidth: true
-            text: "Cancel"
-            onClicked: timeZonePicker.close()
-        }
-    }
+    onPicked: (key, entry) => timeZonePicker.zoneSelected(entry.zone)
 }
