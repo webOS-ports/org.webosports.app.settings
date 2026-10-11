@@ -25,6 +25,7 @@ import LunaNext.Common 0.1
 
 import "../Common"
 import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Date & Time, after the webOS 3.0.5 app of the same name
@@ -62,7 +63,14 @@ BasePage {
     // are about.
     property bool networkTimeReceived: true
     property bool networkTimeZoneReceived: true
-    property bool telephonyAvailable: false
+    // No modem, no NITZ: don't offer a network time zone switch that could
+    // never receive anything.
+    readonly property bool telephonyAvailable: telephonyStatus.available
+
+    ServiceStatus {
+        id: telephonyStatus
+        serviceName: "com.palm.telephony"
+    }
 
     property var timeZone: ({})
     property var availableZones: []
@@ -311,12 +319,6 @@ BasePage {
         luna.call("luna://com.webos.service.systemservice/getPreferenceValues",
                   JSON.stringify({"key": "timeZone"}),
                   _handleGetTimeZones, _handleGetError);
-
-        // No modem, no NITZ: don't offer a network time zone switch that could
-        // never receive anything.
-        luna.subscribe("luna://com.webos.service.bus/signal/registerServerStatus",
-                       JSON.stringify({"serviceName": "com.palm.telephony", "subscribe": true}),
-                       _handleTelephonyStatus, _handleGetError);
     }
 
     function _handleGetPreferences(message) {
@@ -372,15 +374,6 @@ BasePage {
         var response = JSON.parse(message.payload);
         if (response.hasOwnProperty("timeZone"))
             pageRoot.availableZones = response.timeZone;
-    }
-
-    function _handleTelephonyStatus(message) {
-        if (!message || !message.payload)
-            return;
-
-        var response = JSON.parse(message.payload);
-        if (response.hasOwnProperty("connected"))
-            pageRoot.telephonyAvailable = response.connected;
     }
 
     // Push changes to LuneOS
