@@ -18,6 +18,7 @@
 import QtQuick 2.9
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
+import Qt.labs.folderlistmodel 2.1
 
 // Theme specific properties
 import QtQuick.Controls.LuneOS 2.0
@@ -78,12 +79,51 @@ BasePage {
 
     property bool prefsLoaded: false
 
-    // The languages the shipped keyboard has plugins for. There is no call
-    // that enumerates them, so this is the plugin set webos-keyboard builds.
-    readonly property var keyboardLanguageCodes: [
-        "ar", "cs", "da", "de", "en", "es", "fi", "fr", "he",
-        "hu", "it", "nl", "pinyin", "pl", "pt", "ru", "sv"
+    /*
+     * The languages the keyboard can type. There is no call that lists them,
+     * so they are read off the keyboard's own install: one directory per
+     * language under its lib/, named by the code it matches against - which
+     * is the one place that cannot disagree with what the device has (the
+     * Q25 image has no Chinese, and does have Norwegian and Ukrainian).
+     *
+     * The keyboard keeps only the first two letters of each enabled
+     * language, so the code here has to be the two-letter one: Pinyin
+     * installs as lib/zh, and "pinyin" came out as "pi", which no layout
+     * matches. Where the directory cannot be read (the desktop) this falls
+     * back to the keyboard's own supported list (KeyboardContainer.qml).
+     */
+    readonly property var _keyboardFallback: [
+        "ar", "cs", "da", "de", "en", "es", "fi", "fr", "he", "hu",
+        "it", "nl", "no", "pl", "pt", "ru", "sv", "uk", "zh"
     ]
+    property var _installedKeyboards: []
+    readonly property var keyboardLanguageCodes: _installedKeyboards.length > 0
+                                                 ? _installedKeyboards : _keyboardFallback
+
+    FolderListModel {
+        id: installedKeyboardModel
+        folder: "file:///usr/share/maliit/plugins/org/luneos/lib"
+        showFiles: false
+        showDirs: true
+        showDotAndDotDot: false
+        onCountChanged: pageRoot._readInstalledKeyboards()
+    }
+
+    function _readInstalledKeyboards() {
+        var codes = [];
+        for (var i = 0; i < installedKeyboardModel.count; i++) {
+            var name = installedKeyboardModel.get(i, "fileName");
+            if (/^[a-z][a-z]$/.test(name))
+                codes.push(name);
+        }
+        pageRoot._installedKeyboards = codes;
+    }
+
+    // Chinese is typed in Pinyin; it is the only layout that says how
+    function keyboardLabel(code) {
+        return (code === "zh" || code === "pinyin") ? "Chinese (Pinyin)"
+                                                    : LanguageNames.nameForCode(code);
+    }
 
     Component.onCompleted: retrieveProperties();
 
@@ -142,7 +182,7 @@ BasePage {
                         width: parent.width
 
                         SwipeRow {
-                            text: LanguageNames.nameForCode(modelData)
+                            text: pageRoot.keyboardLabel(modelData)
 
                             LuneOSSwipeDelegate.confirmText: "Remove Keyboard"
                             LuneOSSwipeDelegate.onConfirmed: pageRoot.removeKeyboard(modelData)
@@ -490,10 +530,7 @@ BasePage {
 
             entries.push({
                 "key": code,
-                // "pinyin" is a way of typing Chinese, not a language code,
-                // so it would come out of the table unchanged.
-                "label": code === "pinyin" ? "Chinese (Pinyin)"
-                                           : LanguageNames.nameForCode(code)
+                "label": pageRoot.keyboardLabel(code)
             });
         }
         entries.sort(function(a, b) { return a.label.localeCompare(b.label); });
@@ -642,10 +679,14 @@ BasePage {
                 }
             }
             pageRoot.keyboardPrefs = keyboardValue || {};
+            // "pinyin", which this page used to write, is read as "zh": the
+            // keyboard only ever saw its first two letters. It is written back
+            // as "zh" with the next change.
+            function twoLetter(code) { return code === "pinyin" ? "zh" : code; }
             if (pageRoot.keyboardPrefs.hasOwnProperty("enabledLanguages"))
-                pageRoot.enabledKeyboards = pageRoot.keyboardPrefs.enabledLanguages;
+                pageRoot.enabledKeyboards = pageRoot.keyboardPrefs.enabledLanguages.map(twoLetter);
             if (pageRoot.keyboardPrefs.hasOwnProperty("activeLanguage"))
-                pageRoot.activeKeyboard = pageRoot.keyboardPrefs.activeLanguage;
+                pageRoot.activeKeyboard = twoLetter(pageRoot.keyboardPrefs.activeLanguage);
         }
 
         pageRoot.prefsLoaded = true;
