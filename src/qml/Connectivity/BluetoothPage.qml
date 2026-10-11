@@ -27,6 +27,7 @@ import "../Common"
 import LunaNext.Common 0.1
 // LuneOS Bluetooth wrapper
 import LuneOS.Bluetooth 0.2
+import LuneOS.Forms 1.0
 
 BasePage {
     id: bluetoothPageId
@@ -99,8 +100,6 @@ BasePage {
     pageActionHeaderComponent: Component {
         Switch {
             id: bluetoothPowerSwitch
-            LuneOSSwitch.labelOn: "On"
-            LuneOSSwitch.labelOff: "Off"
 
             Connections {
                 target: BluetoothManager
@@ -123,8 +122,6 @@ BasePage {
 
             Layout.fillWidth: true
             LayoutMirroring.enabled: true
-            LuneOSSwitch.labelOn: "On"
-            LuneOSSwitch.labelOff: "Off"
 
             checked: BluetoothManager.discoverable
             onClicked: {

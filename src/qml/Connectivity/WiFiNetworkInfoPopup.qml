@@ -28,6 +28,7 @@ import Connman 0.2
 import LuneOS.Service 1.0
 
 import "../Common"
+import LuneOS.Forms 1.0
 
 /*
  * What one Wi-Fi network actually is and, once connected, how it is
@@ -91,8 +92,6 @@ Popup {
 
     width: Math.min(parent.width - Units.gu(4), Units.gu(46))
     height: Math.min(parent.height - Units.gu(4), Units.gu(70))
-    x: (parent.width - width) / 2
-    y: (parent.height - height) / 2
 
     /*
      * The service is owned by the TechnologyModel, which drops services that

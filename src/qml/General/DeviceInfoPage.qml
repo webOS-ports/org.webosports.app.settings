@@ -20,6 +20,7 @@ import QtQuick.Controls 2.2
 import LunaNext.Common 0.1
 
 import "../Common"
+import LuneOS.Forms 1.0
 
 BasePage {
 

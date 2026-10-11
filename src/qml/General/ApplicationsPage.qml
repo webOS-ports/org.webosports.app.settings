@@ -23,6 +23,7 @@ import QtQuick.Controls.LuneOS 2.0
 import LunaNext.Common 0.1
 
 import "../Common"
+import LuneOS.Forms 1.0
 
 /*
  * Applications, after webOS 3.0.5's Software Manager (com.palm.app.swmanager),

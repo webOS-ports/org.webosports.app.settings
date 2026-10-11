@@ -28,6 +28,7 @@ import "../Common"
 import LunaNext.Common 0.1
 // Connman
 import Connman 0.2
+import LuneOS.Forms 1.0
 
 BasePage {
     id: wifiPageId
@@ -44,8 +45,6 @@ BasePage {
     pageActionHeaderComponent: Component {
         Switch {
             id: wifiPowerSwitch
-            LuneOSSwitch.labelOn: "On"
-            LuneOSSwitch.labelOff: "Off"
 
             Connections {
                 target: wifiModel

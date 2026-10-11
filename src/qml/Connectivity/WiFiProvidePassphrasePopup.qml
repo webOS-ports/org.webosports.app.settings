@@ -33,8 +33,6 @@ Popup {
     modal: true
     closePolicy: Popup.NoAutoClose
     visible: true
-    x: (parent.width - width)/2
-    y: (parent.height - height)/2
 
     property UserAgent agent;
     property string serviceName: ""

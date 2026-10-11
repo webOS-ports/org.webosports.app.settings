@@ -79,8 +79,6 @@ Popup {
     closePolicy: Popup.NoAutoClose
 
     width: Math.min(parent.width - Units.gu(4), Units.gu(40))
-    x: (parent.width - width) / 2
-    y: (parent.height - height) / 2
 
     onOpened: {
         firstField.text = "";

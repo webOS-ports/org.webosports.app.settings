@@ -24,6 +24,7 @@ import QtQuick.Controls.LuneOS 2.0
 import LunaNext.Common 0.1
 // LS2 access
 import LuneOS.Service 1.0
+import LuneOS.Forms 1.0
 
 /*
  * Renders one com.webos.service.vpn "vpnFormFields" array - the
@@ -132,27 +133,14 @@ Column {
                                                        fieldsColumn.vpnProfileName !== "" &&
                                                        parent.field.editable !== false
 
-                TextField {
+                FormTextField {
                     Layout.fillWidth: true
                     height: Units.gu(5)
-                    leftPadding: Units.gu(1)
-                    rightPadding: Units.gu(1)
                     enabled: parent.parent.field.editable !== false
                     echoMode: parent.parent.field.type === "passwordfield" ? TextInput.Password : TextInput.Normal
                     inputMethodHints: Qt.ImhNoPredictiveText |
                                       (parent.parent.field.type === "passwordfield" ? Qt.ImhSensitiveData : 0) |
                                       (parent.parent.field.inputType === "number" ? Qt.ImhDigitsOnly : 0)
-                    color: "#2a2929"
-                    // A clearly visible white field, styled after
-                    // FingerprintPage's rename field - the default LuneOS
-                    // style's TextField background is a flat image, not a
-                    // rounded box.
-                    background: Rectangle {
-                        color: "#ffffff"
-                        radius: Units.gu(0.6)
-                        border.color: "#9a9a9a"
-                        border.width: 1
-                    }
                     // hasStoredValue: a secret already exists server-side but
                     // was not sent back to us - leave the field blank rather
                     // than show "" as if nothing were set.

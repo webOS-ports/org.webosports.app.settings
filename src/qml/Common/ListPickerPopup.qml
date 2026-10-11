@@ -22,6 +22,7 @@ import QtQuick.Layouts 1.3
 import QtQuick.Controls.LuneOS 2.0
 // Units & font sizes
 import LunaNext.Common 0.1
+import LuneOS.Forms 1.0
 
 /*
  * Pick one entry out of a long list, with a search box above it - the shape
@@ -52,8 +53,6 @@ Popup {
 
     width: Math.min(parent.width - Units.gu(4), Units.gu(46))
     height: Math.min(parent.height - Units.gu(4), Units.gu(70))
-    x: (parent.width - width) / 2
-    y: (parent.height - height) / 2
 
     onOpened: searchField.text = ""
 

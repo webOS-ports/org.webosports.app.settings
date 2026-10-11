@@ -24,6 +24,7 @@ import QtQuick.Controls.LuneOS 2.0
 import LunaNext.Common 0.1
 
 import "../Common"
+import LuneOS.Forms 1.0
 
 /*
  * Certificate Manager, after the webOS 3.0.5 app of the same name
@@ -209,8 +210,6 @@ BasePage {
 
         width: Math.min(parent.width - Units.gu(4), Units.gu(46))
         height: Math.min(parent.height - Units.gu(4), Units.gu(50))
-        x: (parent.width - width) / 2
-        y: (parent.height - height) / 2
 
         property string filePath: ""
         property string loadError: ""
@@ -278,21 +277,12 @@ BasePage {
                     color: "#666666"
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
-                TextField {
+                FormTextField {
                     id: passphraseField
                     Layout.fillWidth: true
                     height: Units.gu(5)
-                    leftPadding: Units.gu(1)
-                    rightPadding: Units.gu(1)
                     echoMode: TextInput.Password
                     inputMethodHints: Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
-                    color: "#2a2929"
-                    background: Rectangle {
-                        color: "#ffffff"
-                        radius: Units.gu(0.6)
-                        border.color: "#9a9a9a"
-                        border.width: 1
-                    }
                 }
 
                 Label {

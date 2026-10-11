@@ -50,8 +50,6 @@ Popup {
 
     width: Math.min(parent.width - Units.gu(4), Units.gu(60))
     height: Math.min(parent.height - Units.gu(4), Units.gu(70))
-    x: (parent.width - width) / 2
-    y: (parent.height - height) / 2
 
     // Wallpapers imported through systemservice end up here, cropped and
     // scaled for the screen.

@@ -31,8 +31,6 @@ Popup {
     dim: true
     modal: true
     visible: true
-    x: (parent.width - width)/2
-    y: (parent.height - height)/2
 
     property LuneOSBluetoothRequest bluezRequest;
     property string deviceName: "";

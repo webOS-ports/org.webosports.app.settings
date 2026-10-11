@@ -25,6 +25,7 @@ import QtQuick.Controls.LuneOS 2.0
 import LunaNext.Common 0.1
 
 import "../Common"
+import LuneOS.Forms 1.0
 
 /*
  * The tone list, shared by the ringtone, the alert tone and the notification
@@ -75,9 +76,6 @@ Popup {
 
     width: Math.min(parent.width - Units.gu(4), Units.gu(45))
     height: Math.min(parent.height - Units.gu(4), Units.gu(60))
-    // Overlay.overlay only arrived in Controls 2.3; the app builds against 2.2.
-    x: (parent.width - width) / 2
-    y: (parent.height - height) / 2
 
     ColumnLayout {
         anchors.fill: parent

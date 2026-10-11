@@ -26,6 +26,7 @@ import LunaNext.Common 0.1
 
 import "../Common"
 import "../Common/LanguageNames.js" as LanguageNames
+import LuneOS.Forms 1.0
 
 /*
  * Regional Settings, after the webOS 3.0.5 app of the same name
@@ -344,8 +345,6 @@ BasePage {
 
         modal: true
         width: Math.min(parent.width - Units.gu(4), Units.gu(40))
-        x: (parent.width - width) / 2
-        y: (parent.height - height) / 2
 
         title: "Apply Regional Settings"
 
@@ -364,16 +363,31 @@ BasePage {
             font.pixelSize: FontUtils.sizeToPixels("medium")
         }
 
-        footer: Row {
+        /*
+         * Stacked and full width, the way webOS dialogs laid out their
+         * buttons, with Cancel last. Side by side the three ran past the
+         * dialog's edge on a 720px wide screen.
+         */
+        footer: Column {
             spacing: Units.gu(1)
-            padding: Units.gu(1)
+            // The dialog art's 25px frame at the sides and the bottom
+            leftPadding: 25
+            rightPadding: 25
+            bottomPadding: 25
 
             Button {
-                text: "Cancel"
-                LuneOSButton.mainColor: LuneOSButton.secondaryColor
-                onClicked: applyDialog.close()
+                width: parent.width - parent.leftPadding - parent.rightPadding
+                text: "Apply and Restart"
+                LuneOSButton.mainColor: LuneOSButton.negativeColor
+                LuneOSButton.textColor: "white"
+                onClicked: {
+                    pageRoot.applyChanges();
+                    pageRoot.restartDevice();
+                    applyDialog.close();
+                }
             }
             Button {
+                width: parent.width - parent.leftPadding - parent.rightPadding
                 // Writing the preferences without restarting is worth having
                 // on its own: a newly started app already picks them up.
                 text: "Apply Only"
@@ -383,14 +397,10 @@ BasePage {
                 }
             }
             Button {
-                text: "Apply and Restart"
-                LuneOSButton.mainColor: LuneOSButton.negativeColor
-                LuneOSButton.textColor: "white"
-                onClicked: {
-                    pageRoot.applyChanges();
-                    pageRoot.restartDevice();
-                    applyDialog.close();
-                }
+                width: parent.width - parent.leftPadding - parent.rightPadding
+                text: "Cancel"
+                LuneOSButton.mainColor: LuneOSButton.secondaryColor
+                onClicked: applyDialog.close()
             }
         }
     }

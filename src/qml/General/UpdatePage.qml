@@ -47,8 +47,6 @@ BasePage {
     pageActionHeaderComponent: Component {
         Switch {
             id: mainExampleSwitch
-            LuneOSSwitch.labelOn: "On"
-            LuneOSSwitch.labelOff: "Off"
         }
     }
 
@@ -86,8 +84,6 @@ BasePage {
                     font.weight: Font.Normal
                     LayoutMirroring.enabled: true // by default the switch is on the left in Qt, not very webOS-ish
 
-                    LuneOSSwitch.labelOn: "On"
-                    LuneOSSwitch.labelOff: "Off"
                 }
                 Rectangle { color: "silver"; width: parent.width; height: 2 }
                 Switch {

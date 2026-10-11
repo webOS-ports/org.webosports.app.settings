@@ -25,6 +25,7 @@ import "../Common"
 
 // Units & font sizes
 import LunaNext.Common 0.1
+import LuneOS.Forms 1.0
 
 BasePage {
     id: fingerprintPageId
@@ -383,7 +384,7 @@ BasePage {
                                 text: modelData
                             }
 
-                            TextField {
+                            FormTextField {
                                 id: nameField
                                 visible: fingerRow.editing
                                 anchors.left: parent.left
@@ -392,19 +393,8 @@ BasePage {
                                 anchors.rightMargin: Units.gu(1)
                                 anchors.verticalCenter: parent.verticalCenter
                                 height: Units.gu(5)
-                                leftPadding: Units.gu(1)
-                                rightPadding: Units.gu(1)
                                 verticalAlignment: TextInput.AlignVCenter
-                                color: "#2a2929"
                                 font.pixelSize: FontUtils.sizeToPixels("medium")
-                                // A clearly visible white field while editing,
-                                // styled after the phone app's SearchField.
-                                background: Rectangle {
-                                    color: "#ffffff"
-                                    radius: Units.gu(0.6)
-                                    border.color: "#9a9a9a"
-                                    border.width: 1
-                                }
 
                                 // Bound to the stored name so the field always
                                 // shows the current value, even when a list

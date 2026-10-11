@@ -26,6 +26,7 @@ import LunaNext.Common 0.1
 import LuneOS.Service 1.0
 
 import "../Common"
+import LuneOS.Forms 1.0
 
 /*
  * Add or edit one VPN profile against com.webos.service.vpn.
@@ -61,8 +62,6 @@ Popup {
 
     width: Math.min(parent.width - Units.gu(4), Units.gu(46))
     height: Math.min(parent.height - Units.gu(4), Units.gu(70))
-    x: (parent.width - width) / 2
-    y: (parent.height - height) / 2
 
     // The fields for whatever type is selected, filled in once
     // getAgentFormFields / getProfileDetails answers.
@@ -248,22 +247,13 @@ Popup {
                     color: "#666666"
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
-                TextField {
+                FormTextField {
                     id: nameField
                     width: parent.width
                     height: Units.gu(5)
                     enabled: !profilePopup.editing
                     placeholderText: "Work"
                     inputMethodHints: Qt.ImhNoPredictiveText
-                    color: "#2a2929"
-                    leftPadding: Units.gu(1)
-                    rightPadding: Units.gu(1)
-                    background: Rectangle {
-                        color: "#ffffff"
-                        radius: Units.gu(0.6)
-                        border.color: "#9a9a9a"
-                        border.width: 1
-                    }
                 }
 
                 Label {
@@ -272,21 +262,12 @@ Popup {
                     color: "#666666"
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
-                TextField {
+                FormTextField {
                     id: hostField
                     width: parent.width
                     height: Units.gu(5)
                     placeholderText: "Host name or IP address"
                     inputMethodHints: Qt.ImhNoPredictiveText | Qt.ImhNoAutoUppercase | Qt.ImhUrlCharactersOnly
-                    color: "#2a2929"
-                    leftPadding: Units.gu(1)
-                    rightPadding: Units.gu(1)
-                    background: Rectangle {
-                        color: "#ffffff"
-                        radius: Units.gu(0.6)
-                        border.color: "#9a9a9a"
-                        border.width: 1
-                    }
                 }
 
                 Label {
@@ -295,21 +276,12 @@ Popup {
                     color: "#666666"
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
-                TextField {
+                FormTextField {
                     id: domainField
                     width: parent.width
                     height: Units.gu(5)
                     placeholderText: "corp.example.com"
                     inputMethodHints: Qt.ImhNoPredictiveText | Qt.ImhNoAutoUppercase
-                    color: "#2a2929"
-                    leftPadding: Units.gu(1)
-                    rightPadding: Units.gu(1)
-                    background: Rectangle {
-                        color: "#ffffff"
-                        radius: Units.gu(0.6)
-                        border.color: "#9a9a9a"
-                        border.width: 1
-                    }
                 }
 
                 HorizontalSeparator { width: parent.width }

@@ -25,6 +25,7 @@ import QtQuick.Controls.LuneOS 2.0
 import LunaNext.Common 0.1
 
 import "../Common"
+import LuneOS.Forms 1.0
 
 /*
  * Sounds & Ringtones, after the webOS 3.0.5 app of the same name
@@ -89,8 +90,6 @@ BasePage {
     pageActionHeaderComponent: Component {
         Switch {
             id: soundsSwitch
-            LuneOSSwitch.labelOn: "On"
-            LuneOSSwitch.labelOff: "Off"
 
             checked: pageRoot.soundsOn
             Connections {
@@ -165,8 +164,6 @@ BasePage {
                         font.weight: Font.Normal
                         LayoutMirroring.enabled: true // by default the switch is on the left in Qt, not very webOS-ish
 
-                        LuneOSSwitch.labelOn: "On"
-                        LuneOSSwitch.labelOff: "Off"
 
                         checked: pageRoot.systemSounds
                         Connections {
@@ -188,8 +185,6 @@ BasePage {
                         font.weight: Font.Normal
                         LayoutMirroring.enabled: true
 
-                        LuneOSSwitch.labelOn: "On"
-                        LuneOSSwitch.labelOff: "Off"
 
                         checked: pageRoot.keyboardClicks
                         Connections {

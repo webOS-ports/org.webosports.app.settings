@@ -21,6 +21,7 @@ import QtQuick.Controls 2.2
 import QtQuick.Controls.LuneOS 2.0
 // Units & font sizes
 import LunaNext.Common 0.1
+import LuneOS.Forms 1.0
 
 /*
  * What each application has been allowed for one Web API that asks first -

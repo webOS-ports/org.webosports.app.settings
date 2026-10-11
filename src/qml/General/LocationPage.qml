@@ -25,6 +25,7 @@ import QtQuick.Controls.LuneOS 2.0
 import LunaNext.Common 0.1
 
 import "../Common"
+import LuneOS.Forms 1.0
 
 /*
  * Location Services, after the webOS 3.0.5 app of the same name
@@ -422,8 +423,6 @@ BasePage {
         closePolicy: Popup.CloseOnEscape
 
         width: Math.min(parent.width - Units.gu(4), Units.gu(40))
-        x: (parent.width - width) / 2
-        y: (parent.height - height) / 2
 
         ColumnLayout {
             width: parent.width

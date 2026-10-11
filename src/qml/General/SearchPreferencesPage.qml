@@ -25,6 +25,7 @@ import QtQuick.Controls.LuneOS 2.0
 import LunaNext.Common 0.1
 
 import "../Common"
+import LuneOS.Forms 1.0
 
 /*
  * Just Type, after the webOS 3.0.5 app of the same name
@@ -299,8 +300,6 @@ BasePage {
 
         width: Math.min(parent.width - Units.gu(4), Units.gu(40))
         height: Math.min(parent.height - Units.gu(4), Units.gu(50))
-        x: (parent.width - width) / 2
-        y: (parent.height - height) / 2
 
         ColumnLayout {
             anchors.fill: parent
