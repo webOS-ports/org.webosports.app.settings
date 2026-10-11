@@ -212,7 +212,7 @@ Popup {
                 Label {
                     width: parent.width
                     text: "Connection type"
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
                 ComboBox {
@@ -244,7 +244,7 @@ Popup {
                 Label {
                     width: parent.width
                     text: "Profile name"
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
                 FormTextField {
@@ -259,7 +259,7 @@ Popup {
                 Label {
                     width: parent.width
                     text: "VPN server"
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
                 FormTextField {
@@ -273,7 +273,7 @@ Popup {
                 Label {
                     width: parent.width
                     text: "Domain (optional)"
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
                 FormTextField {
@@ -307,7 +307,7 @@ Popup {
                     visible: profilePopup.loadError !== ""
                     wrapMode: Text.WordWrap
                     text: profilePopup.loadError
-                    color: "#be0003"
+                    color: Colors.error
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
             }

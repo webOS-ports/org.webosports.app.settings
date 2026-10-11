@@ -24,6 +24,7 @@ import LunaNext.Common 0.1
 
 import "../Common"
 import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Appearance.
@@ -60,7 +61,14 @@ BasePage {
     id: pageRoot
 
     property var wallpaper: ({})
-    property bool prefsLoaded: false
+    readonly property bool prefsLoaded: prefs.loaded
+
+    SystemPreferences {
+        id: prefs
+        clientName: appId
+        keys: ["wallpaper"]
+        onUpdated: (response) => pageRoot._handleGetPreferences(response)
+    }
 
     property bool tweaksAvailable: false
 
@@ -447,9 +455,6 @@ BasePage {
      * Bindings with LuneOS settings
      */
     function retrieveProperties() {
-        luna.subscribe("luna://com.webos.service.systemservice/getPreferences",
-                       JSON.stringify({"keys": ["wallpaper"], "subscribe": true}),
-                       _handleGetPreferences, _handleGetError);
 
         retrieveTweaks();
     }
@@ -466,15 +471,9 @@ BasePage {
                   _handleGetTweaks, _handleTweaksUnavailable);
     }
 
-    function _handleGetPreferences(message) {
-        if (!message || !message.payload)
-            return;
-
-        var response = JSON.parse(message.payload);
+    function _handleGetPreferences(response) {
         if (response.hasOwnProperty("wallpaper") && response.wallpaper)
             pageRoot.wallpaper = response.wallpaper;
-
-        pageRoot.prefsLoaded = true;
     }
 
     /*
@@ -531,16 +530,10 @@ BasePage {
     }
 
     // Push changes to LuneOS
+    // SystemPreferences refuses to write before the first read, so a default
+    // set from the page's own state cannot overwrite the user's setting
     function _setPreference(key, value) {
-        if (!pageRoot.prefsLoaded) {
-            console.log("Trying to set preferences before reading them first: ignoring.");
-            return;
-        }
-
-        var params = {};
-        params[key] = value;
-        luna.call("luna://com.webos.service.systemservice/setPreferences", JSON.stringify(params),
-                  _handleSetSuccess, _handleSetError);
+        prefs.set(key, value);
     }
 
     function setTweak(key, value) {

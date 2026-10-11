@@ -262,14 +262,10 @@ BasePage {
 
     // Each settings category is its own launchable application on the device.
     function openDeveloperSettings() {
-        luna.call("luna://com.webos.service.applicationManager/launch",
-                  JSON.stringify({"id": "org.webosports.app.settings.devmodeswitcher"}),
-                  _handleSetSuccess, _handleSetError);
+        launcher.launch("org.webosports.app.settings.devmodeswitcher", null, undefined, _handleSetError);
     }
 
     function openTetheringSettings() {
-        luna.call("luna://com.webos.service.applicationManager/launch",
-                  JSON.stringify({"id": "org.webosports.app.settings.tethering"}),
-                  _handleSetSuccess, _handleSetError);
+        launcher.launch("org.webosports.app.settings.tethering", null, undefined, _handleSetError);
     }
 }

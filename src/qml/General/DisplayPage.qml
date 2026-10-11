@@ -24,6 +24,7 @@ import LunaNext.Common 0.1
 
 import "../Common"
 import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Display.
@@ -83,7 +84,14 @@ BasePage {
     property bool autoDim: true
     property int rotationLockAngle: rotationUnlocked
 
-    property bool prefsLoaded: false
+    readonly property bool prefsLoaded: prefs.loaded
+
+    SystemPreferences {
+        id: prefs
+        clientName: appId
+        keys: ["enableALS", "rotationLock"]
+        onUpdated: (response) => pageRoot._handleGetPreferences(response)
+    }
 
     // The shell's "rotationInvalid": an angle that is not one, standing for
     // "follow the sensor".
@@ -290,10 +298,6 @@ BasePage {
      * Bindings with LuneOS settings
      */
     function retrieveProperties() {
-        luna.subscribe("luna://com.webos.service.systemservice/getPreferences",
-                       JSON.stringify({"keys": ["enableALS", "rotationLock"],
-                                       "subscribe": true}),
-                       _handleGetPreferences, _handleGetError);
 
         // com.palm.display posts maximumBrightness to subscribers now, so follow
         // it rather than reading it once. The old assumption - that the shell's
@@ -310,18 +314,11 @@ BasePage {
                        _handleGetDisplayProperties, _handleGetError);
     }
 
-    function _handleGetPreferences(message) {
-        if (!message || !message.payload)
-            return;
-
-        var response = JSON.parse(message.payload);
-
+    function _handleGetPreferences(response) {
         if (response.hasOwnProperty("enableALS"))
             pageRoot.autoDim = response.enableALS;
         if (response.hasOwnProperty("rotationLock"))
             pageRoot.rotationLockAngle = response.rotationLock;
-
-        pageRoot.prefsLoaded = true;
     }
 
     function _handleGetDisplayProperties(message) {
@@ -336,16 +333,10 @@ BasePage {
     }
 
     // Push changes to LuneOS
+    // SystemPreferences refuses to write before the first read, so a default
+    // set from the page's own state cannot overwrite the user's setting
     function _setPreference(key, value) {
-        if (!pageRoot.prefsLoaded) {
-            console.log("Trying to set preferences before reading them first: ignoring.");
-            return;
-        }
-
-        var params = {};
-        params[key] = value;
-        luna.call("luna://com.webos.service.systemservice/setPreferences", JSON.stringify(params),
-                  _handleSetSuccess, _handleSetError);
+        prefs.set(key, value);
     }
 
     function _setDisplayProperty(key, value) {
@@ -423,8 +414,6 @@ BasePage {
 
     // Each settings category is its own launchable application on the device.
     function openAccessibilitySettings() {
-        luna.call("luna://com.webos.service.applicationManager/launch",
-                  JSON.stringify({"id": "org.webosports.app.settings.accessibility"}),
-                  _handleSetSuccess, _handleSetError);
+        launcher.launch("org.webosports.app.settings.accessibility", null, undefined, _handleSetError);
     }
 }

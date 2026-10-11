@@ -299,7 +299,7 @@ BasePage {
                     wrapMode: Text.WordWrap
                     text: "The SIM is PUK-locked. Enter the PUK printed on " +
                           "the card it came with to unblock it."
-                    color: "#be0003"
+                    color: Colors.error
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
                 Button {
@@ -358,7 +358,7 @@ BasePage {
                     height: visible ? Units.gu(6) : 0
                     verticalAlignment: Text.AlignVCenter
                     text: "No access points configured."
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
 
@@ -397,7 +397,7 @@ BasePage {
                                     width: parent.width
                                     text: apnCtx.accessPointName
                                     elide: Text.ElideRight
-                                    color: "#666666"
+                                    color: Colors.secondaryText
                                     font.pixelSize: FontUtils.sizeToPixels("small")
                                 }
                             }
@@ -449,7 +449,7 @@ BasePage {
                                 Label {
                                     text: modelData.operatorName + " · " +
                                           modelData.bars + "/4"
-                                    color: "#666666"
+                                    color: Colors.secondaryText
                                     font.pixelSize: FontUtils.sizeToPixels("small")
                                 }
                             }
@@ -612,7 +612,7 @@ BasePage {
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
                     text: "No networks found."
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
 
@@ -655,7 +655,7 @@ BasePage {
                                 text: opInfo.status === "current" ? "Current" :
                                       opInfo.status === "forbidden" ? "Forbidden" : "Available"
                                 elide: Text.ElideRight
-                                color: opInfo.status === "forbidden" ? "#be0003" : "#666666"
+                                color: opInfo.status === "forbidden" ? Colors.error : Colors.secondaryText
                                 font.pixelSize: FontUtils.sizeToPixels("small")
                             }
                         }
@@ -747,7 +747,7 @@ BasePage {
                     Layout.fillWidth: true
                     text: pinPromptPopup.mode === "puk" ? "PUK code" :
                           pinPromptPopup.mode === "change" ? "Current PIN" : "PIN"
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
                 FormTextField {
@@ -762,7 +762,7 @@ BasePage {
                     Layout.fillWidth: true
                     visible: pinPromptPopup.mode === "change" || pinPromptPopup.mode === "puk"
                     text: "New PIN"
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
                 FormTextField {
@@ -779,7 +779,7 @@ BasePage {
                     visible: pinPromptPopup.errorText !== ""
                     wrapMode: Text.WordWrap
                     text: pinPromptPopup.errorText
-                    color: "#be0003"
+                    color: Colors.error
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
 
@@ -886,7 +886,7 @@ BasePage {
                     Label {
                         Layout.fillWidth: true
                         text: "Name"
-                        color: "#666666"
+                        color: Colors.secondaryText
                         font.pixelSize: FontUtils.sizeToPixels("small")
                     }
                     FormTextField {
@@ -898,7 +898,7 @@ BasePage {
                     Label {
                         Layout.fillWidth: true
                         text: "APN"
-                        color: "#666666"
+                        color: Colors.secondaryText
                         font.pixelSize: FontUtils.sizeToPixels("small")
                     }
                     FormTextField {
@@ -910,7 +910,7 @@ BasePage {
                     Label {
                         Layout.fillWidth: true
                         text: "Username"
-                        color: "#666666"
+                        color: Colors.secondaryText
                         font.pixelSize: FontUtils.sizeToPixels("small")
                     }
                     FormTextField {
@@ -922,7 +922,7 @@ BasePage {
                     Label {
                         Layout.fillWidth: true
                         text: "Password"
-                        color: "#666666"
+                        color: Colors.secondaryText
                         font.pixelSize: FontUtils.sizeToPixels("small")
                     }
                     FormTextField {
@@ -935,7 +935,7 @@ BasePage {
                     Label {
                         Layout.fillWidth: true
                         text: "Protocol"
-                        color: "#666666"
+                        color: Colors.secondaryText
                         font.pixelSize: FontUtils.sizeToPixels("small")
                     }
                     ComboBox {

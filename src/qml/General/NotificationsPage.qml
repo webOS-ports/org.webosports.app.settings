@@ -24,6 +24,7 @@ import LunaNext.Common 0.1
 
 import "../Common"
 import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Notifications.
@@ -302,7 +303,7 @@ BasePage {
                     height: visible ? Units.gu(6) : 0
                     verticalAlignment: Text.AlignVCenter
                     text: "Nothing is installed that posts notifications."
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
             }
@@ -393,21 +394,18 @@ BasePage {
         luna.subscribe("luna://com.webos.service.applicationManager/listApps",
                        JSON.stringify({"subscribe": true}),
                        _handleListApps, _handleAppServiceUnavailable);
-
-        // Subscribed so that the swatches follow a colour changed elsewhere,
-        // and so that turning the LED off on Screen & Lock shows up here.
-        luna.subscribe("luna://com.webos.service.systemservice/getPreferences",
-                       JSON.stringify({"keys": ["BlinkNotifications", "notificationLedColors"],
-                                       "subscribe": true}),
-                       _handleGetPreferences, _handleGetError);
     }
 
-    function _handleGetPreferences(message) {
-        if (!message || !message.payload)
-            return;
+    // Subscribed so that the swatches follow a colour changed elsewhere, and
+    // so that turning the LED off on Screen & Lock shows up here
+    SystemPreferences {
+        id: prefs
+        clientName: appId
+        keys: ["BlinkNotifications", "notificationLedColors"]
+        onUpdated: (response) => pageRoot._handleGetPreferences(response)
+    }
 
-        var response = JSON.parse(message.payload);
-
+    function _handleGetPreferences(response) {
         if (response.hasOwnProperty("BlinkNotifications"))
             pageRoot.blinkNotifications = response.BlinkNotifications;
 
@@ -533,15 +531,11 @@ BasePage {
 
         pageRoot.ledColors = updated;
 
-        luna.call("luna://com.webos.service.systemservice/setPreferences",
-                  JSON.stringify({"notificationLedColors": updated}),
-                  _handleSetSuccess, _handleSetError);
+        prefs.set("notificationLedColors", updated);
     }
 
     // Each settings category is its own launchable application on the device.
     function openScreenLockSettings() {
-        luna.call("luna://com.webos.service.applicationManager/launch",
-                  JSON.stringify({"id": "org.webosports.app.settings.screenlock"}),
-                  _handleSetSuccess, _handleSetError);
+        launcher.launch("org.webosports.app.settings.screenlock", null, undefined, _handleSetError);
     }
 }

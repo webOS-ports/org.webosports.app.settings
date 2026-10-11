@@ -26,6 +26,7 @@ import LunaNext.Common 0.1
 
 import "../Common"
 import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Location Services, after the webOS 3.0.5 app of the same name
@@ -136,10 +137,7 @@ BasePage {
     property bool networkHandlerPresent: false
     property bool networkHandlerEnabled: false
 
-    Component.onCompleted: {
-        retrieveProperties();
-        retrieveLocationHandlers();
-    }
+    Component.onCompleted: retrieveLocationHandlers()
 
     SettingsPageContent {
         GroupBox {
@@ -469,26 +467,20 @@ BasePage {
     /*
      * Bindings with LuneOS settings
      */
-    function retrieveProperties() {
-        // Subscribed, same as TextAssistPage's keyboard settings: another
-        // app (or a future permission prompt) changing one of these should
-        // move the switch here without a re-open.
-        luna.subscribe("luna://com.webos.service.systemservice/getPreferences",
-                       JSON.stringify({"subscribe": true,
-                                       "keys": ["autoLocate", "webSetting", "geotagPhotos"]}),
-                       _handleGetPrefs, _handleGetError);
+    // Subscribed, same as TextAssistPage's keyboard settings: another app (or
+    // a future permission prompt) changing one of these should move the
+    // switch here without a re-open. Only the first answer carries
+    // returnValue; the pushes after a change are just the changed keys, which
+    // _handleGetPrefs takes as they come.
+    SystemPreferences {
+        id: prefs
+        clientName: appId
+        keys: ["autoLocate", "webSetting", "geotagPhotos"]
+        onUpdated: (response) => pageRoot._handleGetPrefs(response)
+        onError: (message) => console.warn("Location preferences did not answer: " + message)
     }
 
-    function _handleGetPrefs(message) {
-        if (!message || !message.payload)
-            return;
-
-        // Only the first reply carries returnValue; the pushes that follow a
-        // change are just the changed keys, and were all thrown away here.
-        var response = JSON.parse(message.payload);
-        if (response.returnValue === false)
-            return;
-
+    function _handleGetPrefs(response) {
         if (response.hasOwnProperty("autoLocate"))
             pageRoot.autoLocate = response.autoLocate;
         if (response.hasOwnProperty("webSetting"))
@@ -499,25 +491,19 @@ BasePage {
 
     function setAutoLocate(on) {
         pageRoot.autoLocate = on;
-        luna.call("luna://com.webos.service.systemservice/setPreferences",
-                  JSON.stringify({"autoLocate": on}), _handleSetSuccess, _handleSetError);
+        prefs.set("autoLocate", on);
     }
 
     function setWebSetting(on) {
         pageRoot.webSetting = on;
-        luna.call("luna://com.webos.service.systemservice/setPreferences",
-                  JSON.stringify({"webSetting": on}), _handleSetSuccess, _handleSetError);
+        prefs.set("webSetting", on);
     }
 
     function setGeotagPhotos(on) {
         pageRoot.geotagPhotos = on;
-        luna.call("luna://com.webos.service.systemservice/setPreferences",
-                  JSON.stringify({"geotagPhotos": on}), _handleSetSuccess, _handleSetError);
+        prefs.set("geotagPhotos", on);
     }
 
-    function _handleGetError(message) {
-        console.warn("Location preferences did not answer: " + message);
-    }
 
     /*
      * GPS Status

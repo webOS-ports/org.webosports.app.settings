@@ -19,24 +19,30 @@ import QtQuick.Controls 2.2
 
 // LS2 access
 import LuneOS.Service 1.0
+import LuneOS.System 1.0
+import LuneOS.Forms 1.0
 
-Page {
+/*
+ * A settings category page: LuneOS.Forms' AppPage (the grey gradient, the
+ * explanation line) with what the category window and the pages share - the
+ * header action handed to the window's loader, the page's LunaService, and
+ * an AppLauncher for opening another category, each of which is its own
+ * application.
+ */
+AppPage {
     id: basePage
 
     // this is exposed by the page loader
     Component.onCompleted: actionHeaderComponent=pageActionHeaderComponent;
     property Component pageActionHeaderComponent
 
-    background: Rectangle {
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "#D8D8D8" }
-            GradientStop { position: 1.0; color: "#888" }
-        }
-    }
-
     // Convenience LS2 services & functions
     property LunaService luna: LunaService {
         name: appId
+    }
+
+    property AppLauncher launcher: AppLauncher {
+        clientName: appId
     }
 
     function _handleGetError(message) {

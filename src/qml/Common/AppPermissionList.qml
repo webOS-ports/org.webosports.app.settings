@@ -258,7 +258,7 @@ Column {
         verticalAlignment: Text.AlignVCenter
         wrapMode: Text.WordWrap
         text: permissionList.emptyText
-        color: "#666666"
+        color: Colors.secondaryText
         font.pixelSize: FontUtils.sizeToPixels("medium")
     }
 

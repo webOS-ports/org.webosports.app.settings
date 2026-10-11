@@ -289,7 +289,7 @@ BasePage {
                         visible: faceUnlockPageId.faceEnrolled
                         // The red this application uses wherever something is
                         // about to be thrown away.
-                        LuneOSButton.mainColor: "#be0003"
+                        LuneOSButton.mainColor: LuneOSButton.negativeColor
                         LuneOSButton.textColor: "white"
                         Layout.preferredHeight: Units.gu(5.5)
                         Layout.fillWidth: true

@@ -96,7 +96,7 @@ Popup {
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
             text: "No sounds found"
-            color: "#666666"
+            color: Colors.secondaryText
             font.pixelSize: FontUtils.sizeToPixels("medium")
         }
 
@@ -131,7 +131,7 @@ Popup {
                             height: visible ? Units.gu(4) : 0
                             verticalAlignment: Text.AlignVCenter
                             text: folderSection.sectionTitle
-                            color: "#666666"
+                            color: Colors.secondaryText
                             font.pixelSize: FontUtils.sizeToPixels("14pt")
                         }
 

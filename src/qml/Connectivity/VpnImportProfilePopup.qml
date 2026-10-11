@@ -129,7 +129,7 @@ Popup {
             Label {
                 Layout.fillWidth: true
                 text: "File type"
-                color: "#666666"
+                color: Colors.secondaryText
                 font.pixelSize: FontUtils.sizeToPixels("small")
             }
             ComboBox {
@@ -155,7 +155,7 @@ Popup {
             Label {
                 Layout.fillWidth: true
                 text: "Profile name"
-                color: "#666666"
+                color: Colors.secondaryText
                 font.pixelSize: FontUtils.sizeToPixels("small")
             }
             FormTextField {
@@ -175,7 +175,7 @@ Popup {
                     elide: Text.ElideMiddle
                     text: importPopup.filePath !== ""
                           ? importPopup.filePath.split("/").pop() : "No file chosen"
-                    color: importPopup.filePath !== "" ? "#2a2929" : "#999999"
+                    color: importPopup.filePath !== "" ? Colors.text : "#999999"
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
                 Button {
@@ -190,7 +190,7 @@ Popup {
                 visible: importPopup.loadError !== ""
                 wrapMode: Text.WordWrap
                 text: importPopup.loadError
-                color: "#be0003"
+                color: Colors.error
                 font.pixelSize: FontUtils.sizeToPixels("small")
             }
 

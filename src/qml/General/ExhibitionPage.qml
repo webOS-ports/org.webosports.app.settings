@@ -116,7 +116,7 @@ BasePage {
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.WordWrap
                     text: "No installed application supports Exhibition mode."
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
             }

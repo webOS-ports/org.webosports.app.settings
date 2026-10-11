@@ -122,7 +122,7 @@ Popup {
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.WordWrap
                     text: "No words yet. Words you add here are never corrected."
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
 
@@ -194,7 +194,7 @@ Popup {
 
                             Button {
                                 text: "Delete"
-                                LuneOSButton.mainColor: "#be0003"
+                                LuneOSButton.mainColor: LuneOSButton.negativeColor
                                 LuneOSButton.textColor: "white"
                                 onClicked: {
                                     dictionaryPopup.removeWordRequested(modelData._id);
@@ -258,7 +258,7 @@ Popup {
                     wrapMode: Text.WordWrap
                     text: "No shortcuts yet. Type the short version and it is " +
                           "replaced by the long one."
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
 
@@ -334,7 +334,7 @@ Popup {
 
                             Button {
                                 text: "Delete"
-                                LuneOSButton.mainColor: "#be0003"
+                                LuneOSButton.mainColor: LuneOSButton.negativeColor
                                 LuneOSButton.textColor: "white"
                                 onClicked: {
                                     dictionaryPopup.removeShortcutRequested(modelData._id);

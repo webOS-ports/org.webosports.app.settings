@@ -119,7 +119,7 @@ Column {
                 visible: parent.field.type !== "checkbox" && parent.field.type !== "status" &&
                          (parent.field.label || "") !== ""
                 text: parent.field.label + (parent.field.required ? " *" : "")
-                color: "#666666"
+                color: Colors.secondaryText
                 font.pixelSize: FontUtils.sizeToPixels("small")
             }
 
@@ -231,7 +231,7 @@ Column {
                 text: parent.field.value || ""
                 font.pixelSize: FontUtils.sizeToPixels("small")
                 font.italic: parent.field.statusType === "footnote"
-                color: parent.field.statusType === "error" ? "#be0003" : "#666666"
+                color: parent.field.statusType === "error" ? Colors.error : Colors.secondaryText
             }
         }
     }

@@ -25,6 +25,7 @@ import LunaNext.Common 0.1
 
 import "../Common"
 import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Screen & Lock, after the webOS 3.0.5 app of the same name
@@ -90,7 +91,14 @@ BasePage {
     // What the user asked for, held while the current passcode is verified
     property string pendingLockMode: ""
 
-    property bool prefsLoaded: false
+    readonly property bool prefsLoaded: prefs.loaded
+
+    SystemPreferences {
+        id: prefs
+        clientName: appId
+        keys: ["sysUiEnableNextPrevGestures", "showAlertsWhenLocked", "BlinkNotifications", "lockTimeout", "enableFingerprintUnlock", "enableFaceUnlock"]
+        onUpdated: (response) => pageRoot._handleGetPreferences(response)
+    }
 
     readonly property var lockTimeouts: [0, 30, 60, 120, 180, 300, 600, 1800]
     readonly property var lockTimeoutLabels: ["Screen turns off", "30 seconds", "1 minute",
@@ -535,14 +543,6 @@ BasePage {
      * Bindings with LuneOS settings
      */
     function retrieveProperties() {
-        luna.subscribe("luna://com.webos.service.systemservice/getPreferences",
-                       JSON.stringify({"keys": ["sysUiEnableNextPrevGestures",
-                                                "showAlertsWhenLocked", "BlinkNotifications",
-                                                "lockTimeout",
-                                                "enableFingerprintUnlock",
-                                                "enableFaceUnlock"],
-                                       "subscribe": true}),
-                       _handleGetPreferences, _handleGetError);
 
         retrieveLockMode();
 
@@ -564,12 +564,7 @@ BasePage {
                   _handleGetLockMode, _handleLockServiceUnavailable);
     }
 
-    function _handleGetPreferences(message) {
-        if (!message || !message.payload)
-            return;
-
-        var response = JSON.parse(message.payload);
-
+    function _handleGetPreferences(response) {
         if (response.hasOwnProperty("sysUiEnableNextPrevGestures"))
             pageRoot.gesturesEnabled = response.sysUiEnableNextPrevGestures;
         if (response.hasOwnProperty("showAlertsWhenLocked"))
@@ -582,8 +577,6 @@ BasePage {
             pageRoot.fingerprintUnlockEnabled = response.enableFingerprintUnlock;
         if (response.hasOwnProperty("enableFaceUnlock"))
             pageRoot.faceUnlockEnabled = response.enableFaceUnlock;
-
-        pageRoot.prefsLoaded = true;
     }
 
     function _handleFingerprintStatus(message) {
@@ -645,16 +638,10 @@ BasePage {
     }
 
     // Push changes to LuneOS
+    // SystemPreferences refuses to write before the first read, so a default
+    // set from the page's own state cannot overwrite the user's setting
     function _setPreference(key, value) {
-        if (!pageRoot.prefsLoaded) {
-            console.log("Trying to set preferences before reading them first: ignoring.");
-            return;
-        }
-
-        var params = {};
-        params[key] = value;
-        luna.call("luna://com.webos.service.systemservice/setPreferences", JSON.stringify(params),
-                  _handleSetSuccess, _handleSetError);
+        prefs.set(key, value);
     }
 
     function setGesturesEnabled(on) {
@@ -691,26 +678,18 @@ BasePage {
     // device; this is how one of them opens another, the way the legacy
     // Help menu items opened com.palm.app.help.
     function openDisplaySettings() {
-        luna.call("luna://com.webos.service.applicationManager/launch",
-                  JSON.stringify({"id": "org.webosports.app.settings.display"}),
-                  _handleSetSuccess, _handleSetError);
+        launcher.launch("org.webosports.app.settings.display", null, undefined, _handleSetError);
     }
 
     function openAppearanceSettings() {
-        luna.call("luna://com.webos.service.applicationManager/launch",
-                  JSON.stringify({"id": "org.webosports.app.settings.appearance"}),
-                  _handleSetSuccess, _handleSetError);
+        launcher.launch("org.webosports.app.settings.appearance", null, undefined, _handleSetError);
     }
 
     function openFingerprintSettings() {
-        luna.call("luna://com.webos.service.applicationManager/launch",
-                  JSON.stringify({"id": "org.webosports.app.settings.fingerprint"}),
-                  _handleSetSuccess, _handleSetError);
+        launcher.launch("org.webosports.app.settings.fingerprint", null, undefined, _handleSetError);
     }
 
     function openFaceUnlockSettings() {
-        luna.call("luna://com.webos.service.applicationManager/launch",
-                  JSON.stringify({"id": "org.webosports.app.settings.faceunlock"}),
-                  _handleSetSuccess, _handleSetError);
+        launcher.launch("org.webosports.app.settings.faceunlock", null, undefined, _handleSetError);
     }
 }

@@ -23,6 +23,7 @@ import Qt.labs.folderlistmodel 2.1
 import QtQuick.Controls.LuneOS 2.0
 // Units & font sizes
 import LunaNext.Common 0.1
+import LuneOS.Forms 1.0
 
 /*
  * The wallpaper grid.
@@ -108,7 +109,7 @@ Popup {
             wrapMode: Text.WordWrap
             text: "No pictures found. Copy some into /media/internal/wallpapers " +
                   "over USB and they will show up here."
-            color: "#666666"
+            color: Colors.secondaryText
             font.pixelSize: FontUtils.sizeToPixels("medium")
         }
 
@@ -142,7 +143,7 @@ Popup {
                         Label {
                             width: parent.width
                             text: section.sectionTitle
-                            color: "#666666"
+                            color: Colors.secondaryText
                             font.pixelSize: FontUtils.sizeToPixels("14pt")
                         }
 

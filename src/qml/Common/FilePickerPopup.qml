@@ -90,7 +90,7 @@ Popup {
             visible: filePicker.hint !== ""
             horizontalAlignment: Text.AlignHCenter
             text: filePicker.hint
-            color: "#666666"
+            color: Colors.secondaryText
             font.pixelSize: FontUtils.sizeToPixels("small")
         }
 
@@ -103,7 +103,7 @@ Popup {
             wrapMode: Text.WordWrap
             text: "No matching files found. Copy some into " +
                   "/media/internal/downloads over USB and they will show up here."
-            color: "#666666"
+            color: Colors.secondaryText
             font.pixelSize: FontUtils.sizeToPixels("medium")
         }
 

@@ -210,7 +210,7 @@ WebOSWindow {
     Rectangle {
         z: -1
         anchors.fill: parent
-        color: "#D8D8D8"
+        color: Colors.pageBackground
     }
 
     AppHeader {

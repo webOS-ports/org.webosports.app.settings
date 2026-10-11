@@ -25,6 +25,7 @@ import LunaNext.Common 0.1
 
 import "../Common"
 import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Text Assist, after the webOS 3.0.5 app of the same name
@@ -117,7 +118,7 @@ BasePage {
     // here belong to other pages, and writing the object back without them
     // would wipe them.
     property var keyboardPrefs: ({})
-    property bool prefsLoaded: false
+    readonly property bool prefsLoaded: systemPrefs.loaded
 
     property var words: []
     property var shortcuts: []
@@ -130,7 +131,6 @@ BasePage {
     readonly property var sizeLabels: ["Extra small", "Small", "Medium", "Large"]
 
     Component.onCompleted: {
-        retrieveProperties();
         retrieveKeyboardStatus();
         ensureDictionaryKinds();
     }
@@ -400,17 +400,14 @@ BasePage {
     /*
      * Keyboard preferences
      */
-    function retrieveProperties() {
-        luna.subscribe("luna://com.webos.service.systemservice/getPreferences",
-                       JSON.stringify({"keys": ["keyboard"], "subscribe": true}),
-                       _handleGetPreferences, _handleGetError);
+    SystemPreferences {
+        id: systemPrefs
+        clientName: appId
+        keys: ["keyboard"]
+        onUpdated: (response) => pageRoot._handleGetPreferences(response)
     }
 
-    function _handleGetPreferences(message) {
-        if (!message || !message.payload)
-            return;
-
-        var response = JSON.parse(message.payload);
+    function _handleGetPreferences(response) {
         if (!response.hasOwnProperty("keyboard"))
             return;
 
@@ -441,7 +438,6 @@ BasePage {
         if (pageRoot.keyboardPrefs.hasOwnProperty("keyboardSize"))
             pageRoot.keyboardSize = pageRoot.keyboardPrefs.keyboardSize;
 
-        pageRoot.prefsLoaded = true;
     }
 
     function setKeyboardPreference(key, value) {
@@ -469,9 +465,7 @@ BasePage {
         prefs[key] = value;
         pageRoot.keyboardPrefs = prefs;
 
-        luna.call("luna://com.webos.service.systemservice/setPreferences",
-                  JSON.stringify({"keyboard": prefs}),
-                  _handleSetSuccess, _handleSetError);
+        systemPrefs.set("keyboard", prefs);
     }
 
     /*

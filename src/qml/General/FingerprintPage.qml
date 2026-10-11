@@ -473,7 +473,7 @@ BasePage {
 
                             Button {
                                 text: "Delete"
-                                LuneOSButton.mainColor: "#be0003"
+                                LuneOSButton.mainColor: LuneOSButton.negativeColor
                                 LuneOSButton.textColor: "white"
                                 onClicked: {
                                     fingerprintPageId.removeFinger(modelData);

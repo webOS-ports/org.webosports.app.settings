@@ -461,7 +461,7 @@ Popup {
             // A failure is the one state that carries a reason with it, and
             // it is the only time anyone reads this line closely.
             color: networkInfoPopup.service && networkInfoPopup.service.state === "failure"
-                   ? "#be0003" : "#666666"
+                   ? Colors.error : Colors.secondaryText
             text: {
                 if (!networkInfoPopup.service)
                     return "";

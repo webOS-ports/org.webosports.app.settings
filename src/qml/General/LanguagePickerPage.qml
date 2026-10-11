@@ -28,6 +28,7 @@ import LunaNext.Common 0.1
 import "../Common"
 import "../Common/LanguageNames.js" as LanguageNames
 import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Regional Settings, after the webOS 3.0.5 app of the same name
@@ -77,7 +78,14 @@ BasePage {
     property var originalLocale: ({})
     property var originalRegion: ({})
 
-    property bool prefsLoaded: false
+    readonly property bool prefsLoaded: prefs.loaded
+
+    SystemPreferences {
+        id: prefs
+        clientName: appId
+        keys: ["locale", "region", "keyboard"]
+        onUpdated: (response) => pageRoot._handleGetPreferences(response)
+    }
 
     /*
      * The languages the keyboard can type. There is no call that lists them,
@@ -197,7 +205,7 @@ BasePage {
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: modelData === pageRoot.activeKeyboard
                                 text: "Default"
-                                color: "#666666"
+                                color: Colors.secondaryText
                                 font.pixelSize: FontUtils.sizeToPixels("small")
                             }
                         }
@@ -214,7 +222,7 @@ BasePage {
                     height: visible ? Units.gu(6) : 0
                     verticalAlignment: Text.AlignVCenter
                     text: "No keyboard is set up."
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
 
@@ -620,23 +628,19 @@ BasePage {
         pageRoot.enabledKeyboards = keyboards;
         pageRoot.activeKeyboard = active;
 
-        var prefs = _copy(keyboardPrefs);
-        prefs.enabledLanguages = keyboards;
+        var keyboard = _copy(keyboardPrefs);
+        keyboard.enabledLanguages = keyboards;
         if (active !== "")
-            prefs.activeLanguage = active;
-        pageRoot.keyboardPrefs = prefs;
+            keyboard.activeLanguage = active;
+        pageRoot.keyboardPrefs = keyboard;
 
-        _setPreferences({"keyboard": prefs});
+        _setPreferences({"keyboard": keyboard});
     }
 
     /*
      * Bindings with LuneOS settings
      */
     function retrieveProperties() {
-        luna.subscribe("luna://com.webos.service.systemservice/getPreferences",
-                       JSON.stringify({"keys": ["locale", "region", "keyboard"],
-                                       "subscribe": true}),
-                       _handleGetPreferences, _handleGetError);
 
         luna.call("luna://com.webos.service.systemservice/getPreferenceValues",
                   JSON.stringify({"key": "locale"}),
@@ -647,12 +651,7 @@ BasePage {
                   _handleGetRegions, _handleGetError);
     }
 
-    function _handleGetPreferences(message) {
-        if (!message || !message.payload)
-            return;
-
-        var response = JSON.parse(message.payload);
-
+    function _handleGetPreferences(response) {
         if (response.hasOwnProperty("locale") && response.locale) {
             pageRoot.currentLocale = response.locale;
             // Only the first read is the baseline: later ones are our own
@@ -688,8 +687,6 @@ BasePage {
             if (pageRoot.keyboardPrefs.hasOwnProperty("activeLanguage"))
                 pageRoot.activeKeyboard = twoLetter(pageRoot.keyboardPrefs.activeLanguage);
         }
-
-        pageRoot.prefsLoaded = true;
     }
 
     function _handleGetLocales(message) {
@@ -711,14 +708,9 @@ BasePage {
     }
 
     // Push changes to LuneOS
+    // SystemPreferences refuses to write before the first read
     function _setPreferences(params) {
-        if (!pageRoot.prefsLoaded) {
-            console.log("Trying to set preferences before reading them first: ignoring.");
-            return;
-        }
-
-        luna.call("luna://com.webos.service.systemservice/setPreferences", JSON.stringify(params),
-                  _handleSetSuccess, _handleSetError);
+        prefs.setMany(params);
     }
 
     function applyChanges() {

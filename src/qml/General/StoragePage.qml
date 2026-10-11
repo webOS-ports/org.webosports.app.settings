@@ -24,6 +24,7 @@ import LunaNext.Common 0.1
 
 import "../Common"
 import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Storage.
@@ -59,6 +60,28 @@ BasePage {
     property var volumes: []
 
     Component.onCompleted: retrieveProperties();
+
+    // Asked again whenever the service comes (back) on the bus: one that
+    // starts after the page opened, or restarts, makes it live without "Try
+    // again". The first call stays above - an on-demand service is only
+    // started by being called.
+    ServiceStatus {
+        id: serviceStatus
+
+        property bool wentAway: false
+
+        serviceName: "com.palm.storage"
+        onKnownChanged: if (known && !available) wentAway = true
+        onAvailableChanged: {
+            if (!available) {
+                wentAway = true;
+                pageRoot.serviceAvailable = false;
+            } else if (wentAway) {
+                wentAway = false;
+                pageRoot.retrieveProperties();
+            }
+        }
+    }
 
     /*
      * Powers of 1024 with the SI-ish names everything on a phone uses. Not
@@ -228,7 +251,7 @@ BasePage {
             height: visible ? Units.gu(6) : 0
             verticalAlignment: Text.AlignVCenter
             text: "No storage was reported."
-            color: "#666666"
+            color: Colors.secondaryText
             font.pixelSize: FontUtils.sizeToPixels("medium")
         }
 
@@ -287,8 +310,6 @@ BasePage {
 
     // Each settings category is its own launchable application on the device.
     function openEncryptionSettings() {
-        luna.call("luna://com.webos.service.applicationManager/launch",
-                  JSON.stringify({"id": "org.webosports.app.settings.encryption"}),
-                  _handleSetSuccess, _handleSetError);
+        launcher.launch("org.webosports.app.settings.encryption", null, undefined, _handleSetError);
     }
 }

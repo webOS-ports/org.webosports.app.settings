@@ -25,6 +25,7 @@ import LunaNext.Common 0.1
 
 import "../Common"
 import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Certificate Manager, after the webOS 3.0.5 app of the same name
@@ -63,6 +64,28 @@ BasePage {
 
     Component.onCompleted: retrieveProperties();
 
+    // Asked again whenever the service comes (back) on the bus: one that
+    // starts after the page opened, or restarts, makes it live without "Try
+    // again". The first call stays above - an on-demand service is only
+    // started by being called.
+    ServiceStatus {
+        id: serviceStatus
+
+        property bool wentAway: false
+
+        serviceName: pageRoot.certService
+        onKnownChanged: if (known && !available) wentAway = true
+        onAvailableChanged: {
+            if (!available) {
+                wentAway = true;
+                pageRoot.serviceAvailable = false;
+            } else if (wentAway) {
+                wentAway = false;
+                pageRoot.retrieveProperties();
+            }
+        }
+    }
+
     SettingsPageContent {
         ServiceUnavailableNotice {
             visible: !pageRoot.serviceAvailable
@@ -89,7 +112,7 @@ BasePage {
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.WordWrap
                     text: "No certificates are installed."
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
 
@@ -133,7 +156,7 @@ BasePage {
                                           (certRow.cert.issuer || certRow.cert.issuerOrganization || "unknown") +
                                           (certRow.cert.expiration ? " - expires " + certRow.cert.expiration : "")
                                     elide: Text.ElideRight
-                                    color: "#666666"
+                                    color: Colors.secondaryText
                                     font.pixelSize: FontUtils.sizeToPixels("small")
                                 }
                             }
@@ -166,7 +189,7 @@ BasePage {
                             Button {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: "Delete"
-                                LuneOSButton.mainColor: "#be0003"
+                                LuneOSButton.mainColor: LuneOSButton.negativeColor
                                 LuneOSButton.textColor: "white"
                                 onClicked: {
                                     pageRoot.removeCertificate(certRow.cert.serial);
@@ -252,7 +275,7 @@ BasePage {
                         elide: Text.ElideMiddle
                         text: importCertPopup.filePath !== ""
                               ? importCertPopup.filePath.split("/").pop() : "No file chosen"
-                        color: importCertPopup.filePath !== "" ? "#2a2929" : "#999999"
+                        color: importCertPopup.filePath !== "" ? Colors.text : "#999999"
                         font.pixelSize: FontUtils.sizeToPixels("medium")
                     }
                     Button {
@@ -274,7 +297,7 @@ BasePage {
                 Label {
                     Layout.fillWidth: true
                     text: "Passphrase (if any)"
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
                 FormTextField {
@@ -290,7 +313,7 @@ BasePage {
                     visible: importCertPopup.loadError !== ""
                     wrapMode: Text.WordWrap
                     text: importCertPopup.loadError
-                    color: "#be0003"
+                    color: Colors.error
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
 

@@ -24,6 +24,7 @@ import LunaNext.Common 0.1
 
 import "../Common"
 import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Applications, after webOS 3.0.5's Software Manager (com.palm.app.swmanager),
@@ -80,6 +81,28 @@ BasePage {
     property string removeError: ""
 
     Component.onCompleted: retrieveProperties();
+
+    // Asked again whenever the service comes (back) on the bus: one that
+    // starts after the page opened, or restarts, makes it live without "Try
+    // again". The first call stays above - an on-demand service is only
+    // started by being called.
+    ServiceStatus {
+        id: serviceStatus
+
+        property bool wentAway: false
+
+        serviceName: "com.webos.service.applicationManager"
+        onKnownChanged: if (known && !available) wentAway = true
+        onAvailableChanged: {
+            if (!available) {
+                wentAway = true;
+                pageRoot.serviceAvailable = false;
+            } else if (wentAway) {
+                wentAway = false;
+                pageRoot.retrieveProperties();
+            }
+        }
+    }
 
     function visibleApps() {
         var out = [];
@@ -187,7 +210,7 @@ BasePage {
                                     anchors.rightMargin: Units.gu(1)
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: modelData.version ? modelData.version : ""
-                                    color: "#666666"
+                                    color: Colors.secondaryText
                                     font.pixelSize: FontUtils.sizeToPixels("small")
                                 }
 
@@ -227,7 +250,7 @@ BasePage {
 
                                 Button {
                                     text: "Delete"
-                                    LuneOSButton.mainColor: "#be0003"
+                                    LuneOSButton.mainColor: LuneOSButton.negativeColor
                                     LuneOSButton.textColor: "white"
                                     onClicked: {
                                         pageRoot.removeApp(modelData.id);
@@ -270,7 +293,7 @@ BasePage {
                                 topPadding: Units.gu(0.5)
                                 text: "May use: " + pageRoot.permissionsOf(modelData)
                                 wrapMode: Text.WordWrap
-                                color: "#666666"
+                                color: Colors.secondaryText
                                 font.pixelSize: FontUtils.sizeToPixels("small")
                             }
 
@@ -282,7 +305,7 @@ BasePage {
                                 text: "Asks for nothing beyond what every " +
                                       "application may do."
                                 wrapMode: Text.WordWrap
-                                color: "#666666"
+                                color: Colors.secondaryText
                                 font.pixelSize: FontUtils.sizeToPixels("small")
                             }
 
@@ -292,7 +315,7 @@ BasePage {
                                 bottomPadding: Units.gu(0.5)
                                 text: "Part of the system; it cannot be removed."
                                 wrapMode: Text.WordWrap
-                                color: "#666666"
+                                color: Colors.secondaryText
                                 font.pixelSize: FontUtils.sizeToPixels("small")
                             }
                         }
@@ -309,7 +332,7 @@ BasePage {
                     height: visible ? Units.gu(6) : 0
                     verticalAlignment: Text.AlignVCenter
                     text: "Nothing is installed."
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
             }

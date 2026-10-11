@@ -25,6 +25,7 @@ import LunaNext.Common 0.1
 
 import "../Common"
 import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Print Manager, after the webOS 3.0.5 app of the same name
@@ -74,6 +75,28 @@ BasePage {
     property string defaultPrinterId: ""
 
     Component.onCompleted: retrieveProperties();
+
+    // Asked again whenever the service comes (back) on the bus: one that
+    // starts after the page opened, or restarts, makes it live without "Try
+    // again". The first call stays above - an on-demand service is only
+    // started by being called.
+    ServiceStatus {
+        id: serviceStatus
+
+        property bool wentAway: false
+
+        serviceName: pageRoot.printService
+        onKnownChanged: if (known && !available) wentAway = true
+        onAvailableChanged: {
+            if (!available) {
+                wentAway = true;
+                pageRoot.serviceAvailable = false;
+            } else if (wentAway) {
+                wentAway = false;
+                pageRoot.retrieveProperties();
+            }
+        }
+    }
 
     readonly property var discoveredPrinters: _printersWhere(true)
     readonly property var manualPrinters: _printersWhere(false)
@@ -174,7 +197,7 @@ BasePage {
                                         text: modelData.printerName + " - " +
                                               pageRoot.jobStateText(modelData)
                                         elide: Text.ElideRight
-                                        color: "#666666"
+                                        color: Colors.secondaryText
                                         font.pixelSize: FontUtils.sizeToPixels("small")
                                     }
                                 }
@@ -199,7 +222,7 @@ BasePage {
                     height: visible ? Units.gu(6) : 0
                     verticalAlignment: Text.AlignVCenter
                     text: "Currently there are no jobs in the printing queue."
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
             }
@@ -251,7 +274,7 @@ BasePage {
                     height: visible ? Units.gu(6) : 0
                     verticalAlignment: Text.AlignVCenter
                     text: "No printer has been added by hand."
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
             }
@@ -270,7 +293,7 @@ BasePage {
                     width: parent.width
                     text: "Give the printer a name and the address to reach it at."
                     wrapMode: Text.WordWrap
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
 
@@ -355,7 +378,7 @@ BasePage {
                             text: (row.printer.makeAndModel ? row.printer.makeAndModel + " - " : "") +
                                   pageRoot.printerStateText(row.printer)
                             elide: Text.ElideRight
-                            color: "#666666"
+                            color: Colors.secondaryText
                             font.pixelSize: FontUtils.sizeToPixels("small")
                         }
                     }
@@ -363,7 +386,7 @@ BasePage {
                     Label {
                         visible: row.printer.printerId === pageRoot.defaultPrinterId
                         text: "Default"
-                        color: "#666666"
+                        color: Colors.secondaryText
                         font.pixelSize: FontUtils.sizeToPixels("small")
                     }
                 }
@@ -420,7 +443,7 @@ BasePage {
 
                 Button {
                     text: "Delete"
-                    LuneOSButton.mainColor: "#be0003"
+                    LuneOSButton.mainColor: LuneOSButton.negativeColor
                     LuneOSButton.textColor: "white"
                     onClicked: {
                         pageRoot.removePrinter(row.printer.printerId);
