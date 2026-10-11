@@ -22,8 +22,8 @@ import QtQuick.Layouts 1.3
 import QtQuick.Controls.LuneOS 2.0
 // Units & font sizes
 import LunaNext.Common 0.1
-
-import "../Common"
+// The pattern grid the lock screen draws too
+import LuneOS.Passcode 1.0
 
 /*
  * The passcode dialogs the legacy Screen & Lock app had, plus the Pattern
