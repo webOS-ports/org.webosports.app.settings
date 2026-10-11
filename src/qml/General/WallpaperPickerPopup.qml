@@ -159,25 +159,16 @@ Popup {
                                 model: section.sectionFiles
 
                                 delegate: Item {
-                                    // "required property" auto-wiring from a
-                                    // model role only fires when the Repeater
-                                    // is bound to the model directly; here the
-                                    // model comes from section.sectionFiles,
-                                    // itself a property on an already-dynamic
-                                    // (outer-Repeater) delegate, and that
-                                    // extra indirection left fileURL/filePath
-                                    // unresolved ("Required property fileURL
-                                    // was not initialized") even though the
-                                    // FolderListModel had real rows. Reading
-                                    // the roles off the implicit "model"
-                                    // context property instead sidesteps it.
+                                    // The role is fileUrl: Qt 6 dropped the
+                                    // old fileURL spelling, which left every
+                                    // thumbnail with an undefined source.
                                     width: (section.width - (parent.columns - 1) * Units.gu(1))
                                            / parent.columns
                                     height: width * 3 / 4
 
                                     Image {
                                         anchors.fill: parent
-                                        source: model.fileURL
+                                        source: model.fileUrl
                                         fillMode: Image.PreserveAspectCrop
                                         clip: true
                                         asynchronous: true
