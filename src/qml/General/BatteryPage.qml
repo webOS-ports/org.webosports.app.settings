@@ -23,6 +23,7 @@ import QtQuick.Controls.LuneOS 2.0
 import LunaNext.Common 0.1
 
 import "../Common"
+import LuneOS.Forms 1.0
 
 /*
  * Battery.
@@ -480,7 +481,7 @@ BasePage {
                                 text: "This pack reports the same capacity it " +
                                       "shipped with, so how worn it is cannot " +
                                       "be told from here."
-                                color: "#666666"
+                                color: Colors.secondaryText
                                 font.pixelSize: FontUtils.sizeToPixels("small")
                             }
                         }
@@ -806,8 +807,6 @@ BasePage {
 
     // Each settings category is its own launchable application on the device.
     function openDisplaySettings() {
-        luna.call("luna://com.webos.service.applicationManager/launch",
-                  JSON.stringify({"id": "org.webosports.app.settings.display"}),
-                  _handleSetSuccess, _handleSetError);
+        launcher.launch("org.webosports.app.settings.display", null, undefined, _handleSetError);
     }
 }

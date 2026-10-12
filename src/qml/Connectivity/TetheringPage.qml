@@ -25,6 +25,7 @@ import LunaNext.Common 0.1
 import Connman 0.2
 
 import "../Common"
+import LuneOS.Forms 1.0
 
 /*
  * Tethering, after webOS 3.0.5's Mobile Hotspot (com.palm.app.mobilehotspot).

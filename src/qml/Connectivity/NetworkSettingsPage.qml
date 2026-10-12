@@ -31,6 +31,7 @@ import "../Common"
 // nothing ships a MeeGo/QOfono path on-device, so that spelling only ever
 // looks like it should work.
 import QOfono 0.2
+import LuneOS.Forms 1.0
 
 /*
  * Network Settings, the cellular/mobile counterpart to the separate WiFi and
@@ -298,7 +299,7 @@ BasePage {
                     wrapMode: Text.WordWrap
                     text: "The SIM is PUK-locked. Enter the PUK printed on " +
                           "the card it came with to unblock it."
-                    color: "#be0003"
+                    color: Colors.error
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
                 Button {
@@ -357,7 +358,7 @@ BasePage {
                     height: visible ? Units.gu(6) : 0
                     verticalAlignment: Text.AlignVCenter
                     text: "No access points configured."
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
 
@@ -396,7 +397,7 @@ BasePage {
                                     width: parent.width
                                     text: apnCtx.accessPointName
                                     elide: Text.ElideRight
-                                    color: "#666666"
+                                    color: Colors.secondaryText
                                     font.pixelSize: FontUtils.sizeToPixels("small")
                                 }
                             }
@@ -448,7 +449,7 @@ BasePage {
                                 Label {
                                     text: modelData.operatorName + " · " +
                                           modelData.bars + "/4"
-                                    color: "#666666"
+                                    color: Colors.secondaryText
                                     font.pixelSize: FontUtils.sizeToPixels("small")
                                 }
                             }
@@ -581,8 +582,6 @@ BasePage {
 
         width: Math.min(parent.width - Units.gu(4), Units.gu(46))
         height: Math.min(parent.height - Units.gu(4), Units.gu(56))
-        x: (parent.width - width) / 2
-        y: (parent.height - height) / 2
 
         onOpened: network.scan()
 
@@ -613,7 +612,7 @@ BasePage {
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
                     text: "No networks found."
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
 
@@ -656,7 +655,7 @@ BasePage {
                                 text: opInfo.status === "current" ? "Current" :
                                       opInfo.status === "forbidden" ? "Forbidden" : "Available"
                                 elide: Text.ElideRight
-                                color: opInfo.status === "forbidden" ? "#be0003" : "#666666"
+                                color: opInfo.status === "forbidden" ? Colors.error : Colors.secondaryText
                                 font.pixelSize: FontUtils.sizeToPixels("small")
                             }
                         }
@@ -716,8 +715,6 @@ BasePage {
 
         width: Math.min(parent.width - Units.gu(4), Units.gu(40))
         height: Math.min(parent.height - Units.gu(4), Units.gu(44))
-        x: (parent.width - width) / 2
-        y: (parent.height - height) / 2
 
         onOpened: {
             errorText = "";
@@ -750,49 +747,31 @@ BasePage {
                     Layout.fillWidth: true
                     text: pinPromptPopup.mode === "puk" ? "PUK code" :
                           pinPromptPopup.mode === "change" ? "Current PIN" : "PIN"
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
-                TextField {
+                FormTextField {
                     id: pinField
                     Layout.fillWidth: true
                     height: Units.gu(5)
-                    leftPadding: Units.gu(1)
-                    rightPadding: Units.gu(1)
                     echoMode: TextInput.Password
                     inputMethodHints: Qt.ImhDigitsOnly | Qt.ImhSensitiveData
-                    color: "#2a2929"
-                    background: Rectangle {
-                        color: "#ffffff"
-                        radius: Units.gu(0.6)
-                        border.color: "#9a9a9a"
-                        border.width: 1
-                    }
                 }
 
                 Label {
                     Layout.fillWidth: true
                     visible: pinPromptPopup.mode === "change" || pinPromptPopup.mode === "puk"
                     text: "New PIN"
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
-                TextField {
+                FormTextField {
                     id: newPinField
                     Layout.fillWidth: true
                     height: Units.gu(5)
                     visible: pinPromptPopup.mode === "change" || pinPromptPopup.mode === "puk"
-                    leftPadding: Units.gu(1)
-                    rightPadding: Units.gu(1)
                     echoMode: TextInput.Password
                     inputMethodHints: Qt.ImhDigitsOnly | Qt.ImhSensitiveData
-                    color: "#2a2929"
-                    background: Rectangle {
-                        color: "#ffffff"
-                        radius: Units.gu(0.6)
-                        border.color: "#9a9a9a"
-                        border.width: 1
-                    }
                 }
 
                 Label {
@@ -800,7 +779,7 @@ BasePage {
                     visible: pinPromptPopup.errorText !== ""
                     wrapMode: Text.WordWrap
                     text: pinPromptPopup.errorText
-                    color: "#be0003"
+                    color: Colors.error
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
 
@@ -848,8 +827,6 @@ BasePage {
 
         width: Math.min(parent.width - Units.gu(4), Units.gu(46))
         height: Math.min(parent.height - Units.gu(4), Units.gu(58))
-        x: (parent.width - width) / 2
-        y: (parent.height - height) / 2
 
         OfonoContextConnection {
             id: editCtx
@@ -909,84 +886,56 @@ BasePage {
                     Label {
                         Layout.fillWidth: true
                         text: "Name"
-                        color: "#666666"
+                        color: Colors.secondaryText
                         font.pixelSize: FontUtils.sizeToPixels("small")
                     }
-                    TextField {
+                    FormTextField {
                         id: nameField
                         Layout.fillWidth: true
                         height: Units.gu(5)
-                        leftPadding: Units.gu(1)
-                        rightPadding: Units.gu(1)
-                        color: "#2a2929"
-                        background: Rectangle {
-                            color: "#ffffff"; radius: Units.gu(0.6)
-                            border.color: "#9a9a9a"; border.width: 1
-                        }
                     }
 
                     Label {
                         Layout.fillWidth: true
                         text: "APN"
-                        color: "#666666"
+                        color: Colors.secondaryText
                         font.pixelSize: FontUtils.sizeToPixels("small")
                     }
-                    TextField {
+                    FormTextField {
                         id: apnField
                         Layout.fillWidth: true
                         height: Units.gu(5)
-                        leftPadding: Units.gu(1)
-                        rightPadding: Units.gu(1)
-                        color: "#2a2929"
-                        background: Rectangle {
-                            color: "#ffffff"; radius: Units.gu(0.6)
-                            border.color: "#9a9a9a"; border.width: 1
-                        }
                     }
 
                     Label {
                         Layout.fillWidth: true
                         text: "Username"
-                        color: "#666666"
+                        color: Colors.secondaryText
                         font.pixelSize: FontUtils.sizeToPixels("small")
                     }
-                    TextField {
+                    FormTextField {
                         id: userField
                         Layout.fillWidth: true
                         height: Units.gu(5)
-                        leftPadding: Units.gu(1)
-                        rightPadding: Units.gu(1)
-                        color: "#2a2929"
-                        background: Rectangle {
-                            color: "#ffffff"; radius: Units.gu(0.6)
-                            border.color: "#9a9a9a"; border.width: 1
-                        }
                     }
 
                     Label {
                         Layout.fillWidth: true
                         text: "Password"
-                        color: "#666666"
+                        color: Colors.secondaryText
                         font.pixelSize: FontUtils.sizeToPixels("small")
                     }
-                    TextField {
+                    FormTextField {
                         id: passField
                         Layout.fillWidth: true
                         height: Units.gu(5)
-                        leftPadding: Units.gu(1)
-                        rightPadding: Units.gu(1)
                         echoMode: TextInput.Password
-                        color: "#2a2929"
-                        background: Rectangle {
-                            color: "#ffffff"; radius: Units.gu(0.6)
-                            border.color: "#9a9a9a"; border.width: 1
-                        }
                     }
 
                     Label {
                         Layout.fillWidth: true
                         text: "Protocol"
-                        color: "#666666"
+                        color: Colors.secondaryText
                         font.pixelSize: FontUtils.sizeToPixels("small")
                     }
                     ComboBox {

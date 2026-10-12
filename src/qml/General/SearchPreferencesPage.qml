@@ -25,6 +25,8 @@ import QtQuick.Controls.LuneOS 2.0
 import LunaNext.Common 0.1
 
 import "../Common"
+import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Just Type, after the webOS 3.0.5 app of the same name
@@ -79,6 +81,28 @@ BasePage {
     property var actionItems: []
 
     Component.onCompleted: retrieveProperties();
+
+    // Asked again whenever the service comes (back) on the bus: one that
+    // starts after the page opened, or restarts, makes it live without "Try
+    // again". The first call stays above - an on-demand service is only
+    // started by being called.
+    ServiceStatus {
+        id: serviceStatus
+
+        property bool wentAway: false
+
+        serviceName: pageRoot.searchService
+        onKnownChanged: if (known && !available) wentAway = true
+        onAvailableChanged: {
+            if (!available) {
+                wentAway = true;
+                pageRoot.serviceAvailable = false;
+            } else if (wentAway) {
+                wentAway = false;
+                pageRoot.retrieveProperties();
+            }
+        }
+    }
 
     readonly property var defaultSearchEngine: {
         for (var i = 0; i < searchItems.length; i++) {
@@ -299,8 +323,6 @@ BasePage {
 
         width: Math.min(parent.width - Units.gu(4), Units.gu(40))
         height: Math.min(parent.height - Units.gu(4), Units.gu(50))
-        x: (parent.width - width) / 2
-        y: (parent.height - height) / 2
 
         ColumnLayout {
             anchors.fill: parent

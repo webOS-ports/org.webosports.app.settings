@@ -24,6 +24,8 @@ import QtQuick.Controls.LuneOS 2.0
 import LunaNext.Common 0.1
 
 import "../Common"
+import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Certificate Manager, after the webOS 3.0.5 app of the same name
@@ -62,6 +64,28 @@ BasePage {
 
     Component.onCompleted: retrieveProperties();
 
+    // Asked again whenever the service comes (back) on the bus: one that
+    // starts after the page opened, or restarts, makes it live without "Try
+    // again". The first call stays above - an on-demand service is only
+    // started by being called.
+    ServiceStatus {
+        id: serviceStatus
+
+        property bool wentAway: false
+
+        serviceName: pageRoot.certService
+        onKnownChanged: if (known && !available) wentAway = true
+        onAvailableChanged: {
+            if (!available) {
+                wentAway = true;
+                pageRoot.serviceAvailable = false;
+            } else if (wentAway) {
+                wentAway = false;
+                pageRoot.retrieveProperties();
+            }
+        }
+    }
+
     SettingsPageContent {
         ServiceUnavailableNotice {
             visible: !pageRoot.serviceAvailable
@@ -88,7 +112,7 @@ BasePage {
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.WordWrap
                     text: "No certificates are installed."
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
 
@@ -132,7 +156,7 @@ BasePage {
                                           (certRow.cert.issuer || certRow.cert.issuerOrganization || "unknown") +
                                           (certRow.cert.expiration ? " - expires " + certRow.cert.expiration : "")
                                     elide: Text.ElideRight
-                                    color: "#666666"
+                                    color: Colors.secondaryText
                                     font.pixelSize: FontUtils.sizeToPixels("small")
                                 }
                             }
@@ -165,7 +189,7 @@ BasePage {
                             Button {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: "Delete"
-                                LuneOSButton.mainColor: "#be0003"
+                                LuneOSButton.mainColor: LuneOSButton.negativeColor
                                 LuneOSButton.textColor: "white"
                                 onClicked: {
                                     pageRoot.removeCertificate(certRow.cert.serial);
@@ -209,8 +233,6 @@ BasePage {
 
         width: Math.min(parent.width - Units.gu(4), Units.gu(46))
         height: Math.min(parent.height - Units.gu(4), Units.gu(50))
-        x: (parent.width - width) / 2
-        y: (parent.height - height) / 2
 
         property string filePath: ""
         property string loadError: ""
@@ -253,7 +275,7 @@ BasePage {
                         elide: Text.ElideMiddle
                         text: importCertPopup.filePath !== ""
                               ? importCertPopup.filePath.split("/").pop() : "No file chosen"
-                        color: importCertPopup.filePath !== "" ? "#2a2929" : "#999999"
+                        color: importCertPopup.filePath !== "" ? Colors.text : "#999999"
                         font.pixelSize: FontUtils.sizeToPixels("medium")
                     }
                     Button {
@@ -275,24 +297,15 @@ BasePage {
                 Label {
                     Layout.fillWidth: true
                     text: "Passphrase (if any)"
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
-                TextField {
+                FormTextField {
                     id: passphraseField
                     Layout.fillWidth: true
                     height: Units.gu(5)
-                    leftPadding: Units.gu(1)
-                    rightPadding: Units.gu(1)
                     echoMode: TextInput.Password
                     inputMethodHints: Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
-                    color: "#2a2929"
-                    background: Rectangle {
-                        color: "#ffffff"
-                        radius: Units.gu(0.6)
-                        border.color: "#9a9a9a"
-                        border.width: 1
-                    }
                 }
 
                 Label {
@@ -300,7 +313,7 @@ BasePage {
                     visible: importCertPopup.loadError !== ""
                     wrapMode: Text.WordWrap
                     text: importCertPopup.loadError
-                    color: "#be0003"
+                    color: Colors.error
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
 

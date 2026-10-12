@@ -23,6 +23,7 @@ import Qt.labs.folderlistmodel 2.1
 import QtQuick.Controls.LuneOS 2.0
 // Units & font sizes
 import LunaNext.Common 0.1
+import LuneOS.Forms 1.0
 
 /*
  * The wallpaper grid.
@@ -50,8 +51,6 @@ Popup {
 
     width: Math.min(parent.width - Units.gu(4), Units.gu(60))
     height: Math.min(parent.height - Units.gu(4), Units.gu(70))
-    x: (parent.width - width) / 2
-    y: (parent.height - height) / 2
 
     // Wallpapers imported through systemservice end up here, cropped and
     // scaled for the screen.
@@ -110,7 +109,7 @@ Popup {
             wrapMode: Text.WordWrap
             text: "No pictures found. Copy some into /media/internal/wallpapers " +
                   "over USB and they will show up here."
-            color: "#666666"
+            color: Colors.secondaryText
             font.pixelSize: FontUtils.sizeToPixels("medium")
         }
 
@@ -144,7 +143,7 @@ Popup {
                         Label {
                             width: parent.width
                             text: section.sectionTitle
-                            color: "#666666"
+                            color: Colors.secondaryText
                             font.pixelSize: FontUtils.sizeToPixels("14pt")
                         }
 
@@ -159,25 +158,16 @@ Popup {
                                 model: section.sectionFiles
 
                                 delegate: Item {
-                                    // "required property" auto-wiring from a
-                                    // model role only fires when the Repeater
-                                    // is bound to the model directly; here the
-                                    // model comes from section.sectionFiles,
-                                    // itself a property on an already-dynamic
-                                    // (outer-Repeater) delegate, and that
-                                    // extra indirection left fileURL/filePath
-                                    // unresolved ("Required property fileURL
-                                    // was not initialized") even though the
-                                    // FolderListModel had real rows. Reading
-                                    // the roles off the implicit "model"
-                                    // context property instead sidesteps it.
+                                    // The role is fileUrl: Qt 6 dropped the
+                                    // old fileURL spelling, which left every
+                                    // thumbnail with an undefined source.
                                     width: (section.width - (parent.columns - 1) * Units.gu(1))
                                            / parent.columns
                                     height: width * 3 / 4
 
                                     Image {
                                         anchors.fill: parent
-                                        source: model.fileURL
+                                        source: model.fileUrl
                                         fillMode: Image.PreserveAspectCrop
                                         clip: true
                                         asynchronous: true

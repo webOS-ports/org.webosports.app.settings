@@ -24,6 +24,7 @@ import QtQuick.Controls.LuneOS 2.0
 import LunaNext.Common 0.1
 
 import "../Common"
+import LuneOS.Forms 1.0
 
 /*
  * The user dictionary, after the legacy Text Assist app's dictionary scene:
@@ -53,8 +54,6 @@ Popup {
 
     width: Math.min(parent.width - Units.gu(4), Units.gu(50))
     height: Math.min(parent.height - Units.gu(4), Units.gu(70))
-    x: (parent.width - width) / 2
-    y: (parent.height - height) / 2
 
     onOpened: {
         newWordField.text = "";
@@ -123,7 +122,7 @@ Popup {
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.WordWrap
                     text: "No words yet. Words you add here are never corrected."
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
 
@@ -195,7 +194,7 @@ Popup {
 
                             Button {
                                 text: "Delete"
-                                LuneOSButton.mainColor: "#be0003"
+                                LuneOSButton.mainColor: LuneOSButton.negativeColor
                                 LuneOSButton.textColor: "white"
                                 onClicked: {
                                     dictionaryPopup.removeWordRequested(modelData._id);
@@ -259,7 +258,7 @@ Popup {
                     wrapMode: Text.WordWrap
                     text: "No shortcuts yet. Type the short version and it is " +
                           "replaced by the long one."
-                    color: "#666666"
+                    color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("medium")
                 }
 
@@ -335,7 +334,7 @@ Popup {
 
                             Button {
                                 text: "Delete"
-                                LuneOSButton.mainColor: "#be0003"
+                                LuneOSButton.mainColor: LuneOSButton.negativeColor
                                 LuneOSButton.textColor: "white"
                                 onClicked: {
                                     dictionaryPopup.removeShortcutRequested(modelData._id);

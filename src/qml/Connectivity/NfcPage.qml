@@ -25,6 +25,7 @@ import "../Common"
 
 // Units & font sizes
 import LunaNext.Common 0.1
+import LuneOS.Forms 1.0
 
 BasePage {
     id: nfcPageId
@@ -254,8 +255,6 @@ BasePage {
         Switch {
             id: nfcPowerSwitch
 
-            LuneOSSwitch.labelOn: "On"
-            LuneOSSwitch.labelOff: "Off"
 
             enabled: nfcPageId.nfcAvailable
             checked: nfcPageId.nfcEnabled

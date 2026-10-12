@@ -19,6 +19,7 @@ import QtQuick.Controls 2.2
 
 import LunaNext.Common 0.1
 import Eos.Window 0.1
+import LuneOS.Forms 1.0
 
 WebOSWindow {
     id: settingsCategoryAppWindow
@@ -209,13 +210,13 @@ WebOSWindow {
     Rectangle {
         z: -1
         anchors.fill: parent
-        color: "#D8D8D8"
+        color: Colors.pageBackground
     }
 
-    CategoryHeader {
+    AppHeader {
         id: categoryHeader
         title: settingsCategoryAppWindow.categoryTitle
-        icon: settingsCategoryAppWindow.categoryIcon
+        icon: Qt.resolvedUrl(settingsCategoryAppWindow.categoryIcon)
 
         height: Units.gu(10.0)
         anchors.top: parent.top
@@ -231,7 +232,7 @@ WebOSWindow {
         anchors.right: parent.right
         source: categoryFile
 
-        property alias actionHeaderComponent: categoryHeader.actionHeaderComponent
+        property alias actionHeaderComponent: categoryHeader.actionComponent
         onActionHeaderComponentChanged: console.log("actionHeaderComponent="+actionHeaderComponent);
     }
 }

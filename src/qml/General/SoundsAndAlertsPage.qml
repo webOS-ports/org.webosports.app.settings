@@ -25,6 +25,8 @@ import QtQuick.Controls.LuneOS 2.0
 import LunaNext.Common 0.1
 
 import "../Common"
+import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Sounds & Ringtones, after the webOS 3.0.5 app of the same name
@@ -84,13 +86,18 @@ BasePage {
 
     // Preferences arrive asynchronously; don't write anything back before the
     // first read has landed, or the defaults above would overwrite the device.
-    property bool prefsLoaded: false
+    readonly property bool prefsLoaded: prefs.loaded
+
+    SystemPreferences {
+        id: prefs
+        clientName: appId
+        keys: ["muteSound", "systemSounds", "ringtone", "alerttone", "notificationtone", "keyboard", "VibrateWhenRingerOn", "VibrateWhenRingerOff"]
+        onUpdated: (response) => pageRoot._handleGetPreferences(response)
+    }
 
     pageActionHeaderComponent: Component {
         Switch {
             id: soundsSwitch
-            LuneOSSwitch.labelOn: "On"
-            LuneOSSwitch.labelOff: "Off"
 
             checked: pageRoot.soundsOn
             Connections {
@@ -165,8 +172,6 @@ BasePage {
                         font.weight: Font.Normal
                         LayoutMirroring.enabled: true // by default the switch is on the left in Qt, not very webOS-ish
 
-                        LuneOSSwitch.labelOn: "On"
-                        LuneOSSwitch.labelOff: "Off"
 
                         checked: pageRoot.systemSounds
                         Connections {
@@ -188,8 +193,6 @@ BasePage {
                         font.weight: Font.Normal
                         LayoutMirroring.enabled: true
 
-                        LuneOSSwitch.labelOn: "On"
-                        LuneOSSwitch.labelOff: "Off"
 
                         checked: pageRoot.keyboardClicks
                         Connections {
@@ -394,12 +397,6 @@ BasePage {
      */
     // Initialization and subscriptions
     function retrieveProperties() {
-        luna.subscribe("luna://com.webos.service.systemservice/getPreferences",
-                       JSON.stringify({"keys": ["muteSound", "systemSounds", "ringtone",
-                                                "alerttone", "notificationtone", "keyboard",
-                                                "VibrateWhenRingerOn", "VibrateWhenRingerOff"],
-                                       "subscribe": true}),
-                       _handleGetPreferences, _handleGetError);
 
         // Subscribed rather than polled: the volume keys and the shell's device
         // menu move this behind our back.
@@ -411,12 +408,7 @@ BasePage {
                   _handleGetRingtoneVolume, _handleGetError);
     }
 
-    function _handleGetPreferences(message) {
-        if (!message || !message.payload)
-            return;
-
-        var response = JSON.parse(message.payload);
-
+    function _handleGetPreferences(response) {
         if (response.hasOwnProperty("muteSound"))
             pageRoot.soundsOn = !response.muteSound;
         if (response.hasOwnProperty("systemSounds"))
@@ -453,8 +445,6 @@ BasePage {
             pageRoot.vibrateWhenSoundsOn = response.VibrateWhenRingerOn;
         if (response.hasOwnProperty("VibrateWhenRingerOff"))
             pageRoot.vibrateWhenSoundsOff = response.VibrateWhenRingerOff;
-
-        pageRoot.prefsLoaded = true;
     }
 
     function _handleGetMasterVolume(message) {
@@ -481,16 +471,10 @@ BasePage {
     }
 
     // Push changes to LuneOS
+    // SystemPreferences refuses to write before the first read, so a default
+    // set from the page's own state cannot overwrite the user's setting
     function _setPreference(key, value) {
-        if (!pageRoot.prefsLoaded) {
-            console.log("Trying to set preferences before reading them first: ignoring.");
-            return;
-        }
-
-        var params = {};
-        params[key] = value;
-        luna.call("luna://com.webos.service.systemservice/setPreferences", JSON.stringify(params),
-                  _handleSetSuccess, _handleSetError);
+        prefs.set(key, value);
     }
 
     function setSoundsOn(on) {

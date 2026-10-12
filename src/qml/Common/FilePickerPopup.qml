@@ -24,6 +24,7 @@ import Qt.labs.folderlistmodel 2.1
 import QtQuick.Controls.LuneOS 2.0
 // Units & font sizes
 import LunaNext.Common 0.1
+import LuneOS.Forms 1.0
 
 /*
  * Picks a file under /media/internal/downloads - there is no system file
@@ -62,8 +63,6 @@ Popup {
 
     width: Math.min(parent.width - Units.gu(4), Units.gu(50))
     height: Math.min(parent.height - Units.gu(4), Units.gu(60))
-    x: (parent.width - width) / 2
-    y: (parent.height - height) / 2
 
     FolderListModel {
         id: folderModel
@@ -91,7 +90,7 @@ Popup {
             visible: filePicker.hint !== ""
             horizontalAlignment: Text.AlignHCenter
             text: filePicker.hint
-            color: "#666666"
+            color: Colors.secondaryText
             font.pixelSize: FontUtils.sizeToPixels("small")
         }
 
@@ -104,7 +103,7 @@ Popup {
             wrapMode: Text.WordWrap
             text: "No matching files found. Copy some into " +
                   "/media/internal/downloads over USB and they will show up here."
-            color: "#666666"
+            color: Colors.secondaryText
             font.pixelSize: FontUtils.sizeToPixels("medium")
         }
 

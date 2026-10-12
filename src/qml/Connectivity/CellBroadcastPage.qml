@@ -27,6 +27,7 @@ import "../Common"
 // The installed package registers this under the plain "QOfono" URI, the
 // same way NetworkSettingsPage imports it.
 import QOfono 0.2
+import LuneOS.Forms 1.0
 
 /*
  * Emergency Broadcast.

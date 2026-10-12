@@ -23,6 +23,8 @@ import QtQuick.Controls.LuneOS 2.0
 import LunaNext.Common 0.1
 
 import "../Common"
+import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Accessibility.
@@ -67,7 +69,14 @@ BasePage {
     id: pageRoot
 
     property real uiScale: 1.0
-    property bool prefsLoaded: false
+    readonly property bool prefsLoaded: prefs.loaded
+
+    SystemPreferences {
+        id: prefs
+        clientName: appId
+        keys: ["uiScale"]
+        onUpdated: (response) => pageRoot._handleGetPreferences(response)
+    }
 
     // What Units is scaling this process by, which is not necessarily what
     // the preference says - see the file header.
@@ -184,23 +193,13 @@ BasePage {
      * Bindings with LuneOS settings
      */
     function retrieveProperties() {
-        luna.subscribe("luna://com.webos.service.systemservice/getPreferences",
-                       JSON.stringify({"keys": ["uiScale"], "subscribe": true}),
-                       _handleGetPreferences, _handleGetError);
     }
 
-    function _handleGetPreferences(message) {
-        if (!message || !message.payload)
-            return;
-
-        var response = JSON.parse(message.payload);
-
+    function _handleGetPreferences(response) {
         // Absent on a device nobody has been through this page on, which is
         // normal size rather than an error.
         if (response.hasOwnProperty("uiScale"))
             pageRoot.uiScale = response.uiScale;
-
-        pageRoot.prefsLoaded = true;
     }
 
     function setUiScale(scale) {
@@ -208,28 +207,18 @@ BasePage {
         _setPreference("uiScale", scale);
     }
 
+    // SystemPreferences refuses to write before the first read, so a default
+    // set from the page's own state cannot overwrite the user's setting
     function _setPreference(key, value) {
-        if (!pageRoot.prefsLoaded) {
-            console.log("Trying to set preferences before reading them first: ignoring.");
-            return;
-        }
-
-        var params = {};
-        params[key] = value;
-        luna.call("luna://com.webos.service.systemservice/setPreferences", JSON.stringify(params),
-                  _handleSetSuccess, _handleSetError);
+        prefs.set(key, value);
     }
 
     // Each settings category is its own launchable application on the device.
     function openDisplaySettings() {
-        luna.call("luna://com.webos.service.applicationManager/launch",
-                  JSON.stringify({"id": "org.webosports.app.settings.display"}),
-                  _handleSetSuccess, _handleSetError);
+        launcher.launch("org.webosports.app.settings.display", null, undefined, _handleSetError);
     }
 
     function openSoundSettings() {
-        luna.call("luna://com.webos.service.applicationManager/launch",
-                  JSON.stringify({"id": "org.webosports.app.settings.soundsandalerts"}),
-                  _handleSetSuccess, _handleSetError);
+        launcher.launch("org.webosports.app.settings.soundsandalerts", null, undefined, _handleSetError);
     }
 }

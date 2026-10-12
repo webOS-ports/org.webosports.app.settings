@@ -28,6 +28,7 @@ import Connman 0.2
 import LuneOS.Service 1.0
 
 import "../Common"
+import LuneOS.Forms 1.0
 
 /*
  * What one Wi-Fi network actually is and, once connected, how it is
@@ -91,8 +92,6 @@ Popup {
 
     width: Math.min(parent.width - Units.gu(4), Units.gu(46))
     height: Math.min(parent.height - Units.gu(4), Units.gu(70))
-    x: (parent.width - width) / 2
-    y: (parent.height - height) / 2
 
     /*
      * The service is owned by the TechnologyModel, which drops services that
@@ -462,7 +461,7 @@ Popup {
             // A failure is the one state that carries a reason with it, and
             // it is the only time anyone reads this line closely.
             color: networkInfoPopup.service && networkInfoPopup.service.state === "failure"
-                   ? "#be0003" : "#666666"
+                   ? Colors.error : Colors.secondaryText
             text: {
                 if (!networkInfoPopup.service)
                     return "";

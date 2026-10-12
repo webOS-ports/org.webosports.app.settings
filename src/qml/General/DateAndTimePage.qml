@@ -24,6 +24,8 @@ import QtQuick.Controls.LuneOS 2.0
 import LunaNext.Common 0.1
 
 import "../Common"
+import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Date & Time, after the webOS 3.0.5 app of the same name
@@ -61,7 +63,14 @@ BasePage {
     // are about.
     property bool networkTimeReceived: true
     property bool networkTimeZoneReceived: true
-    property bool telephonyAvailable: false
+    // No modem, no NITZ: don't offer a network time zone switch that could
+    // never receive anything.
+    readonly property bool telephonyAvailable: telephonyStatus.available
+
+    ServiceStatus {
+        id: telephonyStatus
+        serviceName: "com.palm.telephony"
+    }
 
     property var timeZone: ({})
     property var availableZones: []
@@ -76,7 +85,14 @@ BasePage {
 
     // Preferences arrive asynchronously; don't write anything back before the
     // first read has landed, or the defaults above would overwrite the device.
-    property bool prefsLoaded: false
+    readonly property bool prefsLoaded: prefs.loaded
+
+    SystemPreferences {
+        id: prefs
+        clientName: appId
+        keys: ["timeFormat", "timeZone", "useNetworkTime", "useNetworkTimeZone", "receiveNetworkTimeUpdate", "receiveNetworkTimezoneUpdate"]
+        onUpdated: (response) => pageRoot._handleGetPreferences(response)
+    }
 
     Component.onCompleted: retrieveProperties();
 
@@ -294,12 +310,6 @@ BasePage {
      * Bindings with LuneOS settings
      */
     function retrieveProperties() {
-        luna.subscribe("luna://com.webos.service.systemservice/getPreferences",
-                       JSON.stringify({"keys": ["timeFormat", "timeZone", "useNetworkTime",
-                                                "useNetworkTimeZone", "receiveNetworkTimeUpdate",
-                                                "receiveNetworkTimezoneUpdate"],
-                                       "subscribe": true}),
-                       _handleGetPreferences, _handleGetError);
 
         // Subscribed rather than polled: this re-reports on every jump, which
         // is how the row picks up a time that arrived over the network.
@@ -310,20 +320,9 @@ BasePage {
         luna.call("luna://com.webos.service.systemservice/getPreferenceValues",
                   JSON.stringify({"key": "timeZone"}),
                   _handleGetTimeZones, _handleGetError);
-
-        // No modem, no NITZ: don't offer a network time zone switch that could
-        // never receive anything.
-        luna.subscribe("luna://com.webos.service.bus/signal/registerServerStatus",
-                       JSON.stringify({"serviceName": "com.palm.telephony", "subscribe": true}),
-                       _handleTelephonyStatus, _handleGetError);
     }
 
-    function _handleGetPreferences(message) {
-        if (!message || !message.payload)
-            return;
-
-        var response = JSON.parse(message.payload);
-
+    function _handleGetPreferences(response) {
         if (response.hasOwnProperty("timeFormat"))
             pageRoot.timeFormat = response.timeFormat;
         if (response.hasOwnProperty("useNetworkTime"))
@@ -336,8 +335,6 @@ BasePage {
             pageRoot.networkTimeZoneReceived = response.receiveNetworkTimezoneUpdate;
         if (response.hasOwnProperty("timeZone") && response.timeZone)
             pageRoot.timeZone = response.timeZone;
-
-        pageRoot.prefsLoaded = true;
     }
 
     function _handleGetSystemTime(message) {
@@ -373,26 +370,11 @@ BasePage {
             pageRoot.availableZones = response.timeZone;
     }
 
-    function _handleTelephonyStatus(message) {
-        if (!message || !message.payload)
-            return;
-
-        var response = JSON.parse(message.payload);
-        if (response.hasOwnProperty("connected"))
-            pageRoot.telephonyAvailable = response.connected;
-    }
-
     // Push changes to LuneOS
+    // SystemPreferences refuses to write before the first read, so a default
+    // set from the page's own state cannot overwrite the user's setting
     function _setPreference(key, value) {
-        if (!pageRoot.prefsLoaded) {
-            console.log("Trying to set preferences before reading them first: ignoring.");
-            return;
-        }
-
-        var params = {};
-        params[key] = value;
-        luna.call("luna://com.webos.service.systemservice/setPreferences", JSON.stringify(params),
-                  _handleSetSuccess, _handleSetError);
+        prefs.set(key, value);
     }
 
     function setTimeFormat(format) {

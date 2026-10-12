@@ -23,6 +23,7 @@ import QtQuick.Controls.LuneOS 2.0
 import LunaNext.Common 0.1
 
 import "../Common"
+import LuneOS.Forms 1.0
 
 /*
  * USB, roughly where webOS 3.0.5 put com.palm.app.usbpassthrough - though
@@ -261,14 +262,10 @@ BasePage {
 
     // Each settings category is its own launchable application on the device.
     function openDeveloperSettings() {
-        luna.call("luna://com.webos.service.applicationManager/launch",
-                  JSON.stringify({"id": "org.webosports.app.settings.devmodeswitcher"}),
-                  _handleSetSuccess, _handleSetError);
+        launcher.launch("org.webosports.app.settings.devmodeswitcher", null, undefined, _handleSetError);
     }
 
     function openTetheringSettings() {
-        luna.call("luna://com.webos.service.applicationManager/launch",
-                  JSON.stringify({"id": "org.webosports.app.settings.tethering"}),
-                  _handleSetSuccess, _handleSetError);
+        launcher.launch("org.webosports.app.settings.tethering", null, undefined, _handleSetError);
     }
 }

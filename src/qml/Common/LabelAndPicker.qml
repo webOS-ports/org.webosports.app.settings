@@ -19,6 +19,7 @@ import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
 // Units & font sizes
 import LunaNext.Common 0.1
+import LuneOS.Forms 1.0
 
 /*
  * A LabelAndValue that can be tapped to change the value, the way the legacy
@@ -47,7 +48,7 @@ ItemDelegate {
             horizontalAlignment: Text.AlignRight
             text: labelAndPicker.value !== "" ? labelAndPicker.value : labelAndPicker.placeholder
             elide: Text.ElideRight
-            color: labelAndPicker.value !== "" ? "black" : "#666666"
+            color: labelAndPicker.value !== "" ? "black" : Colors.secondaryText
             font.pixelSize: FontUtils.sizeToPixels("16pt")
         }
     }

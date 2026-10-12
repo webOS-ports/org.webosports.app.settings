@@ -22,8 +22,9 @@ import QtQuick.Layouts 1.3
 import QtQuick.Controls.LuneOS 2.0
 // Units & font sizes
 import LunaNext.Common 0.1
-
-import "../Common"
+// The pattern grid the lock screen draws too
+import LuneOS.Passcode 1.0
+import LuneOS.Forms 1.0
 
 /*
  * The passcode dialogs the legacy Screen & Lock app had, plus the Pattern
@@ -79,8 +80,6 @@ Popup {
     closePolicy: Popup.NoAutoClose
 
     width: Math.min(parent.width - Units.gu(4), Units.gu(40))
-    x: (parent.width - width) / 2
-    y: (parent.height - height) / 2
 
     onOpened: {
         firstField.text = "";
@@ -193,7 +192,7 @@ Popup {
             visible: text !== ""
             wrapMode: Text.WordWrap
             horizontalAlignment: passcodePopup.isPattern ? Text.AlignHCenter : Text.AlignLeft
-            color: "#be0003"
+            color: Colors.error
             font.pixelSize: FontUtils.sizeToPixels("small")
             text: {
                 if (passcodePopup.errorText !== "")

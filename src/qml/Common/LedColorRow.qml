@@ -19,6 +19,7 @@ import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
 // Units & font sizes
 import LunaNext.Common 0.1
+import LuneOS.Forms 1.0
 
 /*
  * A LabelAndPicker for a notification-LED colour: the name of the colour on
@@ -78,7 +79,7 @@ ItemDelegate {
             horizontalAlignment: Text.AlignRight
             text: ledColorRow.colorName
             elide: Text.ElideRight
-            color: ledColorRow.hasOwnColor ? "black" : "#666666"
+            color: ledColorRow.hasOwnColor ? "black" : Colors.secondaryText
             font.pixelSize: FontUtils.sizeToPixels("16pt")
         }
 
@@ -91,7 +92,7 @@ ItemDelegate {
             // A white or yellow LED on the light page background would
             // otherwise be an invisible circle.
             border.width: 1
-            border.color: "#666666"
+            border.color: Colors.secondaryText
         }
     }
 }
