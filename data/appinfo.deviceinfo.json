@@ -12,6 +12,6 @@
     "icon": "qml/images/icons/icon-deviceinfo.png",
     "uiRevision": "2",
     "visible": true,
-    "requiredPermissions": ["android-property-service.operation", "networkconnection.query", "networkconnection.management", "preferences.systempropertyquery", "update-service.operation", "wifi.query", "wifi.management"]
+    "requiredPermissions": ["android-property-service.operation", "networkconnection.query", "networkconnection.management", "preferences.systempropertyquery", "systemsettings.query", "update-service.operation", "wifi.query", "wifi.management"]
 }
 

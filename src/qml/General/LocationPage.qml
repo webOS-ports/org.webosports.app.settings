@@ -116,6 +116,13 @@ BasePage {
     property bool autoLocate: true
     property bool webSetting: true
     property bool geotagPhotos: false
+
+    // Whether there is a camera to stamp. Assumed until the device says
+    // otherwise: luneos-device-config publishes luneos.device.camera.available
+    // only for an adaptation that declares deviceinfo_has_camera, because a
+    // camera that enumerates is not necessarily one that exists - the
+    // MindPhone has none fitted, yet its HAL lists reference-design sensors.
+    readonly property string cameraConfig: "luneos.device.camera.available"
     property bool cameraAvailable: true
 
     // GPS Status: independent of the preferences above, and of whether they
@@ -146,7 +153,10 @@ BasePage {
     property var _handlersCall: null
     property var _providerCall: null
 
-    Component.onCompleted: retrieveLocationState()
+    Component.onCompleted: {
+        retrieveLocationState();
+        retrieveCameraAvailable();
+    }
 
     // Asked again whenever the service comes (back) on the bus: one that
     // starts after the page opened, or restarts, makes it live without "Try
@@ -556,6 +566,25 @@ BasePage {
         prefs.set("geotagPhotos", on);
     }
 
+
+    function retrieveCameraAvailable() {
+        luna.call("luna://com.webos.service.config/getConfigs",
+                  JSON.stringify({"configNames": [cameraConfig]}),
+                  _handleCameraConfig, _handleCameraConfigError);
+    }
+
+    // A device whose adaptation says nothing gets the key back under
+    // missingConfigs (returnValue still true); that, like any other
+    // non-answer, leaves the row shown.
+    function _handleCameraConfig(message) {
+        var response = JSON.parse(message.payload);
+        if (response.configs && response.configs[cameraConfig] === false)
+            pageRoot.cameraAvailable = false;
+    }
+
+    function _handleCameraConfigError(message) {
+        console.warn("Camera configuration did not answer: " + message);
+    }
 
     /*
      * GPS Status
