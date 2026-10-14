@@ -137,7 +137,39 @@ BasePage {
     property bool networkHandlerPresent: false
     property bool networkHandlerEnabled: false
 
-    Component.onCompleted: retrieveLocationHandlers()
+    // Network Lookup: the server the network handler asks, beaconDB (open,
+    // no key) by default or Google. Older location services lack the call;
+    // then the row stays hidden.
+    property bool networkProviderAvailable: false
+    property string networkProvider: "beacondb"
+
+    property var _handlersCall: null
+    property var _providerCall: null
+
+    Component.onCompleted: retrieveLocationState()
+
+    // Asked again whenever the service comes (back) on the bus: one that
+    // starts after the page opened, or restarts, makes it live without "Try
+    // again". The first call stays above - an on-demand service is only
+    // started by being called.
+    ServiceStatus {
+        id: serviceStatus
+
+        property bool wentAway: false
+
+        serviceName: pageRoot.gpsService
+        onKnownChanged: if (known && !available) wentAway = true
+        onAvailableChanged: {
+            if (!available) {
+                wentAway = true;
+                pageRoot.handlersAvailable = false;
+                pageRoot.networkProviderAvailable = false;
+            } else if (wentAway) {
+                wentAway = false;
+                pageRoot.retrieveLocationState();
+            }
+        }
+    }
 
     SettingsPageContent {
         GroupBox {
@@ -348,7 +380,7 @@ BasePage {
             description: "Which location sources the device may use cannot be " +
                          "changed until this answers."
 
-            onRetry: pageRoot.retrieveLocationHandlers()
+            onRetry: pageRoot.retrieveLocationState()
         }
 
         GroupBox {
@@ -392,13 +424,33 @@ BasePage {
                     }
                     onToggled: pageRoot.setLocationHandlerEnabled("network", checked)
                 }
+
+                HorizontalSeparator {
+                    width: parent.width
+                    visible: pageRoot.networkProviderAvailable
+                }
+
+                LabelAndSelector {
+                    visible: pageRoot.networkProviderAvailable
+                    enabled: pageRoot.networkHandlerPresent
+                    label: "Network Lookup"
+                    model: ["beaconDB", "Google"]
+                    values: ["beacondb", "google"]
+                    value: pageRoot.networkProvider
+                    onChosen: (name) => pageRoot.setNetworkProvider(name)
+                }
             }
         }
 
         ExplanationText {
             text: "GPS is accurate outdoors and costs battery. Network Location " +
                   "works indoors and is quicker, but only as precise as the " +
-                  "nearby cells and access points allow."
+                  "nearby cells and access points allow." +
+                  (pageRoot.networkProviderAvailable
+                   ? (pageRoot.networkProvider === "google"
+                      ? " Network Location asks Google, which needs a key installed on the device."
+                      : " Network Location asks beaconDB, an open database of access points and cells.")
+                   : "")
         }
     }
 
@@ -560,12 +612,21 @@ BasePage {
     /*
      * Locate Me Using
      */
+    // Both subscriptions, opened afresh: at startup, on "Try again", when the
+    // service comes back, and to undo a change it refused.
+    function retrieveLocationState() {
+        retrieveLocationHandlers();
+        retrieveNetworkProvider();
+    }
+
     function retrieveLocationHandlers() {
         // Subscribed: another app changing this (or the same setState call
         // this page just made) should move the switches without a re-open.
-        luna.subscribe("luna://" + gpsService + "/getAllLocationHandlers",
-                       JSON.stringify({"subscribe": true}),
-                       _handleLocationHandlers, _handleLocationHandlersUnavailable);
+        if (_handlersCall)
+            _handlersCall.cancel();
+        _handlersCall = luna.subscribe("luna://" + gpsService + "/getAllLocationHandlers",
+                                       JSON.stringify({"subscribe": true}),
+                                       _handleLocationHandlers, _handleLocationHandlersUnavailable);
     }
 
     function _handleLocationHandlers(message) {
@@ -599,6 +660,56 @@ BasePage {
     function _handleLocationHandlersUnavailable(message) {
         console.warn("Location handlers did not answer: " + message);
         pageRoot.handlersAvailable = false;
+    }
+
+    /*
+     * setState and setNetworkProvider name these as their callbacks; until
+     * now only NetworkSettingsPage defined them, so in this page the names
+     * threw a ReferenceError before the call went out, and the GPS and
+     * Network Location switches never reached the service. A refused change
+     * is undone by reading the state back.
+     */
+    function _handleSetSuccess(message) {
+        var response = JSON.parse(message.payload);
+        if (response.returnValue === false) {
+            console.warn("Location setting refused: " + message.payload);
+            retrieveLocationState();
+        }
+    }
+
+    function _handleSetError(message) {
+        console.warn("Location setting failed: " + JSON.stringify(message));
+        retrieveLocationState();
+    }
+
+    function retrieveNetworkProvider() {
+        if (_providerCall)
+            _providerCall.cancel();
+        _providerCall = luna.subscribe("luna://" + gpsService + "/getNetworkProvider",
+                                       JSON.stringify({"subscribe": true}),
+                                       _handleNetworkProvider, _handleNetworkProviderUnavailable);
+    }
+
+    function _handleNetworkProvider(message) {
+        var response = JSON.parse(message.payload);
+        if (!response.returnValue || !response.hasOwnProperty("provider")) {
+            pageRoot.networkProviderAvailable = false;
+            return;
+        }
+        pageRoot.networkProvider = response.provider;
+        pageRoot.networkProviderAvailable = true;
+    }
+
+    function _handleNetworkProviderUnavailable(message) {
+        console.warn("getNetworkProvider did not answer: " + message);
+        pageRoot.networkProviderAvailable = false;
+    }
+
+    function setNetworkProvider(name) {
+        pageRoot.networkProvider = name;
+        luna.call("luna://" + gpsService + "/setNetworkProvider",
+                  JSON.stringify({"provider": name}),
+                  _handleSetSuccess, _handleSetError);
     }
 
     function setLocationHandlerEnabled(handlerName, on) {
