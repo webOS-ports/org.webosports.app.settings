@@ -32,7 +32,9 @@ BasePage {
     property alias softwareCodename:       softwareCodenameLabel.value
     property alias softwareBuildTree:      softwareBuildTreeLabel.value
     property alias softwareBuildNumber:    softwareBuildNumberLabel.value
+    property alias softwareKernelVersion:  softwareKernelVersionLabel.value
     property alias softwareAndroidVersion: softwareAndroidVersionLabel.value
+    property alias softwareAndroidVendor:  softwareAndroidVendorLabel.value
 
     /* Candidates for the device name, best first. The two service calls that
        supply them are asynchronous and either can answer first, so collect them
@@ -154,9 +156,39 @@ BasePage {
                         width: parent.width
                     }
                     LabelAndValue {
+                        id: softwareKernelVersionLabel
+                        width: parent.width
+                        label: "Kernel"
+                    }
+
+                    /* Only on a Halium device. A mainline device or the
+                       emulator has no Android underneath, and a row there
+                       saying so told nobody anything. */
+                    HorizontalSeparator {
+                        width: parent.width
+                        visible: softwareAndroidVersionLabel.visible
+                    }
+                    LabelAndValue {
                         id: softwareAndroidVersionLabel
                         width: parent.width
+                        visible: value !== ""
                         label: "Android Version"
+                    }
+                    /* The vendor partition - the HALs - can be a different
+                       Android release from the system image LuneOS runs on
+                       (the Q25: a 16 system on a 12 vendor), and it is the
+                       vendor's that decides what the device can do. Hidden
+                       where the image predates that split and has no vendor
+                       release to report. */
+                    HorizontalSeparator {
+                        width: parent.width
+                        visible: softwareAndroidVendorLabel.visible
+                    }
+                    LabelAndValue {
+                        id: softwareAndroidVendorLabel
+                        width: parent.width
+                        visible: value !== ""
+                        label: "Android Vendor"
                     }
                 }
             }
@@ -166,8 +198,13 @@ BasePage {
     function retrieveProperties() {
         luna.call("luna://org.webosports.service.update/retrieveVersion", '{}', _handleRetrieveVersion, _handleGetError);
         luna.call("luna://com.android.properties/getProperty",
-                  '{"keys":["ro.serialno","ro.product.model","ro.product.manufacturer","ro.build.version.release"]}',
+                  JSON.stringify({"keys": ["ro.serialno", "ro.product.model", "ro.product.manufacturer",
+                                           "ro.build.version.release", "ro.build.version.sdk",
+                                           "ro.vendor.build.version.release", "ro.vndk.version"]}),
                   _handleGetProperty, _handleGetError);
+        luna.call("luna://com.webos.service.systemservice/osInfo/query",
+                  JSON.stringify({"parameters": ["core_os_kernel_version"]}),
+                  _handleOsInfo, _handleGetError);
         luna.call("luna://com.palm.connectionmanager/getinfo", '{}', _handleGetInfo, _handleGetError);
         luna.call("luna://com.palm.preferences/systemProperties/getSomeSysProperties", '[{"key":"com.palm.properties.nduid"}, {"key":"com.palm.properties.buildName"}, {"key":"com.palm.properties.buildNumber"}, {"key":"com.palm.properties.deviceName"}, {"key":"com.palm.properties.machineName"}, {"key":"com.palm.properties.browserOsName"}, {"key":"com.palm.properties.version"}]', _handleGetProperties, _handleGetError );
     }
@@ -191,32 +228,45 @@ BasePage {
         }
     }
 
+    /* Joins a release and the API level it goes with: "16 (API 36)". Either
+       half can be missing on an old or a stripped-down image. */
+    function _androidRelease(release, level, levelName) {
+        if (!release)
+            return "";
+        return level ? release + " (" + levelName + " " + level + ")" : release;
+    }
+
     function _handleGetProperty(message) {
         if(message && message.payload) {
             var payloadValue = JSON.parse(message.payload);
             if(!payloadValue.returnValue) {
+                // No Android underneath: a mainline device or the emulator.
+                // The Android rows stay hidden.
                 console.log("com.android.properties doesn't exist, we're probably in an emulator or using a device with mainline kernel");
-                softwareAndroidVersion = "N/A; Not based on Android";
             }
             else {
-                var model = "";
-                var manufacturer = "";
-
+                // One object per property, each holding just that key. A
+                // property the device does not set comes back empty.
+                var props = {};
                 for (var n = 0; n < payloadValue.properties.length; n++) {
                     var property = payloadValue.properties[n];
-                    if (property["ro.serialno"]) {
-                        deviceSerial = property["ro.serialno"];
-                    }
-                    else if (property["ro.product.model"]) {
-                        model = property["ro.product.model"];
-                    }
-                    else if (property["ro.product.manufacturer"]) {
-                        manufacturer = property["ro.product.manufacturer"];
-                    }
-                    else if (property["ro.build.version.release"]) {
-                        softwareAndroidVersion = property["ro.build.version.release"];
-                    }
+                    for (var key in property)
+                        props[key] = property[key];
                 }
+
+                if (props["ro.serialno"])
+                    deviceSerial = props["ro.serialno"];
+
+                softwareAndroidVersion = _androidRelease(props["ro.build.version.release"],
+                                                         props["ro.build.version.sdk"], "API");
+                // ro.vndk.version rather than ro.vendor.build.version.sdk:
+                // the VNDK is the interface the system image is held to.
+                // On the Q25 the two agree (31).
+                softwareAndroidVendor = _androidRelease(props["ro.vendor.build.version.release"],
+                                                        props["ro.vndk.version"], "VNDK");
+
+                var model = props["ro.product.model"] || "";
+                var manufacturer = props["ro.product.manufacturer"] || "";
                 if (model) {
                     /* Some vendors already put the brand in the model, so
                        concatenating unconditionally gave "Google Google Pixel
@@ -227,6 +277,14 @@ BasePage {
                     _updateDeviceName();
                 }
             }
+        }
+    }
+
+    function _handleOsInfo(message) {
+        if(message && message.payload) {
+            var payloadValue = JSON.parse(message.payload);
+            if (payloadValue.core_os_kernel_version)
+                softwareKernelVersion = payloadValue.core_os_kernel_version;
         }
     }
 
