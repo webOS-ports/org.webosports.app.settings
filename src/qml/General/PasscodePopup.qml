@@ -96,6 +96,8 @@ Popup {
         errorText = reason;
         firstField.text = "";
         secondField.text = "";
+        // A refused pattern is drawn twice again from the start.
+        _firstPattern = "";
         if (isPattern) {
             patternGrid.showError();
             mismatchTimer.restart();
@@ -267,8 +269,9 @@ Popup {
         }
 
         if (encoded === _firstPattern) {
+            // Stays open: the page closes it once the passcode is stored,
+            // or reports why the service refused it.
             chosen(encoded);
-            close();
         } else {
             errorText = "The patterns do not match.";
             patternGrid.showError();
@@ -280,8 +283,8 @@ Popup {
         if (mode === "verify") {
             verifyRequested(firstField.text);
         } else {
+            // Stays open, as for a pattern above.
             chosen(firstField.text);
-            close();
         }
     }
 }
