@@ -79,6 +79,27 @@ Popup {
     focus: true
     closePolicy: Popup.NoAutoClose
 
+    /*
+     * Centred in what the on-screen keyboard leaves free of the page above
+     * it, so the second field and the buttons are not hidden behind its
+     * keys; with no on-screen keyboard (a hardware one, or a pattern being
+     * drawn) that is the whole page, and it is centred there.
+     * keyboardRectangle is in window coordinates, the popup's in its
+     * parent's. On a tenderloin the keyboard leaves the page 302 of its 598
+     * pixels, room for the 250 the PIN popup needs.
+     */
+    readonly property real _keyboardTop: {
+        var kb = Qt.inputMethod.keyboardRectangle;
+        if (!parent)
+            return 0;
+        if (!Qt.inputMethod.visible || kb.height <= 0)
+            return parent.height;
+        return Math.min(parent.height, parent.mapFromItem(null, 0, kb.y).y);
+    }
+
+    x: parent ? Math.round((parent.width - width) / 2) : 0
+    y: Math.max(Units.gu(1), Math.round((_keyboardTop - height) / 2))
+
     width: Math.min(parent.width - Units.gu(4), Units.gu(40))
 
     onOpened: {
