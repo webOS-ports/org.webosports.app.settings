@@ -492,9 +492,13 @@ BasePage {
         var response = JSON.parse(message.payload);
 
         if (!response.returnValue) {
-            passcodePopup.reportFailure(pageRoot.lockMode === "pin"
-                                        ? "That PIN is not correct."
-                                        : "That password is not correct.");
+            if (response.lockedOut && response.lockoutSeconds > 0)
+                passcodePopup.reportFailure("Too many tries. Try again in "
+                                            + _waitText(response.lockoutSeconds) + ".");
+            else
+                passcodePopup.reportFailure(pageRoot.lockMode === "pin"
+                                            ? "That PIN is not correct."
+                                            : "That password is not correct.");
             return;
         }
 
@@ -515,21 +519,51 @@ BasePage {
     function _applyPasscode(passcode, mode) {
         luna.call("luna://com.palm.systemmanager/setDevicePasscode",
                   JSON.stringify({"passCode": passcode, "lockMode": mode}),
-                  _handlePasscodeStored, _handleSetError);
+                  _handlePasscodeStored, _handlePasscodeSetError);
     }
 
     function _handlePasscodeStored(message) {
         var response = JSON.parse(message.payload);
         if (!response.returnValue) {
             console.warn("Cannot set the passcode: " + message.payload);
-            // The selector already moved to what was asked for; put it back to
-            // what is really in force.
-            cancelLockModeChange();
+            // The service says why: a PIN like 0000 or 1234, too short, or
+            // short of what an Exchange policy asks for.
+            _passcodeRefused(response.errorText);
             return;
         }
 
+        passcodePopup.close();
+        if (pageRoot.pendingLockMode === "") {
+            // Cancelled while the call was out, and it went through anyway:
+            // show what is really in force.
+            retrieveLockMode();
+            return;
+        }
         pageRoot.lockMode = pageRoot.pendingLockMode;
         pageRoot.pendingLockMode = "";
+    }
+
+    function _handlePasscodeSetError(message) {
+        console.warn("Cannot set the passcode: " + message);
+        _passcodeRefused("");
+    }
+
+    function _passcodeRefused(reason) {
+        if (passcodePopup.visible) {
+            // Let them choose another one.
+            passcodePopup.reportFailure(reason ? reason : "The passcode could not be set.");
+            return;
+        }
+        // Turning the lock off has no popup. The selector already moved to
+        // what was asked for; put it back to what is really in force.
+        cancelLockModeChange();
+    }
+
+    function _waitText(seconds) {
+        if (seconds < 60)
+            return seconds === 1 ? "1 second" : seconds + " seconds";
+        var minutes = Math.ceil(seconds / 60);
+        return minutes === 1 ? "1 minute" : minutes + " minutes";
     }
 
     function cancelLockModeChange() {

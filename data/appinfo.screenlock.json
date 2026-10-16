@@ -16,6 +16,7 @@
         "systemsettings.query",
         "systemsettings.management",
         "luna-sysmgr.operation",
+        "auth.passcode",
         "fingerprint.query",
         "faceunlock.query",
         "application.launcher"
