@@ -11,6 +11,10 @@
     "main": "qml/GenericCategoryWindow.qml",
     "icon": "qml/images/icons/icon-wifi.png",
     "uiRevision": "2",
-    "visible": true
+    "visible": true,
+    "requiredPermissions": [
+        "wifi.query",
+        "application.operation"
+    ]
 }
 
