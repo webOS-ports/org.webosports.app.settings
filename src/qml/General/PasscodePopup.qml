@@ -25,6 +25,7 @@ import LunaNext.Common 0.1
 // The pattern grid the lock screen draws too
 import LuneOS.Passcode 1.0
 import LuneOS.Forms 1.0
+import LuneOS.Components 1.0 as LC
 
 /*
  * The passcode dialogs the legacy Screen & Lock app had, plus the Pattern
@@ -83,19 +84,15 @@ Popup {
      * Centred in what the on-screen keyboard leaves free of the page above
      * it, so the second field and the buttons are not hidden behind its
      * keys; with no on-screen keyboard (a hardware one, or a pattern being
-     * drawn) that is the whole page, and it is centred there.
-     * keyboardRectangle is in window coordinates, the popup's in its
-     * parent's. On a tenderloin the keyboard leaves the page 302 of its 598
-     * pixels, room for the 250 the PIN popup needs.
+     * drawn) that is the whole page, and it is centred there. On a
+     * tenderloin the keyboard leaves the page 302 of its 598 pixels, room
+     * for the 250 the PIN popup needs.
      */
-    readonly property real _keyboardTop: {
-        var kb = Qt.inputMethod.keyboardRectangle;
-        if (!parent)
-            return 0;
-        if (!Qt.inputMethod.visible || kb.height <= 0)
-            return parent.height;
-        return Math.min(parent.height, parent.mapFromItem(null, 0, kb.y).y);
+    LC.KeyboardInset {
+        id: keyboard
+        item: passcodePopup.parent
     }
+    readonly property real _keyboardTop: keyboard.top
 
     x: parent ? Math.round((parent.width - width) / 2) : 0
     y: Math.max(Units.gu(1), Math.round((_keyboardTop - height) / 2))
