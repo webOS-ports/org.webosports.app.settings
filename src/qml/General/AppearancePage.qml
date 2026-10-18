@@ -53,9 +53,8 @@ import LuneOS.System 1.0
  *    editor of every tweak there is, while this panel is the handful that are
  *    about how the device looks, in the place someone would look for them.
  *
- * Most of the shell tweaks are marked "restart": "luna" in that definition,
- * meaning the shell reads them at startup and does not watch them afterwards.
- * The page says so rather than looking as though nothing happened.
+ * The shell follows these keys through the service's subscribed /get, so a
+ * change shows up straight away.
  */
 BasePage {
     id: pageRoot
@@ -257,8 +256,8 @@ BasePage {
                         }
                     }
                     // Written on every keystroke rather than on an accept:
-                    // there is no OK button on this row, and the shell only
-                    // reads the value at startup anyway.
+                    // there is no OK button on this row. The service stores
+                    // them one at a time, in order.
                     onEdited: (text) => pageRoot.setTweak("carrierString", text)
                 }
             }
@@ -403,11 +402,6 @@ BasePage {
             }
         }
 
-        ExplanationText {
-            visible: pageRoot.tweaksAvailable
-            text: "The shell reads these once, when it starts. A change " +
-                  "shows up the next time it does."
-        }
     }
 
     WallpaperPickerPopup {
