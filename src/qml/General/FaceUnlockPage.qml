@@ -157,14 +157,67 @@ BasePage {
         return "";
     }
 
-    function startEnroll() {
+    /*
+     * Enrolling takes the passcode: luna-authmanager answers a right
+     * matchDevicePasscode with an unlockToken for this app, which luneos-faced
+     * spends (purpose "enroll") before it starts. Without one, anyone holding
+     * an unlocked phone could add a face of their own.
+     */
+    function askPasscodeThenEnroll() {
+        enrollResult = "";
+        luna.call("luna://com.palm.systemmanager/getDeviceLockMode", "{}",
+                  _lockModeForEnroll, _enrollPasscodeError);
+    }
+
+    function _lockModeForEnroll(message) {
+        var response = JSON.parse(message.payload);
+        var mode = response.returnValue && response.lockMode ? response.lockMode : "none";
+        if (mode === "none") {
+            enrollResult = "Set a PIN, password or pattern in Screen & Lock first.";
+            return;
+        }
+        enrollPasscodePopup.mode = "verify";
+        enrollPasscodePopup.lockMode = mode;
+        enrollPasscodePopup.open();
+    }
+
+    function _verifyForEnroll(passcode) {
+        luna.call("luna://com.palm.systemmanager/matchDevicePasscode",
+                  JSON.stringify({"passCode": passcode}),
+                  _verifiedForEnroll, _enrollPasscodeError);
+    }
+
+    function _verifiedForEnroll(message) {
+        var response = JSON.parse(message.payload);
+        if (!response.returnValue || !response.unlockToken) {
+            if (response.lockedOut && response.lockoutSeconds > 0)
+                enrollPasscodePopup.reportFailure("Too many tries. Try again in "
+                                                  + Math.ceil(response.lockoutSeconds / 60)
+                                                  + " min.");
+            else
+                enrollPasscodePopup.reportFailure("That is not correct.");
+            return;
+        }
+        enrollPasscodePopup.close();
+        startEnroll(response.unlockToken);
+    }
+
+    function _enrollPasscodeError(message) {
+        console.warn("Cannot check the passcode: " + message);
+        if (enrollPasscodePopup.opened)
+            enrollPasscodePopup.reportFailure("The passcode could not be checked.");
+        else
+            enrollResult = "The passcode could not be checked.";
+    }
+
+    function startEnroll(token) {
         enrolling = true;
         enrollProgress = 0;
         enrollHint = "";
         enrollResult = "";
 
         _enrollCall = luna.subscribe("luna://com.webos.service.faceunlock/enroll",
-                                     JSON.stringify({"subscribe": true}),
+                                     JSON.stringify({"token": token, "subscribe": true}),
                                      onEnrollMessage, onEnrollError);
     }
 
@@ -281,7 +334,7 @@ BasePage {
                         Layout.preferredHeight: Units.gu(5.5)
                         Layout.fillWidth: true
                         Layout.maximumWidth: Units.gu(20)
-                        onClicked: faceUnlockPageId.startEnroll()
+                        onClicked: faceUnlockPageId.askPasscodeThenEnroll()
                     }
 
                     Button {
@@ -372,5 +425,11 @@ BasePage {
         }
 
         Item { Layout.fillHeight: true }
+    }
+
+    PasscodePopup {
+        id: enrollPasscodePopup
+
+        onVerifyRequested: (passcode) => faceUnlockPageId._verifyForEnroll(passcode)
     }
 }
