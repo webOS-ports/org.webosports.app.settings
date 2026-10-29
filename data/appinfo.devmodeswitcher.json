@@ -13,6 +13,7 @@
     "uiRevision": "2",
     "visible": true,
     "requiredPermissions": [
-        "devmode-service.operation"
+        "devmode-service.operation",
+        "devmode-service.management"
     ]
 }
