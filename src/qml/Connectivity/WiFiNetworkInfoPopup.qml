@@ -640,6 +640,46 @@ Popup {
                             checked: !!networkInfoPopup.service && networkInfoPopup.service.autoConnect
                             onToggled: networkInfoPopup.service.autoConnect = checked
                         }
+
+                        /*
+                         * connman joins each network with an address of its
+                         * own (WiFiMACRandomization), stable for that network,
+                         * so networks cannot follow the phone from one to the
+                         * next. Some need the real one - MAC filtering, or a
+                         * DHCP reservation made for it - and this is the way
+                         * out. Shown inverted, as "private address on", the
+                         * way other phones put it.
+                         *
+                         * connman only publishes UseDeviceMACAddress while it
+                         * gives networks their own address, and an older
+                         * libconnman-qt has no such property at all; either
+                         * way there is nothing to choose and the row stays
+                         * hidden. wpa_supplicant picks the address when it
+                         * associates, so a change shows on the next
+                         * connection, which the line below says.
+                         */
+                        Column {
+                            width: parent.width
+                            visible: !!networkInfoPopup.service
+                                     && networkInfoPopup.service.useDeviceMACAddressAvailable === true
+
+                            HorizontalSeparator { width: parent.width }
+                            LabelAndSwitch {
+                                id: privateAddressSwitch
+                                label: "Private Wi-Fi address"
+                                checked: !!networkInfoPopup.service && !networkInfoPopup.service.useDeviceMACAddress
+                                onToggled: networkInfoPopup.service.useDeviceMACAddress = !checked
+                            }
+                            Label {
+                                width: parent.width
+                                wrapMode: Text.WordWrap
+                                font.pixelSize: FontUtils.sizeToPixels("small")
+                                color: Colors.secondaryText
+                                text: privateAddressSwitch.checked
+                                      ? "This network sees an address of its own instead of the device's. Applies from the next connection."
+                                      : "This network sees the device's hardware address. Applies from the next connection."
+                            }
+                        }
                     }
                 }
             }
