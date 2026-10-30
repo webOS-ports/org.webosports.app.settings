@@ -479,18 +479,32 @@ BasePage {
                             enabled: !keyRow.pendingDelete
 
                             property real _pressX: 0
+                            property real _pressY: 0
                             // The row is under the pointer, not animated.
                             property bool tracking: false
 
+                            // These rows sit straight in SettingsPageContent,
+                            // a Flickable, not in a ListView as FingerprintPage's
+                            // do. Left alone it takes the drag as soon as the
+                            // hand drifts up or down a little, and the swipe is
+                            // lost. As PrintManagerPage: keep the drag once it
+                            // is more than 2 gu sideways and more sideways than
+                            // up or down, so a drag up or down still scrolls.
                             onPressed: (mouse) => {
                                 _pressX = mouse.x;
+                                _pressY = mouse.y;
+                                preventStealing = false;
                                 tracking = true;
                             }
                             onPositionChanged: (mouse) => {
+                                var dx = Math.abs(mouse.x - _pressX);
+                                if (dx > Units.gu(2) && dx > Math.abs(mouse.y - _pressY))
+                                    preventStealing = true;
                                 keyContent.x = mouse.x - _pressX;
                             }
                             onReleased: (mouse) => {
                                 var dx = mouse.x - _pressX;
+                                preventStealing = false;
                                 tracking = false;
                                 if (Math.abs(dx) > Units.gu(4)) {
                                     keyRow.pendingDelete = true;
@@ -501,6 +515,7 @@ BasePage {
                             }
                             // The page took the drag (it scrolls): back home.
                             onCanceled: {
+                                preventStealing = false;
                                 tracking = false;
                                 keyContent.x = 0;
                             }
