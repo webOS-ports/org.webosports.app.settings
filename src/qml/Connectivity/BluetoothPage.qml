@@ -85,8 +85,25 @@ BasePage {
         }
     }
 
+    // Search while the page is up. BluetoothManager stops a search after
+    // 30 s by itself; leaving the card ends it at once, and coming back to
+    // it starts a new one, since a headset may have been put into pairing
+    // mode in the meantime. BluetoothManager outlives the page (it is a
+    // singleton), so the page has to say when it goes too.
     Component.onCompleted: {
         BluetoothManager.discoveringMode = true;
+    }
+    Component.onDestruction: {
+        BluetoothManager.discoveringMode = false;
+    }
+    Connections {
+        target: Qt.application
+        function onStateChanged() {
+            if (Qt.application.state === Qt.ApplicationActive)
+                BluetoothManager.searchAgain();
+            else
+                BluetoothManager.discoveringMode = false;
+        }
     }
 
     Connections {
@@ -137,6 +154,35 @@ BasePage {
             title: "Choose a device"
             ColumnLayout {
                 anchors.fill: parent
+
+                // Finding a headset takes BlueZ 10 to 20 s; say that it is
+                // looking, and once it has stopped, let it look again.
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Units.gu(5)
+                    visible: BluetoothManager.bluetoothOperational
+
+                    BusyIndicator {
+                        running: BluetoothManager.discovering
+                        visible: running
+                        Layout.preferredHeight: Units.gu(4)
+                        Layout.preferredWidth: Units.gu(4)
+                    }
+                    Label {
+                        Layout.fillWidth: true
+                        verticalAlignment: Text.AlignVCenter
+                        elide: Text.ElideRight
+                        text: BluetoothManager.discovering ? "Searching for devices\u2026"
+                                                           : (btDevicesModel.count > 0 ? "" : "No devices found.")
+                        color: Colors.secondaryText
+                        font.pixelSize: FontUtils.sizeToPixels("medium")
+                    }
+                    Button {
+                        text: "Search again"
+                        visible: !BluetoothManager.discovering
+                        onClicked: BluetoothManager.searchAgain()
+                    }
+                }
 
                 ListView {
                     Layout.fillWidth: true
