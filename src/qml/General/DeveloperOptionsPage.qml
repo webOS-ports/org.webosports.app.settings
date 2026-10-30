@@ -180,10 +180,9 @@ BasePage {
 
         ExplanationText {
             text: pageRoot.devModeEnabled
-                  ? "USB Debugging runs the Android adb daemon, so it only " +
-                    "does something on a device that has the Android tools - " +
-                    "a Halium port. ssh does not need it: it listens while " +
-                    "Developer Mode is on."
+                  ? "USB Debugging runs adbd, so a computer connected by USB " +
+                    "can use adb once you allow it on this screen. ssh does " +
+                    "not need it: it listens while Developer Mode is on."
                   : "Turn Developer Mode on first. USB Debugging is stopped " +
                     "with it."
         }
