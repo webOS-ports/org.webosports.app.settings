@@ -17,6 +17,7 @@
 
 import QtQuick 2.9
 import QtQuick.Controls 2.2
+import QtQuick.Layouts 1.3
 
 // Theme specific properties
 import QtQuick.Controls.LuneOS 2.0
@@ -195,12 +196,17 @@ BasePage {
                 width: parent.width
                 spacing: Units.gu(1)
 
+                // The style's own colours, as Set and Add. It only asks:
+                // forgetting every computer is one stray tap away
+                // otherwise (a drag to scroll the page starts on it), and
+                // nothing would say it happened. No focus either, so a
+                // Space from a keyboard cannot press it again.
                 Button {
                     objectName: "revokeAdbKeys"
                     width: parent.width
+                    focusPolicy: Qt.NoFocus
                     text: "Revoke USB Debugging Authorizations"
-                    LuneOSButton.mainColor: LuneOSButton.secondaryColor
-                    onClicked: pageRoot.revokeAdbKeys()
+                    onClicked: revokeDialog.open()
                 }
             }
         }
@@ -373,6 +379,65 @@ BasePage {
                     "on the device itself, such as on a serial console."
                   : "Turn Developer Mode on first to set a password, add a " +
                     "key or open SSH to Wi-Fi."
+        }
+    }
+
+    // A Popup as LocationPage's "Clear My Location Data": the LuneOS
+    // style has no Dialog of its own.
+    Popup {
+        id: revokeDialog
+        objectName: "revokeAdbKeysDialog"
+
+        modal: true
+        focus: true
+        closePolicy: Popup.CloseOnEscape
+
+        width: Math.min(parent.width - Units.gu(4), Units.gu(40))
+
+        ColumnLayout {
+            width: parent.width
+            spacing: Units.gu(1.5)
+
+            Label {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: "Revoke USB Debugging Authorizations"
+                font.pixelSize: FontUtils.sizeToPixels("18pt")
+                font.weight: Font.Bold
+            }
+
+            Label {
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                horizontalAlignment: Text.AlignHCenter
+                text: "Every computer allowed \"always\" will have to be " +
+                      "allowed on this screen again before it can use adb."
+                font.pixelSize: FontUtils.sizeToPixels("medium")
+            }
+
+            Row {
+                Layout.alignment: Qt.AlignHCenter
+                spacing: Units.gu(1)
+
+                Button {
+                    objectName: "revokeAdbKeysCancel"
+                    focusPolicy: Qt.NoFocus
+                    text: "Cancel"
+                    LuneOSButton.mainColor: LuneOSButton.secondaryColor
+                    onClicked: revokeDialog.close()
+                }
+                Button {
+                    objectName: "revokeAdbKeysConfirm"
+                    focusPolicy: Qt.NoFocus
+                    text: "Revoke"
+                    LuneOSButton.mainColor: LuneOSButton.negativeColor
+                    onClicked: {
+                        revokeDialog.close();
+                        pageRoot.revokeAdbKeys();
+                    }
+                }
+            }
         }
     }
 
