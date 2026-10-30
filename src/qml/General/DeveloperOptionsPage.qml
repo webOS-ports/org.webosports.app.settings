@@ -50,16 +50,18 @@ import LuneOS.System 1.0
  *  - adbd lets a computer in only once the user said so: the shell asks
  *    ("Allow USB debugging?"), and revokeAdbKeys forgets every computer
  *    allowed "always".
- *  - ssh lets root in with a key only (PermitRootLogin prohibit-password):
- *    add/remove/listAuthorizedKeys keep root's authorized_keys, and
- *    sshOverWifi opens port 22 on Wi-Fi as well as USB. setDevPassword
- *    sets root's password, which is what a serial or local login takes. getAccessStatus says which of these are set. Setting a
- *    password, adding a key and opening Wi-Fi need developer mode on;
- *    taking away does not.
+ *  - ssh lets root in with a key (add/remove/listAuthorizedKeys keep root's
+ *    authorized_keys), and with root's password only over the local link:
+ *    the USB network, or an emulator's NAT (meta-luneos' luneos_image).
+ *    sshOverWifi opens port 22 on Wi-Fi as well as USB. setDevPassword sets
+ *    root's password, clearDevPassword takes it away again ("*"), and
+ *    getAccessStatus says which of these are set. Setting a password, adding
+ *    a key and opening Wi-Fi need developer mode on; taking away does not.
  *
  * Only this app may call those (devmode-service.management, in the
- * service's ACG). The password is handed to the service and not kept:
- * the field is emptied once it is sent, and it is never logged.
+ * service's ACG). The password is typed twice, handed to the service and
+ * not kept: both fields are emptied once it is sent, and it is never logged.
+ * Removing the password or a key asks first, as Revoke does.
  *
  * The reply is not trusted for the result. setStatus builds its returnValue
  * from a "success" flag that the usbDebugging path only sets inside an
@@ -69,7 +71,7 @@ import LuneOS.System 1.0
  *
  * The legacy app's "Change Password" row was novacom's password; there is
  * no novacom here, and the password below is root's, for logging in on the
- * device itself.
+ * device itself and over the USB cable.
  */
 BasePage {
     id: pageRoot
@@ -81,9 +83,12 @@ BasePage {
     property bool sshOverWifiEnabled: false
     // [{type, fingerprint, comment}], from listAuthorizedKeys.
     property var authorizedKeys: []
-    // The service's word on the last password or key that did not take.
+    // The service's word on the last password or key that did not take,
+    // and what the last one that did take did.
     property string passwordError: ""
+    property string passwordMessage: ""
     property string keyError: ""
+    property string keyMessage: ""
     property string adbMessage: ""
 
     readonly property string devmodeService: "luna://org.webosports.service.devmode"
@@ -250,52 +255,135 @@ BasePage {
                     onToggled: pageRoot.setSshOverWifi(checked)
                 }
 
+            }
+        }
+
+        ExplanationText {
+            text: pageRoot.devModeEnabled
+                  ? "ssh answers over the USB cable, and on Wi-Fi as well " +
+                    "while SSH over Wi-Fi is on."
+                  : "Turn Developer Mode on first to set a password, add a " +
+                    "key or open SSH to Wi-Fi."
+        }
+
+        GroupBox {
+            width: parent.width
+            enabled: pageRoot.serviceAvailable
+
+            title: "Root's Password"
+
+            Column {
+                width: parent.width
+                spacing: Units.gu(1)
+
                 Label {
+                    objectName: "passwordState"
                     width: parent.width
                     wrapMode: Text.WordWrap
-                    text: pageRoot.passwordSet ? "Change root's password" : "Set root's password"
+                    text: pageRoot.passwordSet ? "A password is set" : "No password set"
                     font.pixelSize: FontUtils.sizeToPixels("16pt")
                 }
 
-                Row {
+                FormTextField {
+                    id: passwordField
+                    objectName: "devPassword"
                     width: parent.width
-                    spacing: Units.gu(1)
+                    height: Units.gu(5)
+                    enabled: pageRoot.devModeEnabled
+                    echoMode: showPasswordSwitch.checked ? TextInput.Normal : TextInput.Password
+                    inputMethodHints: Qt.ImhNoPredictiveText | Qt.ImhNoAutoUppercase | Qt.ImhSensitiveData
+                    placeholderText: pageRoot.passwordSet ? "New password, 8 characters or more"
+                                                          : "Password, 8 characters or more"
+                    acceptable: text.length === 0 || pageRoot.passwordAcceptable(text)
+                    onAccepted: passwordConfirmField.forceActiveFocus()
+                }
 
-                    FormTextField {
-                        id: passwordField
-                        objectName: "devPassword"
-                        width: parent.width - setPasswordButton.width - parent.spacing
-                        height: Units.gu(5)
-                        enabled: pageRoot.devModeEnabled
-                        echoMode: TextInput.Password
-                        inputMethodHints: Qt.ImhNoPredictiveText | Qt.ImhNoAutoUppercase | Qt.ImhSensitiveData
-                        placeholderText: "8 characters or more"
-                        acceptable: text.length === 0 || pageRoot.passwordAcceptable(text)
-                        onAccepted: setPasswordButton.clicked()
-                    }
+                FormTextField {
+                    id: passwordConfirmField
+                    objectName: "devPasswordConfirm"
+                    width: parent.width
+                    height: Units.gu(5)
+                    enabled: pageRoot.devModeEnabled
+                    echoMode: passwordField.echoMode
+                    inputMethodHints: passwordField.inputMethodHints
+                    placeholderText: "The same again"
+                    acceptable: text.length === 0 || text === passwordField.text
+                    onAccepted: if (setPasswordButton.enabled) setPasswordButton.clicked()
+                }
+
+                LabelAndSwitch {
+                    id: showPasswordSwitch
+                    objectName: "showPassword"
+                    label: "Show Password"
+                    enabled: pageRoot.devModeEnabled
+                    checked: false
+                }
+
+                Row {
+                    spacing: Units.gu(1)
 
                     Button {
                         id: setPasswordButton
                         objectName: "setDevPassword"
-                        text: "Set"
-                        enabled: pageRoot.devModeEnabled && pageRoot.passwordAcceptable(passwordField.text)
-                        onClicked: pageRoot.setPassword(passwordField)
+                        text: pageRoot.passwordSet ? "Change" : "Set"
+                        enabled: pageRoot.devModeEnabled &&
+                                 pageRoot.passwordAcceptable(passwordField.text) &&
+                                 passwordConfirmField.text === passwordField.text
+                        onClicked: pageRoot.setPassword(passwordField, passwordConfirmField)
+                    }
+
+                    // Taking away needs no developer mode, as in the service.
+                    Button {
+                        objectName: "removeDevPassword"
+                        visible: pageRoot.passwordSet
+                        focusPolicy: Qt.NoFocus
+                        text: "Remove"
+                        LuneOSButton.mainColor: LuneOSButton.negativeColor
+                        onClicked: removePasswordDialog.open()
                     }
                 }
 
                 Label {
+                    objectName: "passwordFeedback"
                     width: parent.width
+                    visible: text !== ""
                     wrapMode: Text.WordWrap
-                    text: "Authorized keys"
-                    font.pixelSize: FontUtils.sizeToPixels("16pt")
+                    textFormat: Text.PlainText
+                    text: pageRoot.passwordError !== "" ? pageRoot.passwordError
+                        : pageRoot.passwordMismatch(passwordField.text, passwordConfirmField.text)
+                          ? "The two passwords are not the same."
+                        : pageRoot.passwordMessage
+                    color: pageRoot.passwordError !== "" ||
+                           pageRoot.passwordMismatch(passwordField.text, passwordConfirmField.text)
+                           ? Colors.error : Colors.secondaryText
+                    font.pixelSize: FontUtils.sizeToPixels("small")
                 }
+            }
+        }
+
+        ExplanationText {
+            objectName: "passwordHelp"
+            text: "Root's password is for logging in on the device itself, " +
+                  "such as on a serial console, and over ssh on the USB " +
+                  "cable only (on an emulator, through its NAT). Over Wi-Fi, " +
+                  "ssh takes a key only."
+        }
+
+        GroupBox {
+            width: parent.width
+            enabled: pageRoot.serviceAvailable
+
+            title: "Authorized Keys"
+
+            Column {
+                width: parent.width
+                spacing: Units.gu(1)
 
                 Label {
                     width: parent.width
                     visible: pageRoot.authorizedKeys.length === 0
                     wrapMode: Text.WordWrap
-                    text: "No keys. ssh lets root in with a key listed " +
-                          "here, never with a password."
+                    text: "No keys."
                     color: Colors.secondaryText
                     font.pixelSize: FontUtils.sizeToPixels("small")
                 }
@@ -306,7 +394,7 @@ BasePage {
                     delegate: Item {
                         id: keyRow
                         width: parent.width
-                        height: Units.gu(6)
+                        height: Units.gu(7)
 
                         readonly property var key: modelData
 
@@ -317,13 +405,24 @@ BasePage {
                             anchors.verticalCenter: parent.verticalCenter
 
                             Label {
+                                objectName: "keyComment-" + keyRow.key.fingerprint
                                 width: parent.width
-                                text: keyRow.key.comment || keyRow.key.type
+                                text: keyRow.key.comment || "No comment"
                                 textFormat: Text.PlainText
                                 elide: Text.ElideRight
                                 font.pixelSize: FontUtils.sizeToPixels("medium")
                             }
                             Label {
+                                objectName: "keyType-" + keyRow.key.fingerprint
+                                width: parent.width
+                                text: keyRow.key.type
+                                textFormat: Text.PlainText
+                                elide: Text.ElideRight
+                                color: Colors.secondaryText
+                                font.pixelSize: FontUtils.sizeToPixels("small")
+                            }
+                            Label {
+                                objectName: "keyFingerprint-" + keyRow.key.fingerprint
                                 width: parent.width
                                 text: keyRow.key.fingerprint
                                 textFormat: Text.PlainText
@@ -338,9 +437,10 @@ BasePage {
                             objectName: "removeKey-" + keyRow.key.fingerprint
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
+                            focusPolicy: Qt.NoFocus
                             text: "Remove"
-                            LuneOSButton.mainColor: LuneOSButton.secondaryColor
-                            onClicked: pageRoot.removeAuthorizedKey(keyRow.key.fingerprint)
+                            LuneOSButton.mainColor: LuneOSButton.negativeColor
+                            onClicked: pageRoot.askRemoveKey(keyRow.key)
                         }
                     }
                 }
@@ -357,7 +457,7 @@ BasePage {
                         enabled: pageRoot.devModeEnabled
                         inputMethodHints: Qt.ImhNoPredictiveText | Qt.ImhNoAutoUppercase
                         placeholderText: "ssh-ed25519 AAAA... you@computer"
-                        onAccepted: addKeyButton.clicked()
+                        onAccepted: if (addKeyButton.enabled) addKeyButton.clicked()
                     }
 
                     Button {
@@ -368,20 +468,152 @@ BasePage {
                         onClicked: pageRoot.addAuthorizedKey(keyField)
                     }
                 }
+
+                Label {
+                    objectName: "keyFeedback"
+                    width: parent.width
+                    visible: text !== ""
+                    wrapMode: Text.WrapAnywhere
+                    textFormat: Text.PlainText
+                    text: pageRoot.keyError !== "" ? pageRoot.keyError : pageRoot.keyMessage
+                    color: pageRoot.keyError !== "" ? Colors.error : Colors.secondaryText
+                    font.pixelSize: FontUtils.sizeToPixels("small")
+                }
             }
         }
 
         ExplanationText {
-            text: pageRoot.passwordError !== "" ? pageRoot.passwordError
-                : pageRoot.keyError !== "" ? pageRoot.keyError
-                : pageRoot.devModeEnabled
-                  ? "ssh answers over the USB cable, and on Wi-Fi as well " +
-                    "while SSH over Wi-Fi is on, and takes a key only: paste " +
-                    "a public key (the contents of ~/.ssh/id_ed25519.pub) to " +
-                    "log in as root with it. The password is for logging in " +
-                    "on the device itself, such as on a serial console."
-                  : "Turn Developer Mode on first to set a password, add a " +
-                    "key or open SSH to Wi-Fi."
+            objectName: "keyHelp"
+            text: "ssh lets root in with a key listed here. Paste a public " +
+                  "key (the contents of ~/.ssh/id_ed25519.pub), or, from a " +
+                  "computer USB Debugging lets in: " +
+                  "adb shell luneos-ssh-addkey < ~/.ssh/id_ed25519.pub"
+        }
+    }
+
+    // Asked first, as Revoke: either one leaves root's ssh as it was before
+    // the user set it up, and a stray tap should not.
+    Popup {
+        id: removePasswordDialog
+        objectName: "removeDevPasswordDialog"
+
+        modal: true
+        focus: true
+        closePolicy: Popup.CloseOnEscape
+
+        width: Math.min(parent.width - Units.gu(4), Units.gu(40))
+
+        ColumnLayout {
+            width: parent.width
+            spacing: Units.gu(1.5)
+
+            Label {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: "Remove Root's Password"
+                font.pixelSize: FontUtils.sizeToPixels("18pt")
+                font.weight: Font.Bold
+            }
+
+            Label {
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                horizontalAlignment: Text.AlignHCenter
+                text: "Root will have no password: logging in on the " +
+                      "device or over the USB cable will need a key again."
+                font.pixelSize: FontUtils.sizeToPixels("medium")
+            }
+
+            Row {
+                Layout.alignment: Qt.AlignHCenter
+                spacing: Units.gu(1)
+
+                Button {
+                    objectName: "removeDevPasswordCancel"
+                    focusPolicy: Qt.NoFocus
+                    text: "Cancel"
+                    LuneOSButton.mainColor: LuneOSButton.secondaryColor
+                    onClicked: removePasswordDialog.close()
+                }
+                Button {
+                    objectName: "removeDevPasswordConfirm"
+                    focusPolicy: Qt.NoFocus
+                    text: "Remove"
+                    LuneOSButton.mainColor: LuneOSButton.negativeColor
+                    onClicked: {
+                        removePasswordDialog.close();
+                        pageRoot.clearPassword();
+                    }
+                }
+            }
+        }
+    }
+
+    Popup {
+        id: removeKeyDialog
+        objectName: "removeKeyDialog"
+
+        // {type, fingerprint, comment} of the key asked about.
+        property var key: null
+
+        modal: true
+        focus: true
+        closePolicy: Popup.CloseOnEscape
+
+        width: Math.min(parent.width - Units.gu(4), Units.gu(40))
+
+        ColumnLayout {
+            width: parent.width
+            spacing: Units.gu(1.5)
+
+            Label {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: "Remove Key"
+                font.pixelSize: FontUtils.sizeToPixels("18pt")
+                font.weight: Font.Bold
+            }
+
+            Label {
+                objectName: "removeKeyText"
+                Layout.fillWidth: true
+                wrapMode: Text.WrapAnywhere
+                horizontalAlignment: Text.AlignHCenter
+                textFormat: Text.PlainText
+                text: removeKeyDialog.key
+                      ? (removeKeyDialog.key.comment || removeKeyDialog.key.type) + "\n" +
+                        removeKeyDialog.key.fingerprint + "\n\nwill no longer let root in over ssh."
+                      : ""
+                font.pixelSize: FontUtils.sizeToPixels("medium")
+            }
+
+            Row {
+                Layout.alignment: Qt.AlignHCenter
+                spacing: Units.gu(1)
+
+                Button {
+                    objectName: "removeKeyCancel"
+                    focusPolicy: Qt.NoFocus
+                    text: "Cancel"
+                    LuneOSButton.mainColor: LuneOSButton.secondaryColor
+                    onClicked: removeKeyDialog.close()
+                }
+                Button {
+                    objectName: "removeKeyConfirm"
+                    focusPolicy: Qt.NoFocus
+                    text: "Remove"
+                    LuneOSButton.mainColor: LuneOSButton.negativeColor
+                    onClicked: {
+                        var fp = removeKeyDialog.key ? removeKeyDialog.key.fingerprint : "";
+                        removeKeyDialog.close();
+                        removeKeyDialog.key = null;
+                        if (fp !== "")
+                            pageRoot.removeAuthorizedKey(fp);
+                    }
+                }
+            }
         }
     }
 
@@ -505,22 +737,37 @@ BasePage {
         return text.length >= 8 && text.length <= 512 && !/[\0\r\n]/.test(text);
     }
 
-    // The field, not its text: it is emptied here, whatever the answer, so
-    // the password does not stay on screen or in the page.
-    function setPassword(field) {
+    // Two passwords typed that differ; nothing to say while one is empty.
+    function passwordMismatch(text, confirm) {
+        return text !== "" && confirm !== "" && text !== confirm;
+    }
+
+    // The fields, not their text: they are emptied here, whatever the
+    // answer, so the password does not stay on screen or in the page.
+    function setPassword(field, confirmField) {
         var password = field.text;
+        var confirm = confirmField.text;
         field.text = "";
+        confirmField.text = "";
         pageRoot.passwordError = "";
+        pageRoot.passwordMessage = "";
+        if (password !== confirm) {
+            pageRoot.passwordError = "The two passwords were not the same, so nothing was changed.";
+            return;
+        }
         if (!passwordAcceptable(password))
             return;
+        var changed = pageRoot.passwordSet;
         luna.call(devmodeService + "/setDevPassword", JSON.stringify({"password": password}),
                   function (message) {
                       var response = _reply(message);
                       if (response && response.returnValue) {
                           pageRoot.passwordSet = true;
+                          pageRoot.passwordMessage = changed ? "The password was changed." : "The password is set.";
                       } else {
                           pageRoot.passwordError = (response && response.errorText) || "The password was not set.";
                       }
+                      retrieveAccess();
                   },
                   function (message) {
                       // Not the message: it is the call, password and all.
@@ -528,9 +775,29 @@ BasePage {
                   });
     }
 
+    function clearPassword() {
+        pageRoot.passwordError = "";
+        pageRoot.passwordMessage = "";
+        luna.call(devmodeService + "/clearDevPassword", "{}",
+                  function (message) {
+                      var response = _reply(message);
+                      if (response && response.returnValue) {
+                          pageRoot.passwordSet = false;
+                          pageRoot.passwordMessage = "The password was removed.";
+                      } else {
+                          pageRoot.passwordError = (response && response.errorText) || "The password was not removed.";
+                      }
+                      retrieveAccess();
+                  },
+                  function (message) {
+                      pageRoot.passwordError = "The password was not removed.";
+                  });
+    }
+
     function addAuthorizedKey(field) {
         var key = field.text.trim();
         pageRoot.keyError = "";
+        pageRoot.keyMessage = "";
         if (key === "")
             return;
         luna.call(devmodeService + "/addAuthorizedKey", JSON.stringify({"key": key}),
@@ -538,8 +805,12 @@ BasePage {
                       var response = _reply(message);
                       if (response && response.returnValue) {
                           field.text = "";
+                          pageRoot.keyMessage = response.added === false
+                              ? "This key is already authorized: " + response.fingerprint
+                              : "Key added: " + response.fingerprint;
                       } else {
-                          pageRoot.keyError = (response && response.errorText) || "The key was not added.";
+                          pageRoot.keyError = "The key was not added: " +
+                              ((response && response.errorText) || "the service did not say why") + ".";
                       }
                       retrieveAccess();
                   },
@@ -548,16 +819,28 @@ BasePage {
                   });
     }
 
+    // Asked first (removeKeyDialog), then removeAuthorizedKey.
+    function askRemoveKey(key) {
+        removeKeyDialog.key = key;
+        removeKeyDialog.open();
+    }
+
     function removeAuthorizedKey(fingerprint) {
         pageRoot.keyError = "";
+        pageRoot.keyMessage = "";
         luna.call(devmodeService + "/removeAuthorizedKey", JSON.stringify({"fingerprint": fingerprint}),
                   function (message) {
                       var response = _reply(message);
-                      if (!response || !response.returnValue)
+                      if (response && response.returnValue)
+                          pageRoot.keyMessage = "Key removed: " + fingerprint;
+                      else
                           pageRoot.keyError = (response && response.errorText) || "The key was not removed.";
                       retrieveAccess();
                   },
-                  _handleAccessError);
+                  function (message) {
+                      pageRoot.keyError = "The key was not removed.";
+                      retrieveAccess();
+                  });
     }
 
     function setSshOverWifi(on) {
