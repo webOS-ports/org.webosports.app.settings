@@ -85,6 +85,42 @@ BasePage {
         }
     }
 
+    // Whether bluetooth2 connects the headset used last again when Bluetooth
+    // comes on (boot, switching it on, a stack restart). bluetooth2 keeps the
+    // setting; the switch only shows once it has said what it is.
+    readonly property string autoReconnectService: "luna://com.webos.service.bluetooth2/autoReconnect"
+    property bool autoReconnectKnown: false
+    property bool autoReconnectEnabled: true
+
+    function _handleAutoReconnectStatus(message) {
+        var response = JSON.parse(message.payload);
+        if (response.returnValue === false || response.enabled === undefined)
+            return;
+        autoReconnectEnabled = response.enabled === true;
+        autoReconnectKnown = true;
+    }
+    function _handleAutoReconnectError(message) {
+        console.warn("Bluetooth: no auto-reconnect setting: " + message.payload);
+    }
+    function setAutoReconnect(enabled) {
+        autoReconnectEnabled = enabled;
+        luna.call(autoReconnectService + "/setState", JSON.stringify({"enabled": enabled}),
+                  _handleAutoReconnectStatus,
+                  function (message) {
+                      // Not taken: show what bluetooth2 still has.
+                      _handleSetError(message);
+                      autoReconnectEnabled = !enabled;
+                  });
+    }
+    // The user disconnected this device: bluetooth2 must not bring it back
+    // by itself, as Android does not. It cannot tell by itself, as the
+    // disconnect goes to BlueZ directly.
+    function disconnectDevice(address) {
+        luna.call(autoReconnectService + "/forget", JSON.stringify({"address": address}),
+                  _handleSetSuccess, _handleSetError);
+        BluetoothManager.disconnectDeviceAddress(address);
+    }
+
     // Search while the page is up. BluetoothManager stops a search after
     // 30 s by itself; leaving the card ends it at once, and coming back to
     // it starts a new one, since a headset may have been put into pairing
@@ -92,6 +128,8 @@ BasePage {
     // singleton), so the page has to say when it goes too.
     Component.onCompleted: {
         BluetoothManager.discoveringMode = true;
+        luna.subscribe(autoReconnectService + "/getStatus", JSON.stringify({"subscribe": true}),
+                       _handleAutoReconnectStatus, _handleAutoReconnectError);
     }
     Component.onDestruction: {
         BluetoothManager.discoveringMode = false;
@@ -144,6 +182,22 @@ BasePage {
             onClicked: {
                 BluetoothManager.setDiscoverable(discoverableToggle.checked);
             }
+        }
+
+        LabelAndSwitch {
+            id: autoReconnectSwitch
+            Layout.fillWidth: true
+            visible: bluetoothPageId.autoReconnectKnown
+
+            label: "Reconnect headsets automatically"
+            // Toggling sets checked from C++, which keeps this binding.
+            checked: bluetoothPageId.autoReconnectEnabled
+            onToggled: bluetoothPageId.setAutoReconnect(checked)
+        }
+        ExplanationText {
+            Layout.fillWidth: true
+            visible: bluetoothPageId.autoReconnectKnown
+            text: "When Bluetooth comes on, connect the headset or speaker used last. A device you disconnect here is not connected again until you connect it."
         }
 
         /* GroupBoxes look good! */
@@ -242,7 +296,7 @@ BasePage {
                                     BluetoothManager.connectDeviceAddress(btDevice.Address);
                                 } else {
                                     // disconnect !
-                                    BluetoothManager.disconnectDeviceAddress(btDevice.Address);
+                                    bluetoothPageId.disconnectDevice(btDevice.Address);
                                 }
                             }
                         }
