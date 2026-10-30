@@ -196,16 +196,19 @@ BasePage {
                 width: parent.width
                 spacing: Units.gu(1)
 
-                // The style's own colours, as Set and Add. It only asks:
-                // forgetting every computer is one stray tap away
-                // otherwise (a drag to scroll the page starts on it), and
-                // nothing would say it happened. No focus either, so a
-                // Space from a keyboard cannot press it again.
+                // Red, as the Revoke in the popup it opens and as the
+                // app's other ways to throw something away (PrintManager's
+                // Cancel All). It only asks: forgetting every computer is
+                // one stray tap away otherwise (a drag to scroll the page
+                // starts on it), and nothing would say it happened. No
+                // focus either, so a Space from a keyboard cannot press it
+                // again.
                 Button {
                     objectName: "revokeAdbKeys"
                     width: parent.width
                     focusPolicy: Qt.NoFocus
                     text: "Revoke USB Debugging Authorizations"
+                    LuneOSButton.mainColor: LuneOSButton.negativeColor
                     onClicked: revokeDialog.open()
                 }
             }
