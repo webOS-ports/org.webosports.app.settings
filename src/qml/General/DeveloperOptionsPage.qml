@@ -404,10 +404,31 @@ BasePage {
                         readonly property var key: modelData
                         property bool pendingDelete: false
 
-                        // Normal row: comment, type and fingerprint.
+                        // The row slides out of its own band, not over its
+                        // neighbours.
+                        clip: true
+
+                        // Normal row: comment, type and fingerprint. It follows
+                        // the pointer sideways while the row is held, then on
+                        // release slides out of the way of Cancel and Delete
+                        // or back home, with the LuneOS style's SwipeDelegate
+                        // motion; without that a drag showed nothing at all
+                        // until it was let go past the threshold.
                         Item {
-                            anchors.fill: parent
-                            visible: !keyRow.pendingDelete
+                            id: keyContent
+                            objectName: "keyContent-" + keyRow.key.fingerprint
+                            width: parent.width
+                            height: parent.height
+
+                            // Not keySwipe.pressed: MouseArea sends released
+                            // before it clears pressed, and the row jumped.
+                            Behavior on x {
+                                enabled: !keySwipe.tracking
+                                NumberAnimation {
+                                    easing.type: Easing.OutExpo
+                                    duration: 400
+                                }
+                            }
 
                             Column {
                                 anchors.left: parent.left
@@ -444,20 +465,44 @@ BasePage {
                                     font.pixelSize: FontUtils.sizeToPixels("small")
                                 }
                             }
+                        }
 
-                            // Sideways by more than 4 gu asks; a tap does
-                            // nothing (FingerprintPage's tap renames; a key
-                            // has nothing to rename).
-                            MouseArea {
-                                anchors.fill: parent
+                        // Sideways by more than 4 gu asks; a tap does
+                        // nothing (FingerprintPage's tap renames; a key
+                        // has nothing to rename). On the row, not on what
+                        // slides, so the pointer is measured from a place
+                        // that stays put.
+                        MouseArea {
+                            id: keySwipe
+                            objectName: "keySwipe-" + keyRow.key.fingerprint
+                            anchors.fill: parent
+                            enabled: !keyRow.pendingDelete
 
-                                property real _pressX: 0
+                            property real _pressX: 0
+                            // The row is under the pointer, not animated.
+                            property bool tracking: false
 
-                                onPressed: (mouse) => { _pressX = mouse.x; }
-                                onReleased: (mouse) => {
-                                    if (Math.abs(mouse.x - _pressX) > Units.gu(4))
-                                        keyRow.pendingDelete = true;
+                            onPressed: (mouse) => {
+                                _pressX = mouse.x;
+                                tracking = true;
+                            }
+                            onPositionChanged: (mouse) => {
+                                keyContent.x = mouse.x - _pressX;
+                            }
+                            onReleased: (mouse) => {
+                                var dx = mouse.x - _pressX;
+                                tracking = false;
+                                if (Math.abs(dx) > Units.gu(4)) {
+                                    keyRow.pendingDelete = true;
+                                    keyContent.x = dx < 0 ? -keyRow.width : keyRow.width;
+                                } else {
+                                    keyContent.x = 0;
                                 }
+                            }
+                            // The page took the drag (it scrolls): back home.
+                            onCanceled: {
+                                tracking = false;
+                                keyContent.x = 0;
                             }
                         }
 
@@ -473,7 +518,10 @@ BasePage {
                                 focusPolicy: Qt.NoFocus
                                 text: "Cancel"
                                 LuneOSButton.mainColor: LuneOSButton.secondaryColor
-                                onClicked: keyRow.pendingDelete = false
+                                onClicked: {
+                                    keyRow.pendingDelete = false;
+                                    keyContent.x = 0;
+                                }
                             }
 
                             Button {
@@ -484,6 +532,8 @@ BasePage {
                                 LuneOSButton.textColor: "white"
                                 onClicked: {
                                     keyRow.pendingDelete = false;
+                                    // Home again should the service keep it.
+                                    keyContent.x = 0;
                                     pageRoot.removeAuthorizedKey(keyRow.key.fingerprint);
                                 }
                             }
