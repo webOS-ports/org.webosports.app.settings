@@ -61,7 +61,8 @@ import LuneOS.System 1.0
  * Only this app may call those (devmode-service.management, in the
  * service's ACG). The password is typed twice, handed to the service and
  * not kept: both fields are emptied once it is sent, and it is never logged.
- * Removing the password or a key asks first, as Revoke does.
+ * Removing the password asks first, as Revoke does; a key is removed
+ * as a fingerprint is, by swiping its row and then Delete.
  *
  * The reply is not trusted for the result. setStatus builds its returnValue
  * from a "success" flag that the usbDebugging path only sets inside an
@@ -391,56 +392,109 @@ BasePage {
                 Repeater {
                     model: pageRoot.authorizedKeys
 
+                    // As FingerprintPage's rows: swipe a row sideways to ask,
+                    // then Cancel (grey) or Delete (red) in its place - the
+                    // webOS delete gesture, with no button on every row.
                     delegate: Item {
                         id: keyRow
+                        objectName: "keyRow-" + keyRow.key.fingerprint
                         width: parent.width
-                        height: Units.gu(7)
+                        height: Units.gu(8)
 
                         readonly property var key: modelData
+                        property bool pendingDelete: false
 
-                        Column {
-                            anchors.left: parent.left
-                            anchors.right: removeKeyButton.left
-                            anchors.rightMargin: Units.gu(1)
-                            anchors.verticalCenter: parent.verticalCenter
+                        // Normal row: comment, type and fingerprint.
+                        Item {
+                            anchors.fill: parent
+                            visible: !keyRow.pendingDelete
 
-                            Label {
-                                objectName: "keyComment-" + keyRow.key.fingerprint
-                                width: parent.width
-                                text: keyRow.key.comment || "No comment"
-                                textFormat: Text.PlainText
-                                elide: Text.ElideRight
-                                font.pixelSize: FontUtils.sizeToPixels("medium")
+                            Column {
+                                anchors.left: parent.left
+                                anchors.leftMargin: Units.gu(1)
+                                anchors.right: parent.right
+                                anchors.rightMargin: Units.gu(1)
+                                anchors.verticalCenter: parent.verticalCenter
+
+                                Text {
+                                    objectName: "keyComment-" + keyRow.key.fingerprint
+                                    width: parent.width
+                                    text: keyRow.key.comment || "No comment"
+                                    textFormat: Text.PlainText
+                                    elide: Text.ElideRight
+                                    color: "#333333"
+                                    font.pixelSize: FontUtils.sizeToPixels("medium")
+                                }
+                                Text {
+                                    objectName: "keyType-" + keyRow.key.fingerprint
+                                    width: parent.width
+                                    text: keyRow.key.type
+                                    textFormat: Text.PlainText
+                                    elide: Text.ElideRight
+                                    color: Colors.secondaryText
+                                    font.pixelSize: FontUtils.sizeToPixels("small")
+                                }
+                                Text {
+                                    objectName: "keyFingerprint-" + keyRow.key.fingerprint
+                                    width: parent.width
+                                    text: keyRow.key.fingerprint
+                                    textFormat: Text.PlainText
+                                    elide: Text.ElideMiddle
+                                    color: Colors.secondaryText
+                                    font.pixelSize: FontUtils.sizeToPixels("small")
+                                }
                             }
-                            Label {
-                                objectName: "keyType-" + keyRow.key.fingerprint
-                                width: parent.width
-                                text: keyRow.key.type
-                                textFormat: Text.PlainText
-                                elide: Text.ElideRight
-                                color: Colors.secondaryText
-                                font.pixelSize: FontUtils.sizeToPixels("small")
-                            }
-                            Label {
-                                objectName: "keyFingerprint-" + keyRow.key.fingerprint
-                                width: parent.width
-                                text: keyRow.key.fingerprint
-                                textFormat: Text.PlainText
-                                elide: Text.ElideMiddle
-                                color: Colors.secondaryText
-                                font.pixelSize: FontUtils.sizeToPixels("small")
+
+                            // Sideways by more than 4 gu asks; a tap does
+                            // nothing (FingerprintPage's tap renames; a key
+                            // has nothing to rename).
+                            MouseArea {
+                                anchors.fill: parent
+
+                                property real _pressX: 0
+
+                                onPressed: (mouse) => { _pressX = mouse.x; }
+                                onReleased: (mouse) => {
+                                    if (Math.abs(mouse.x - _pressX) > Units.gu(4))
+                                        keyRow.pendingDelete = true;
+                                }
                             }
                         }
 
-                        Button {
-                            id: removeKeyButton
-                            objectName: "removeKey-" + keyRow.key.fingerprint
-                            anchors.right: parent.right
-                            anchors.verticalCenter: parent.verticalCenter
-                            focusPolicy: Qt.NoFocus
-                            text: "Remove"
-                            LuneOSButton.mainColor: LuneOSButton.negativeColor
-                            onClicked: pageRoot.askRemoveKey(keyRow.key)
+                        // Delete confirmation: Cancel (grey) + Delete (red),
+                        // centred, as on FingerprintPage.
+                        Row {
+                            anchors.centerIn: parent
+                            spacing: Units.gu(2)
+                            visible: keyRow.pendingDelete
+
+                            Button {
+                                objectName: "removeKeyCancel-" + keyRow.key.fingerprint
+                                focusPolicy: Qt.NoFocus
+                                text: "Cancel"
+                                LuneOSButton.mainColor: LuneOSButton.secondaryColor
+                                onClicked: keyRow.pendingDelete = false
+                            }
+
+                            Button {
+                                objectName: "removeKeyConfirm-" + keyRow.key.fingerprint
+                                focusPolicy: Qt.NoFocus
+                                text: "Delete"
+                                LuneOSButton.mainColor: LuneOSButton.negativeColor
+                                LuneOSButton.textColor: "white"
+                                onClicked: {
+                                    keyRow.pendingDelete = false;
+                                    pageRoot.removeAuthorizedKey(keyRow.key.fingerprint);
+                                }
+                            }
+                        }
+
+                        // Separator between rows, as in the other settings lists.
+                        Rectangle {
+                            anchors.bottom: parent.bottom
+                            width: parent.width
+                            height: 1
+                            color: "#b0b0b0"
                         }
                     }
                 }
@@ -491,8 +545,8 @@ BasePage {
         }
     }
 
-    // Asked first, as Revoke: either one leaves root's ssh as it was before
-    // the user set it up, and a stray tap should not.
+    // Asked first, as Revoke: it takes away a way in the user set up, and
+    // a stray tap should not.
     Popup {
         id: removePasswordDialog
         objectName: "removeDevPasswordDialog"
@@ -544,73 +598,6 @@ BasePage {
                     onClicked: {
                         removePasswordDialog.close();
                         pageRoot.clearPassword();
-                    }
-                }
-            }
-        }
-    }
-
-    Popup {
-        id: removeKeyDialog
-        objectName: "removeKeyDialog"
-
-        // {type, fingerprint, comment} of the key asked about.
-        property var key: null
-
-        modal: true
-        focus: true
-        closePolicy: Popup.CloseOnEscape
-
-        width: Math.min(parent.width - Units.gu(4), Units.gu(40))
-
-        ColumnLayout {
-            width: parent.width
-            spacing: Units.gu(1.5)
-
-            Label {
-                Layout.fillWidth: true
-                horizontalAlignment: Text.AlignHCenter
-                wrapMode: Text.WordWrap
-                text: "Remove Key"
-                font.pixelSize: FontUtils.sizeToPixels("18pt")
-                font.weight: Font.Bold
-            }
-
-            Label {
-                objectName: "removeKeyText"
-                Layout.fillWidth: true
-                wrapMode: Text.WrapAnywhere
-                horizontalAlignment: Text.AlignHCenter
-                textFormat: Text.PlainText
-                text: removeKeyDialog.key
-                      ? (removeKeyDialog.key.comment || removeKeyDialog.key.type) + "\n" +
-                        removeKeyDialog.key.fingerprint + "\n\nwill no longer let root in over ssh."
-                      : ""
-                font.pixelSize: FontUtils.sizeToPixels("medium")
-            }
-
-            Row {
-                Layout.alignment: Qt.AlignHCenter
-                spacing: Units.gu(1)
-
-                Button {
-                    objectName: "removeKeyCancel"
-                    focusPolicy: Qt.NoFocus
-                    text: "Cancel"
-                    LuneOSButton.mainColor: LuneOSButton.secondaryColor
-                    onClicked: removeKeyDialog.close()
-                }
-                Button {
-                    objectName: "removeKeyConfirm"
-                    focusPolicy: Qt.NoFocus
-                    text: "Remove"
-                    LuneOSButton.mainColor: LuneOSButton.negativeColor
-                    onClicked: {
-                        var fp = removeKeyDialog.key ? removeKeyDialog.key.fingerprint : "";
-                        removeKeyDialog.close();
-                        removeKeyDialog.key = null;
-                        if (fp !== "")
-                            pageRoot.removeAuthorizedKey(fp);
                     }
                 }
             }
@@ -819,12 +806,7 @@ BasePage {
                   });
     }
 
-    // Asked first (removeKeyDialog), then removeAuthorizedKey.
-    function askRemoveKey(key) {
-        removeKeyDialog.key = key;
-        removeKeyDialog.open();
-    }
-
+    // Asked first: a swipe on the key's row, then its Delete.
     function removeAuthorizedKey(fingerprint) {
         pageRoot.keyError = "";
         pageRoot.keyMessage = "";
