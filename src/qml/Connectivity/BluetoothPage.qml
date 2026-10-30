@@ -250,6 +250,79 @@ BasePage {
                 }
             }
         }
+
+        /*
+         * Calls: whether a hands-free headset that connects during a call
+         * takes the call over. The setting is audiod's
+         * (bluetoothHeadsetTakesCall, on unless turned off); this block only
+         * shows it and hands changes back. Until audiod answers, or if its
+         * answer does not carry the setting, the switch shows audiod's
+         * default. It stays up with the radio off: it is about where the
+         * call is heard, and it applies the next time a headset connects.
+         */
+        ColumnLayout {
+            id: headsetCallsBlock
+            objectName: "headsetCallsBlock"
+            Layout.fillWidth: true
+
+            property bool headsetTakesCall: true
+
+            Component.onCompleted: {
+                bluetoothPageId.luna.subscribe("luna://org.webosports.service.audio/getSettings",
+                                               JSON.stringify({"subscribe": true}),
+                                               headsetCallsBlock.handleSettings,
+                                               bluetoothPageId._handleGetError);
+            }
+
+            function handleSettings(message) {
+                if (!message || !message.payload)
+                    return;
+
+                var response = JSON.parse(message.payload);
+                if (response.returnValue === false)
+                    return;
+                if (typeof response.bluetoothHeadsetTakesCall === "boolean")
+                    headsetCallsBlock.headsetTakesCall = response.bluetoothHeadsetTakesCall;
+            }
+
+            function setHeadsetTakesCall(takes) {
+                headsetCallsBlock.headsetTakesCall = takes;
+                bluetoothPageId.luna.call("luna://org.webosports.service.audio/setSettings",
+                                          JSON.stringify({"bluetoothHeadsetTakesCall": takes}),
+                                          bluetoothPageId._handleSetSuccess,
+                                          bluetoothPageId._handleSetError);
+            }
+
+            GroupBox {
+                Layout.fillWidth: true
+
+                title: "Calls"
+                Column {
+                    width: parent.width
+
+                    LabelAndSwitch {
+                        id: headsetTakesCallSwitch
+                        label: "Headset takes calls"
+
+                        checked: headsetCallsBlock.headsetTakesCall
+                        Connections {
+                            target: headsetCallsBlock
+                            function onHeadsetTakesCallChanged() {
+                                headsetTakesCallSwitch.checked = headsetCallsBlock.headsetTakesCall;
+                            }
+                        }
+                        onToggled: headsetCallsBlock.setHeadsetTakesCall(checked)
+                    }
+                }
+            }
+
+            ExplanationText {
+                Layout.fillWidth: true
+                text: "A headset that connects during a call takes it over. " +
+                      "With this off the call stays where it is, and the " +
+                      "Phone app can still move it to the headset."
+            }
+        }
     }
 
     Loader {
