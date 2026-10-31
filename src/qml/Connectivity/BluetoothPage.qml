@@ -189,21 +189,32 @@ BasePage {
                     checked: BluetoothManager.discoverable
                     onToggled: BluetoothManager.setDiscoverable(checked)
                 }
+
+                HorizontalSeparator {
+                    width: parent.width
+                    visible: bluetoothPageId.autoReconnectKnown
+                }
+
+                // A row of the same group as "Discoverable", so the two
+                // labels line up, with what it does said under the group,
+                // as Tethering does for its switches.
+                LabelAndSwitch {
+                    id: autoReconnectSwitch
+                    visible: bluetoothPageId.autoReconnectKnown
+
+                    label: "Reconnect headsets automatically"
+                    // Toggling sets checked from C++, which keeps this binding.
+                    checked: bluetoothPageId.autoReconnectEnabled
+                    onToggled: bluetoothPageId.setAutoReconnect(checked)
+                }
             }
         }
 
-        LabelAndSwitch {
-            id: autoReconnectSwitch
-            visible: bluetoothPageId.autoReconnectKnown
-
-            label: "Reconnect headsets automatically"
-            // Toggling sets checked from C++, which keeps this binding.
-            checked: bluetoothPageId.autoReconnectEnabled
-            onToggled: bluetoothPageId.setAutoReconnect(checked)
-        }
         ExplanationText {
             visible: bluetoothPageId.autoReconnectKnown
-            text: "When Bluetooth comes on, connect the headset or speaker used last. A device you disconnect here is not connected again until you connect it."
+            text: "When Bluetooth comes on, connect the headset or speaker " +
+                  "used last. A device you disconnect here is not connected " +
+                  "again until you connect it."
         }
 
         GroupBox {
