@@ -118,7 +118,113 @@ BasePage {
     function disconnectDevice(address) {
         luna.call(autoReconnectService + "/forget", JSON.stringify({"address": address}),
                   _handleSetSuccess, _handleSetError);
-        BluetoothManager.disconnectDeviceAddress(address);
+        return deviceManager.disconnectDeviceAddress(address);
+    }
+
+    /*
+     * A connect or disconnect started from the device list, by address:
+     * {action: "connect" or "disconnect", started: ms, call: its BluezQt
+     * PendingCall}. The device's row shows a spinner in place of its check
+     * mark until the device reports the state asked for, BlueZ says the
+     * call failed, or deviceOperationTimeoutMs passes - as the legacy app
+     * spun a row's spinner while it connected. A new object is assigned on
+     * every change, so the rows' bindings follow. Holding the call also
+     * keeps it from being collected before it finishes.
+     */
+    property var deviceOperations: ({})
+    // Who connects and disconnects: BluetoothManager, or a test's stand-in
+    property var deviceManager: BluetoothManager
+    property int deviceOperationTimeoutMs: 30000
+    // A failed call is said in the list's status line for this long, as the
+    // legacy app said "Unable to connect." in its status area for 5 s.
+    property string deviceMessage: ""
+    property int deviceMessageMs: 5000
+
+    function _setDeviceOperation(address, op) {
+        var ops = {};
+        for (var a in deviceOperations) {
+            if (a !== address)
+                ops[a] = deviceOperations[a];
+        }
+        if (op)
+            ops[address] = op;
+        deviceOperations = ops;
+    }
+
+    // A tap on a device's row: disconnect it when it is connected, connect
+    // it otherwise. BluetoothManager takes a second tap on the device it is
+    // connecting as "stop", and drops the device it was connecting when
+    // another one is tapped, so neither keeps its spinner.
+    function toggleDevice(address, connected) {
+        if (connected) {
+            _trackDeviceOperation(address, "disconnect", connected, disconnectDevice(address));
+            return;
+        }
+        var connecting = deviceManager.connectingDevice;
+        var stops = !!connecting && connecting.address === address;
+        for (var a in deviceOperations) {
+            if (deviceOperations[a].action === "connect")
+                _setDeviceOperation(a, null);
+        }
+        var call = deviceManager.connectDeviceAddress(address);
+        if (!stops)
+            _trackDeviceOperation(address, "connect", connected, call);
+    }
+
+    // call: what BluetoothManager returned - a PendingCall, or nothing when
+    // it did not start one (Bluetooth not up), and then there is nothing to
+    // wait for.
+    function _trackDeviceOperation(address, action, connected, call) {
+        if (!call)
+            return;
+        var op = {"action": action, "started": Date.now(), "call": call};
+        _setDeviceOperation(address, op);
+        if (call.finished) {
+            call.finished.connect(function (finishedCall) {
+                bluetoothPageId._deviceCallFinished(address, op, finishedCall || call);
+            });
+        }
+        _deviceStateChanged(address, connected);
+    }
+
+    function _deviceCallFinished(address, op, call) {
+        if (deviceOperations[address] !== op || !call.error)
+            return;
+        // Done when the device says so (_deviceStateChanged): a connect
+        // that went through can report Connected after its reply.
+        console.warn("Bluetooth: could not " + op.action + " " + address + ": " + call.errorText);
+        _setDeviceOperation(address, null);
+        deviceMessage = op.action === "connect" ? "Unable to connect." : "Unable to disconnect.";
+        deviceMessageTimer.restart();
+    }
+
+    // A row's device changed its connected state (or a call was just started)
+    function _deviceStateChanged(address, connected) {
+        var op = deviceOperations[address];
+        if (op && (op.action === "connect") === connected)
+            _setDeviceOperation(address, null);
+    }
+
+    function _expireDeviceOperations() {
+        var now = Date.now();
+        for (var a in deviceOperations) {
+            if (now - deviceOperations[a].started >= deviceOperationTimeoutMs) {
+                console.warn("Bluetooth: no answer to " + deviceOperations[a].action + " " + a);
+                _setDeviceOperation(a, null);
+            }
+        }
+    }
+
+    Timer {
+        interval: Math.max(50, Math.min(1000, bluetoothPageId.deviceOperationTimeoutMs / 4))
+        repeat: true
+        running: Object.keys(bluetoothPageId.deviceOperations).length > 0
+        onTriggered: bluetoothPageId._expireDeviceOperations()
+    }
+    Timer {
+        id: deviceMessageTimer
+        interval: bluetoothPageId.deviceMessageMs
+        onTriggered: bluetoothPageId.deviceMessage = ""
     }
 
     // Search while the page is up. BluetoothManager stops a search after
@@ -149,6 +255,8 @@ BasePage {
         function onBluetoothOperationalChanged() {
             console.log("BluetoothManager.bluetoothOperational="+BluetoothManager.bluetoothOperational);
             btAgent.registerToManager(BluetoothManager.btManager);
+            if (!BluetoothManager.bluetoothOperational)
+                bluetoothPageId.deviceOperations = {};
         }
     }
 
@@ -241,8 +349,10 @@ BasePage {
                         Layout.fillWidth: true
                         verticalAlignment: Text.AlignVCenter
                         elide: Text.ElideRight
-                        text: BluetoothManager.discovering ? "Searching for devices\u2026"
-                                                           : (btDevicesModel.count > 0 ? "" : "No devices found.")
+                        text: bluetoothPageId.deviceMessage !== ""
+                              ? bluetoothPageId.deviceMessage
+                              : BluetoothManager.discovering ? "Searching for devices\u2026"
+                                                             : (btDevicesModel.count > 0 ? "" : "No devices found.")
                         color: Colors.secondaryText
                         font.pixelSize: FontUtils.sizeToPixels("medium")
                     }
@@ -260,6 +370,7 @@ BasePage {
 
                 ListView {
                     id: deviceList
+                    objectName: "deviceList"
                     width: parent.width
                     height: contentHeight
                     interactive: false
@@ -267,10 +378,18 @@ BasePage {
                     model: btDevicesModel
 
                     delegate: Item {
+                        id: deviceRow
                         width: ListView.view.width
                         height: Units.gu(6)
 
                         property variant btDevice: model
+                        readonly property bool deviceConnected: btDevice.Connected === true
+                        // "connect", "disconnect" or "" (deviceOperations)
+                        readonly property string operation: {
+                            var op = bluetoothPageId.deviceOperations[btDevice.Address];
+                            return op ? op.action : "";
+                        }
+                        onDeviceConnectedChanged: bluetoothPageId._deviceStateChanged(btDevice.Address, deviceRow.deviceConnected)
 
                         RowLayout {
                             anchors.fill: parent
@@ -294,18 +413,34 @@ BasePage {
                                 Layout.preferredHeight: Units.gu(3.2)
                                 Layout.preferredWidth: Units.gu(1.5)
                             }
-                            Image {
-                                source: "../images/wifi/checkmark.png"
-                                // Hidden but still taking its place, so the
-                                // lock of a paired device stays in one column
-                                // whether it is connected or not
-                                opacity: btDevice.Connected ? 1 : 0
-
-                                fillMode: Image.PreserveAspectFit
-                                horizontalAlignment: Image.AlignHCenter
-                                verticalAlignment: Image.AlignVCenter
+                            // The check mark of a connected device, or the
+                            // spinner in its place while a connect or
+                            // disconnect is under way. The place is kept
+                            // either way, so the lock of a paired device
+                            // stays in one column and nothing moves.
+                            Item {
                                 Layout.preferredHeight: Units.gu(3.2)
                                 Layout.preferredWidth: Units.gu(3.2)
+
+                                Image {
+                                    objectName: "deviceConnectedMark"
+                                    anchors.fill: parent
+                                    source: "../images/wifi/checkmark.png"
+                                    opacity: btDevice.Connected && deviceRow.operation === "" ? 1 : 0
+
+                                    fillMode: Image.PreserveAspectFit
+                                    horizontalAlignment: Image.AlignHCenter
+                                    verticalAlignment: Image.AlignVCenter
+                                }
+                                // The style's legacy spinner ring, scaled
+                                // down to the place of the check mark
+                                // (scale leaves the layout as it is)
+                                BusyIndicator {
+                                    objectName: "deviceBusyIndicator"
+                                    anchors.centerIn: parent
+                                    running: deviceRow.operation !== ""
+                                    scale: Math.min(1, parent.height / Math.max(1, implicitHeight - topPadding - bottomPadding))
+                                }
                             }
                         }
                         // Show a separator between items
@@ -315,16 +450,11 @@ BasePage {
                             visible: index < btDevicesModel.count - 1
                         }
                         MouseArea {
+                            objectName: "deviceRowMouseArea"
                             anchors.fill: parent
                             onClicked: {
                                 console.log("Bluetooth Device Selected. Name = " + btDevice.Name + ", connected = " + btDevice.Connected);
-                                if(!btDevice.Connected) {
-                                    // connect !
-                                    BluetoothManager.connectDeviceAddress(btDevice.Address);
-                                } else {
-                                    // disconnect !
-                                    bluetoothPageId.disconnectDevice(btDevice.Address);
-                                }
+                                bluetoothPageId.toggleDevice(btDevice.Address, deviceRow.deviceConnected);
                             }
                         }
                     }
