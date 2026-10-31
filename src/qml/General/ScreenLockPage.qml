@@ -482,7 +482,17 @@ BasePage {
         passcodePopup.open();
     }
 
+    /*
+     * luna-authmanager wants the current passcode with any change or removal
+     * of it, not only this page: so the one just verified is kept for that
+     * one call (_currentPasscode), and dropped as soon as it is made or the
+     * change is cancelled.
+     */
+    property string _currentPasscode: ""
+    property string _passcodeBeingVerified: ""
+
     function verifyPasscode(passcode) {
+        pageRoot._passcodeBeingVerified = passcode;
         luna.call("luna://com.palm.systemmanager/matchDevicePasscode",
                   JSON.stringify({"passCode": passcode}),
                   _handleVerifyResult, _handleVerifyError);
@@ -490,6 +500,9 @@ BasePage {
 
     function _handleVerifyResult(message) {
         var response = JSON.parse(message.payload);
+
+        var verified = pageRoot._passcodeBeingVerified;
+        pageRoot._passcodeBeingVerified = "";
 
         if (!response.returnValue) {
             if (response.lockedOut && response.lockoutSeconds > 0)
@@ -502,11 +515,13 @@ BasePage {
             return;
         }
 
+        pageRoot._currentPasscode = verified;
         passcodePopup.close();
         _openSetPasscode(pageRoot.pendingLockMode, true);
     }
 
     function _handleVerifyError(message) {
+        pageRoot._passcodeBeingVerified = "";
         console.warn("Cannot check the passcode: " + message);
         passcodePopup.reportFailure("The passcode could not be checked.");
         pageRoot.lockServiceAvailable = false;
@@ -517,21 +532,34 @@ BasePage {
     }
 
     function _applyPasscode(passcode, mode) {
+        var request = {"passCode": passcode, "lockMode": mode};
+        if (pageRoot._currentPasscode !== "")
+            request.currentPasscode = pageRoot._currentPasscode;
         luna.call("luna://com.palm.systemmanager/setDevicePasscode",
-                  JSON.stringify({"passCode": passcode, "lockMode": mode}),
+                  JSON.stringify(request),
                   _handlePasscodeStored, _handlePasscodeSetError);
     }
 
     function _handlePasscodeStored(message) {
         var response = JSON.parse(message.payload);
         if (!response.returnValue) {
-            console.warn("Cannot set the passcode: " + message.payload);
             // The service says why: a PIN like 0000 or 1234, too short, or
-            // short of what an Exchange policy asks for.
+            // short of what an Exchange policy asks for. Not the payload
+            // itself into the log: it is about the passcode.
+            console.warn("Cannot set the passcode: " + response.errorText);
+            if (response.errorCode === -12) {
+                // The current passcode was not taken (wrong, or locked out
+                // meanwhile): start over from it.
+                pageRoot._currentPasscode = "";
+                passcodePopup.close();
+                cancelLockModeChange();
+                return;
+            }
             _passcodeRefused(response.errorText);
             return;
         }
 
+        pageRoot._currentPasscode = "";
         passcodePopup.close();
         if (pageRoot.pendingLockMode === "") {
             // Cancelled while the call was out, and it went through anyway:
@@ -568,6 +596,7 @@ BasePage {
 
     function cancelLockModeChange() {
         // The selector already moved to the choice that was made; put it back.
+        pageRoot._currentPasscode = "";
         pageRoot.pendingLockMode = "";
         lockModeSelector.currentIndex = pageRoot._indexOf(pageRoot.lockModes,
                                                           pageRoot.lockMode, 0);
