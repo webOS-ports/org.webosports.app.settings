@@ -129,37 +129,43 @@ BasePage {
         }
     }
 
-    ColumnLayout {
-        anchors.fill: parent
+    /*
+     * Laid out like the other settings pages (Tethering, Sounds & Alerts):
+     * a scrolling column with the page margin, every row inside a group so
+     * its label lines up with the group's other rows, and the rows
+     * themselves LuneOS.Forms ones, so they have the same font and height.
+     * The device list takes the height of its devices and scrolls with the
+     * page, so whatever comes under it is not squeezed off the bottom.
+     */
+    SettingsPageContent {
+        GroupBox {
+            width: parent.width
 
-        Switch {
-            id: discoverableToggle
+            Column {
+                width: parent.width
 
-            text: "Discoverable"
+                LabelAndSwitch {
+                    id: discoverableToggle
+                    label: "Discoverable"
 
-            Layout.fillWidth: true
-            LayoutMirroring.enabled: true
-
-            checked: BluetoothManager.discoverable
-            onClicked: {
-                BluetoothManager.setDiscoverable(discoverableToggle.checked);
+                    checked: BluetoothManager.discoverable
+                    onToggled: BluetoothManager.setDiscoverable(checked)
+                }
             }
         }
 
-        /* GroupBoxes look good! */
         GroupBox {
-            Layout.fillHeight: true
-            Layout.fillWidth: true
+            width: parent.width
 
             title: "Choose a device"
-            ColumnLayout {
-                anchors.fill: parent
+            Column {
+                width: parent.width
 
                 // Finding a headset takes BlueZ 10 to 20 s; say that it is
                 // looking, and once it has stopped, let it look again.
                 RowLayout {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: Units.gu(5)
+                    width: parent.width
+                    height: Units.gu(6)
                     visible: BluetoothManager.bluetoothOperational
 
                     BusyIndicator {
@@ -184,15 +190,21 @@ BasePage {
                     }
                 }
 
+                HorizontalSeparator {
+                    width: parent.width
+                    visible: BluetoothManager.bluetoothOperational && deviceList.count > 0
+                }
+
                 ListView {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    clip: true
+                    id: deviceList
+                    width: parent.width
+                    height: contentHeight
+                    interactive: false
 
                     model: btDevicesModel
 
                     delegate: Item {
-                        width: parent.width
+                        width: ListView.view.width
                         height: Units.gu(6)
 
                         property variant btDevice: model
@@ -201,10 +213,13 @@ BasePage {
                             anchors.fill: parent
 
                             Label {
-                                height: parent.height
                                 Layout.fillWidth: true
-                                Layout.minimumWidth: contentWidth
+                                verticalAlignment: Text.AlignVCenter
+                                elide: Text.ElideRight
                                 text: btDevice.Name || btDevice.Address
+                                // As big as the label of any other row
+                                // (LabelAndSwitch, LabelAndValue)
+                                font.pixelSize: FontUtils.sizeToPixels("16pt")
                             }
                             Image {
                                 source: "../images/secure-icon.png"
@@ -218,7 +233,10 @@ BasePage {
                             }
                             Image {
                                 source: "../images/wifi/checkmark.png"
-                                visible: btDevice.Connected
+                                // Hidden but still taking its place, so the
+                                // lock of a paired device stays in one column
+                                // whether it is connected or not
+                                opacity: btDevice.Connected ? 1 : 0
 
                                 fillMode: Image.PreserveAspectFit
                                 horizontalAlignment: Image.AlignHCenter
