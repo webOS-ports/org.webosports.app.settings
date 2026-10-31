@@ -119,6 +119,16 @@ Item {
             return null;
         }
 
+        // The page's columns place their rows when they are next polished,
+        // not as soon as a row appears; let them, before clicking where a
+        // row will be.
+        function waitForLayout(item) {
+            for (var it = item; it; it = it.parent) {
+                if (isPolishScheduled(it))
+                    waitForPolish(it);
+            }
+        }
+
         function makePage() {
             var luna = createTemporaryObject(fakeLunaComponent, root);
             var page = createTemporaryObject(pageComponent, root, {"luna": luna});
@@ -159,11 +169,14 @@ Item {
             t.luna.sendStatus(true);
             var sw = findByText(t.page, "Reconnect headsets automatically");
             tryCompare(sw, "visible", true);
+            waitForLayout(sw);
             mouseClick(sw);
             verify(!sw.checked);
             var set = t.luna.callsTo("setState");
             compare(set.length, 1);
             compare(set[0].args.enabled, false);
+
+            waitForLayout(sw);
 
             mouseClick(sw);
             set = t.luna.callsTo("setState");
@@ -177,6 +190,7 @@ Item {
             t.luna.sendStatus(true);
             var sw = findByText(t.page, "Reconnect headsets automatically");
             tryCompare(sw, "visible", true);
+            waitForLayout(sw);
             mouseClick(sw);	// off, and the binding is gone
             t.luna.sendStatus(true);
             verify(sw.checked, "the switch stopped following bluetooth2");
@@ -188,6 +202,7 @@ Item {
             t.luna.sendStatus(true);
             var sw = findByText(t.page, "Reconnect headsets automatically");
             tryCompare(sw, "visible", true);
+            waitForLayout(sw);
             mouseClick(sw);
             verify(sw.checked, "the switch shows what bluetooth2 did not take");
         }
@@ -203,6 +218,7 @@ Item {
             var label = findLabel(t.page, "Fake Paired Connected");
             verify(label !== null, "no connected device in the list");
             tryCompare(label, "visible", true);
+            waitForLayout(label);
             mouseClick(label);
             var forget = t.luna.callsTo("forget");
             compare(forget.length, 1);
@@ -215,6 +231,7 @@ Item {
             var label = findLabel(t.page, "Fake Paired");
             verify(label !== null);
             tryCompare(label, "visible", true);
+            waitForLayout(label);
             mouseClick(label);
             compare(t.luna.callsTo("forget").length, 0);
         }
