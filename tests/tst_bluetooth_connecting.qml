@@ -258,10 +258,10 @@ Item {
         function test_theSpinnerDoesNotTakeTaps() {
             tap(3);
             waitForLayout(row(3));
-            var spy3 = createTemporaryQmlObject("import QtTest; SignalSpy { signalName: \"clicked\" }", root);
-            spy3.target = findByObjectName(row(3), "deviceRowMouseArea");
-            var spy2 = createTemporaryQmlObject("import QtTest; SignalSpy { signalName: \"clicked\" }", root);
-            spy2.target = findByObjectName(row(2), "deviceRowMouseArea");
+            var spy3 = createTemporaryQmlObject("import QtTest; SignalSpy { signalName: \"tapped\" }", root);
+            spy3.target = row(3).rowTap;
+            var spy2 = createTemporaryQmlObject("import QtTest; SignalSpy { signalName: \"tapped\" }", root);
+            spy2.target = row(2).rowTap;
             var s = spinner(3);
             mouseClick(s, s.width / 2, s.height / 2);
             compare(spy3.count, 1, "a tap on the spinner did not reach its row");
