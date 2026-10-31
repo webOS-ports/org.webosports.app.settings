@@ -445,9 +445,10 @@ BasePage {
                         }
                         // Show a separator between items
                         HorizontalSeparator {
+                            objectName: "deviceSeparator"
                             anchors.bottom: parent.bottom
                             width: parent.width
-                            visible: index < btDevicesModel.count - 1
+                            visible: index < deviceList.count - 1
                         }
                         MouseArea {
                             objectName: "deviceRowMouseArea"
