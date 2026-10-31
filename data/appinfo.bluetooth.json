@@ -11,6 +11,7 @@
     "main": "qml/GenericCategoryWindow.qml",
     "icon": "qml/images/icons/icon-bluetooth.png",
     "uiRevision": "2",
-    "visible": true
+    "visible": true,
+    "requiredPermissions": ["audio.query", "audio.operation"]
 }
 
