@@ -55,6 +55,16 @@ Item {
             return null;
         }
 
+        // The page's columns place their rows when they are next polished,
+        // not as soon as a row appears; let them, before clicking where a
+        // row will be.
+        function waitForLayout(item) {
+            for (var it = item; it; it = it.parent) {
+                if (isPolishScheduled(it))
+                    waitForPolish(it);
+            }
+        }
+
         function init() {
             BluetoothManager.discoveringMode = false;
             BluetoothManager.btManager.usableAdapter.stopDiscovery();
@@ -87,6 +97,7 @@ Item {
             verify(findByText(page, "Searching for devices…") === null);
             var button = findByText(page, "Search again");
             verify(button !== null && button.visible, "no \"Search again\" once stopped");
+            waitForLayout(button);
             mouseClick(button);
             verify(BluetoothManager.discovering, "\"Search again\" did not search");
         }
