@@ -352,7 +352,7 @@ BasePage {
                         text: bluetoothPageId.deviceMessage !== ""
                               ? bluetoothPageId.deviceMessage
                               : BluetoothManager.discovering ? "Searching for devices\u2026"
-                                                             : (btDevicesModel.count > 0 ? "" : "No devices found.")
+                                                             : (deviceList.count > 0 ? "" : "No devices found.")
                         color: Colors.secondaryText
                         font.pixelSize: FontUtils.sizeToPixels("medium")
                     }
