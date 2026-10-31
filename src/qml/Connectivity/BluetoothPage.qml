@@ -14,7 +14,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick 2.9
+import QtQuick 2.12
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
 
@@ -119,6 +119,42 @@ BasePage {
         luna.call(autoReconnectService + "/forget", JSON.stringify({"address": address}),
                   _handleSetSuccess, _handleSetError);
         return deviceManager.disconnectDeviceAddress(address);
+    }
+
+    /*
+     * "Forget device" in the popup of a paired device: bluetooth2 unpairs it
+     * (adapter/unpair, which BlueZ's RemoveDevice does, disconnecting it
+     * first when it is connected). Once that went through, bluetooth2 is
+     * told not to connect it again when Bluetooth comes on: unpairing does
+     * not do that by itself, and the disconnect it brings looks to
+     * bluetooth2 like the device going away, which keeps it.
+     */
+    readonly property string unpairService: "luna://com.webos.service.bluetooth2/adapter/unpair"
+
+    function forgetDevice(address, adapterAddress) {
+        var args = {"address": address};
+        if (adapterAddress)
+            args.adapterAddress = adapterAddress;
+        _setDeviceOperation(address, null);
+        luna.call(unpairService, JSON.stringify(args),
+                  function (message) {
+                      var response = JSON.parse(message.payload);
+                      if (response.returnValue === false) {
+                          bluetoothPageId._forgetFailed(address, message);
+                          return;
+                      }
+                      luna.call(autoReconnectService + "/forget", JSON.stringify(args),
+                                _handleSetSuccess, _handleSetError);
+                  },
+                  function (message) {
+                      bluetoothPageId._forgetFailed(address, message);
+                  });
+    }
+
+    function _forgetFailed(address, message) {
+        console.warn("Bluetooth: could not forget " + address + ": " + (message ? message.payload : ""));
+        deviceMessage = "Unable to forget the device.";
+        deviceMessageTimer.restart();
     }
 
     /*
@@ -450,10 +486,34 @@ BasePage {
                             width: parent.width
                             visible: index < deviceList.count - 1
                         }
-                        MouseArea {
-                            objectName: "deviceRowMouseArea"
-                            anchors.fill: parent
-                            onClicked: {
+                        /*
+                         * Tap: connect or disconnect. Press and hold on a
+                         * paired device: its popup, with "Forget device".
+                         * A TapHandler, as on the Wi-Fi page, where a
+                         * MouseArea's pressAndHold was lost to the list's
+                         * Flickable after a few pixels of drift (see
+                         * WiFiPage.qml). This list does not flick itself,
+                         * and in tst_bluetooth_forget a MouseArea's hold
+                         * survives the page's Flickable too; a pointer
+                         * handler shares the press with any Flickable, so
+                         * it keeps working if that changes. TapHandler
+                         * emits no tapped() after longPressed(), so a hold
+                         * never also connects.
+                         */
+                        readonly property TapHandler rowTap: deviceTap
+                        TapHandler {
+                            id: deviceTap
+                            objectName: "deviceRowTap"
+                            longPressThreshold: 0.8
+
+                            onLongPressed: {
+                                if (deviceRow.btDevice.Paired !== true)
+                                    return;
+                                deviceInfoPopup.device = deviceRow.btDevice;
+                                deviceInfoPopup.open();
+                            }
+
+                            onTapped: {
                                 console.log("Bluetooth Device Selected. Name = " + btDevice.Name + ", connected = " + btDevice.Connected);
                                 bluetoothPageId.toggleDevice(btDevice.Address, deviceRow.deviceConnected);
                             }
@@ -461,6 +521,11 @@ BasePage {
                     }
                 }
             }
+        }
+
+        ExplanationText {
+            visible: BluetoothManager.bluetoothOperational && deviceList.count > 0
+            text: "Touch and hold a paired device to see its details or forget it."
         }
 
         /*
@@ -537,6 +602,15 @@ BasePage {
                       "Phone app can still move it to the headset."
             }
         }
+    }
+
+    BluetoothDeviceInfoPopup {
+        id: deviceInfoPopup
+        objectName: "deviceInfoPopup"
+        luna: bluetoothPageId.luna
+        onForgetRequested: (address, adapterAddress) => bluetoothPageId.forgetDevice(address, adapterAddress)
+        // Nothing to keep once it is off screen
+        onClosed: device = null
     }
 
     Loader {
