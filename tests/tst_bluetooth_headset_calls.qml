@@ -83,11 +83,12 @@ Item {
             verify(page !== null, "the page did not load");
             var sw = findByText(page, label);
             verify(sw !== null, "no \"" + label + "\" switch");
-            // The switch sits at the foot of the page's ColumnLayout, the
-            // parent of the switch's block; let it place the switch before
-            // anything clicks it.
+            // The switch sits at the foot of the page's column, the parent
+            // of the switch's block, in the block's own column; let both
+            // place it before anything clicks it.
             var block = findChild(page, "headsetCallsBlock");
             verify(block !== null, "no headsetCallsBlock");
+            waitForPolish(block);
             waitForPolish(block.parent);
             return {"page": page, "luna": luna, "sw": sw};
         }

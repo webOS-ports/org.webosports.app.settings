@@ -278,10 +278,13 @@ BasePage {
          * default. It stays up with the radio off: it is about where the
          * call is heard, and it applies the next time a headset connects.
          */
-        ColumnLayout {
+        Column {
             id: headsetCallsBlock
             objectName: "headsetCallsBlock"
             width: parent.width
+            // The page column's spacing, so the explanation sits as far
+            // under the group as on the other settings pages (Tethering)
+            spacing: Units.gu(2)
 
             property bool headsetTakesCall: true
 
@@ -312,7 +315,7 @@ BasePage {
             }
 
             GroupBox {
-                Layout.fillWidth: true
+                width: parent.width
 
                 title: "Calls"
                 Column {
@@ -335,7 +338,6 @@ BasePage {
             }
 
             ExplanationText {
-                Layout.fillWidth: true
                 text: "A headset that connects during a call takes it over. " +
                       "With this off the call stays where it is, and the " +
                       "Phone app can still move it to the headset."
