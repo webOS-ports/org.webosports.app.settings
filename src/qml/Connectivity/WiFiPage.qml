@@ -66,6 +66,7 @@ BasePage {
             anchors.fill: parent
 
             ListView {
+                objectName: "wifiList"
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
@@ -125,6 +126,19 @@ BasePage {
                             Layout.preferredWidth: Units.gu(3.2)
                         }
                     }
+                    /*
+                     * A Connect that connman refused or that failed. Not
+                     * answering this is how the page went silent when
+                     * connman still held an earlier attempt: every tap got
+                     * InProgress and nothing at all happened on screen.
+                     */
+                    Connections {
+                        target: delegateService
+                        function onConnectRequestFailed(error) {
+                            wifiPageId.connectFailed(delegateService, error);
+                        }
+                    }
+
                     // Show a separator between items
                     HorizontalSeparator {
                         anchors.bottom: parent.bottom
@@ -175,6 +189,11 @@ BasePage {
 
                             if(delegateService.connected) {
                                 delegateService.requestDisconnect();
+                            }
+                            else if(delegateService.connecting) {
+                                // Another Connect would only be refused
+                                // with InProgress: offer to stop instead.
+                                connectProblemPopup.showBusy(delegateService);
                             }
                             else {
                                 // if this service needs a password and we don't have it yet,
@@ -255,6 +274,27 @@ BasePage {
         // Nothing to keep once it is off screen, and holding the service
         // would keep this pinned to a network the list may have dropped.
         onClosed: service = null
+    }
+
+    WiFiConnectProblemPopup {
+        id: connectProblemPopup
+        objectName: "connectProblemPopup"
+    }
+
+    /*
+     * Called with the D-Bus error's message; the error's name is in
+     * lastConnectError, except for InProgress, which libconnman-qt reports
+     * with an empty lastConnectError ("somebody has already asked").
+     */
+    function connectFailed(service, message) {
+        var errorName = service.lastConnectError;
+        if (errorName === "" || errorName === "net.connman.Error.InProgress") {
+            connectProblemPopup.showBusy(service);
+            return;
+        }
+        var text = connectProblemPopup.failureText(errorName, service.error, message);
+        if (text !== "")
+            connectProblemPopup.showFailure(service, text);
     }
 
     Loader {
