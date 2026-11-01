@@ -536,6 +536,9 @@ BasePage {
          * answer does not carry the setting, the switch shows audiod's
          * default. It stays up with the radio off: it is about where the
          * call is heard, and it applies the next time a headset connects.
+         * Beside it, whether alerts and notifications play on the phone's
+         * speaker rather than in a Bluetooth headset (audiod's
+         * bluetoothAlertsOnSpeaker, off unless turned on), the same way.
          */
         Column {
             id: headsetCallsBlock
@@ -546,6 +549,7 @@ BasePage {
             spacing: Units.gu(2)
 
             property bool headsetTakesCall: true
+            property bool alertsOnSpeaker: false
 
             Component.onCompleted: {
                 bluetoothPageId.luna.subscribe("luna://org.webosports.service.audio/getSettings",
@@ -563,12 +567,22 @@ BasePage {
                     return;
                 if (typeof response.bluetoothHeadsetTakesCall === "boolean")
                     headsetCallsBlock.headsetTakesCall = response.bluetoothHeadsetTakesCall;
+                if (typeof response.bluetoothAlertsOnSpeaker === "boolean")
+                    headsetCallsBlock.alertsOnSpeaker = response.bluetoothAlertsOnSpeaker;
             }
 
             function setHeadsetTakesCall(takes) {
                 headsetCallsBlock.headsetTakesCall = takes;
                 bluetoothPageId.luna.call("luna://org.webosports.service.audio/setSettings",
                                           JSON.stringify({"bluetoothHeadsetTakesCall": takes}),
+                                          bluetoothPageId._handleSetSuccess,
+                                          bluetoothPageId._handleSetError);
+            }
+
+            function setAlertsOnSpeaker(on) {
+                headsetCallsBlock.alertsOnSpeaker = on;
+                bluetoothPageId.luna.call("luna://org.webosports.service.audio/setSettings",
+                                          JSON.stringify({"bluetoothAlertsOnSpeaker": on}),
                                           bluetoothPageId._handleSetSuccess,
                                           bluetoothPageId._handleSetError);
             }
@@ -593,13 +607,34 @@ BasePage {
                         }
                         onToggled: headsetCallsBlock.setHeadsetTakesCall(checked)
                     }
+
+                    HorizontalSeparator {
+                        width: parent.width
+                    }
+
+                    LabelAndSwitch {
+                        id: alertsOnSpeakerSwitch
+                        label: "Alerts on phone speaker"
+
+                        checked: headsetCallsBlock.alertsOnSpeaker
+                        Connections {
+                            target: headsetCallsBlock
+                            function onAlertsOnSpeakerChanged() {
+                                alertsOnSpeakerSwitch.checked = headsetCallsBlock.alertsOnSpeaker;
+                            }
+                        }
+                        onToggled: headsetCallsBlock.setAlertsOnSpeaker(checked)
+                    }
                 }
             }
 
             ExplanationText {
                 text: "A headset that connects during a call takes it over. " +
                       "With this off the call stays where it is, and the " +
-                      "Phone app can still move it to the headset."
+                      "Phone app can still move it to the headset. " +
+                      "With \"Alerts on phone speaker\" on, alerts and " +
+                      "notifications play on the phone's speaker instead " +
+                      "of in the headset, as the ringtone does."
             }
         }
     }
