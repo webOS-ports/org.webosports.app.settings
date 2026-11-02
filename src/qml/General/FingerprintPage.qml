@@ -131,7 +131,7 @@ BasePage {
      */
     function askPasscodeThenEnroll() {
         enrollResult = "";
-        luna.call("luna://com.palm.systemmanager/getDeviceLockMode", "{}",
+        luna.call("luna://com.webos.service.auth/getDeviceLockMode", "{}",
                   _lockModeForEnroll, _enrollPasscodeError);
     }
 
@@ -148,7 +148,7 @@ BasePage {
     }
 
     function _verifyForEnroll(passcode) {
-        luna.call("luna://com.palm.systemmanager/matchDevicePasscode",
+        luna.call("luna://com.webos.service.auth/matchDevicePasscode",
                   JSON.stringify({"passCode": passcode}),
                   _verifiedForEnroll, _enrollPasscodeError);
     }

@@ -12,6 +12,8 @@
     "uiRevision": "2",
     "visible": true,
     "requiredPermissions": [
+        "auth.query",
+        "auth.verify",
         "faceunlock.operation",
         "faceunlock.query",
         "display.operation"
