@@ -44,6 +44,17 @@ Item {
         name: "BluetoothPage"
         when: windowShown
 
+        function findByObjectName(item, name) {
+            if (item.objectName === name)
+                return item;
+            for (var i = 0; i < item.children.length; ++i) {
+                var found = findByObjectName(item.children[i], name);
+                if (found)
+                    return found;
+            }
+            return null;
+        }
+
         function findByText(item, text) {
             if (item.text === text)
                 return item;
@@ -100,6 +111,64 @@ Item {
             waitForLayout(button);
             mouseClick(button);
             verify(BluetoothManager.discovering, "\"Search again\" did not search");
+        }
+
+        // "No devices found." goes by the list on screen. BluezQt's
+        // DevicesModel, the one on the device, has no count, so going by the
+        // model said it under a list of devices. Here the list is given its
+        // own model, and the page's (the stand-in, which has a count) is
+        // emptied, so only the list's count is right.
+        function test_noDevicesFoundOnlyWhenTheListIsEmpty() {
+            var page = createTemporaryObject(pageComponent, root);
+            tryCompare(BluetoothManager, "bluetoothOperational", true, 2000);
+            BluetoothManager.btManager.usableAdapter.stopDiscovery();
+            var list = findByObjectName(page, "deviceList");
+            verify(list !== null);
+            var pageModel = list.model;
+            var shown = createTemporaryQmlObject("import QtQuick; ListModel { ListElement { Address: \"11-22-33-44-55-66\"; Name: \"Headset\"; Paired: true; Connected: false } }", root);
+            list.model = shown;
+            pageModel.clear();
+            // ListView passes a new count on once the event loop has run
+            tryCompare(list, "count", 1);
+            wait(50);
+            compare(pageModel.count, 0);
+            verify(findByText(page, "No devices found.") === null, "\"No devices found.\" under a device");
+            shown.clear();
+            tryVerify(function () {
+                var label = findByText(page, "No devices found.");
+                return label !== null && label.visible;
+            }, 2000, "no \"No devices found.\" with no devices");
+        }
+
+        // A separator between devices and none under the last one, going by
+        // the list too (BluezQt's DevicesModel has no count, and going by it
+        // left the devices with no separators at all).
+        function test_separatorsBetweenDevicesOnly() {
+            var page = createTemporaryObject(pageComponent, root);
+            tryCompare(BluetoothManager, "bluetoothOperational", true, 2000);
+            var list = findByObjectName(page, "deviceList");
+            var pageModel = list.model;
+            var shown = createTemporaryQmlObject("import QtQuick; ListModel {" +
+                "ListElement { Address: \"11-22-33-44-55-01\"; Name: \"One\"; Paired: true; Connected: false }" +
+                "ListElement { Address: \"11-22-33-44-55-02\"; Name: \"Two\"; Paired: false; Connected: false }" +
+                "ListElement { Address: \"11-22-33-44-55-03\"; Name: \"Three\"; Paired: true; Connected: true } }", root);
+            list.model = shown;
+            pageModel.clear();
+            tryCompare(list, "count", 3);
+            wait(50);
+            for (var i = 0; i < 3; ++i) {
+                var separator = findByObjectName(list.itemAtIndex(i), "deviceSeparator");
+                verify(separator !== null);
+                compare(separator.visible, i < 2,
+                        i < 2 ? "no separator under device " + i : "a separator under the last device");
+            }
+            // One fewer: the new last one loses its separator
+            shown.remove(2);
+            tryCompare(list, "count", 2);
+            wait(50);
+            verify(findByObjectName(list.itemAtIndex(0), "deviceSeparator").visible);
+            verify(!findByObjectName(list.itemAtIndex(1), "deviceSeparator").visible,
+                   "a separator under the new last device");
         }
     }
 }

@@ -14,7 +14,10 @@
     "visible": true,
     "requiredPermissions": [
         "bluetooth.query",
-        "bluetooth.management"
+        "bluetooth.management",
+        "bluetooth.operation",
+        "audio.query",
+        "audio.operation"
     ]
 }
 
