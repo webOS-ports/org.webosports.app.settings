@@ -13,6 +13,8 @@
     "uiRevision": "2",
     "visible": true,
     "requiredPermissions": [
+        "auth.query",
+        "auth.verify",
         "fingerprint.operation",
         "fingerprint.query"
     ]
