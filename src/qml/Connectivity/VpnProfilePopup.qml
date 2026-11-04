@@ -61,7 +61,8 @@ Popup {
     closePolicy: Popup.CloseOnEscape
 
     width: Math.min(parent.width - Units.gu(4), Units.gu(46))
-    height: Math.min(parent.height - Units.gu(4), Units.gu(70))
+    // keyboardTop: the window's height, or where the on-screen keys start
+    height: Math.min(keyboardTop - Units.gu(4), Units.gu(70))
 
     // The fields for whatever type is selected, filled in once
     // getAgentFormFields / getProfileDetails answers.

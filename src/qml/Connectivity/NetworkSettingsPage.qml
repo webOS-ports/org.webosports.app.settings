@@ -714,7 +714,8 @@ BasePage {
         closePolicy: Popup.CloseOnEscape
 
         width: Math.min(parent.width - Units.gu(4), Units.gu(40))
-        height: Math.min(parent.height - Units.gu(4), Units.gu(44))
+        // keyboardTop: the window's height, or where the on-screen keys start
+        height: Math.min(keyboardTop - Units.gu(4), Units.gu(44))
 
         onOpened: {
             errorText = "";
@@ -826,7 +827,8 @@ BasePage {
         closePolicy: Popup.CloseOnEscape
 
         width: Math.min(parent.width - Units.gu(4), Units.gu(46))
-        height: Math.min(parent.height - Units.gu(4), Units.gu(58))
+        // keyboardTop: the window's height, or where the on-screen keys start
+        height: Math.min(keyboardTop - Units.gu(4), Units.gu(58))
 
         OfonoContextConnection {
             id: editCtx
