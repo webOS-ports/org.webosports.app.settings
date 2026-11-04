@@ -91,7 +91,8 @@ Popup {
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
     width: Math.min(parent.width - Units.gu(4), Units.gu(46))
-    height: Math.min(parent.height - Units.gu(4), Units.gu(70))
+    // keyboardTop: the window's height, or where the on-screen keys start
+    height: Math.min(keyboardTop - Units.gu(4), Units.gu(70))
 
     /*
      * The service is owned by the TechnologyModel, which drops services that

@@ -232,7 +232,8 @@ BasePage {
         closePolicy: Popup.CloseOnEscape
 
         width: Math.min(parent.width - Units.gu(4), Units.gu(46))
-        height: Math.min(parent.height - Units.gu(4), Units.gu(50))
+        // keyboardTop: the window's height, or where the on-screen keys start
+        height: Math.min(keyboardTop - Units.gu(4), Units.gu(50))
 
         property string filePath: ""
         property string loadError: ""
