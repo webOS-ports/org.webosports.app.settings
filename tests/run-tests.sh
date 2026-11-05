@@ -7,12 +7,22 @@
 # system (LuneOS.Bluetooth, Connman, LunaService). Point LUNEOS_COMPONENTS at
 # it; it defaults to one next to this checkout.
 #
+# The tst_*.qml here run once. screens/tst_screens.qml opens every settings
+# page at the size of a real device and runs once per screen in PROFILES - by
+# default the mindphone (480x800), the Q25 (720x720), the TouchPad (1024x768)
+# and the radon (720x1600) - saving each page as
+# build/test-output/ui/<profile>-<page>.png. luneos-components' stand-ins read
+# their profile, and with it the grid unit, once as they load, and
+# qmltestrunner takes no --profile, so each profile runs against a copy of
+# LunaNext.Common whose default profile is that screen. PROFILES= skips them.
+#
 # Override QMLTESTRUNNER if your Qt lives elsewhere; any arguments are passed
 # on to qmltestrunner. On a machine without a display, run with
 # QT_QPA_PLATFORM=offscreen.
 cd "$(dirname "$0")" || exit 1
 
 LUNEOS_COMPONENTS=${LUNEOS_COMPONENTS:-../../luneos-components}
+PROFILES=${PROFILES-mindphone q25 tp radon}
 if [ -z "${QMLTESTRUNNER:-}" ]; then
     for candidate in /usr/lib/qt6/bin/qmltestrunner \
             $(ls -d "$HOME"/Qt/6.*/gcc_64/bin/qmltestrunner 2>/dev/null | sort -V | tail -1) \
@@ -41,6 +51,27 @@ for t in tst_*.qml; do
     "$QMLTESTRUNNER" -input "$t" \
         -import "$LUNEOS_COMPONENTS/modules" \
         -import "$LUNEOS_COMPONENTS/test/imports" "$@" || status=1
+done
+
+[ -n "$PROFILES" ] || exit $status
+PROFILE_DIR=$(mktemp -d) || exit 1
+trap 'rm -rf "$PROFILE_DIR"' EXIT
+mkdir -p ../build/test-output/ui
+for profile in $PROFILES; do
+    common=$PROFILE_DIR/$profile/LunaNext/Common
+    mkdir -p "$common"
+    cp "$LUNEOS_COMPONENTS"/test/imports/LunaNext/Common/* "$common/"
+    sed -i "s/^var defaultProfile = .*/var defaultProfile = \"$profile\";/" "$common/SettingsStub.js"
+    if ! grep -q "^var defaultProfile = \"$profile\";" "$common/SettingsStub.js"; then
+        echo "could not select profile $profile in SettingsStub.js" >&2
+        status=1
+        continue
+    fi
+    echo "--- screens/tst_screens.qml ($profile)"
+    "$QMLTESTRUNNER" -input screens/tst_screens.qml \
+        -import "$LUNEOS_COMPONENTS/modules" \
+        -import "$LUNEOS_COMPONENTS/test/imports" \
+        -import "$PROFILE_DIR/$profile" "$@" || status=1
 done
 
 exit $status

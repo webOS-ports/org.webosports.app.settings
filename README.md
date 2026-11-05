@@ -38,6 +38,26 @@ the pages lay themselves out for: "tp" for a TouchPad, "n5" or "gnex" for a phon
 "desktop" for a small window. Every page is meant to work on both, so it is worth trying
 a page at a phone size as well as a tablet one.
 
+Tests
+-----
+
+The QML tests run on the development machine, with no device: luneos-components'
+"test/imports" stand in for the services. They need a built luneos-components checkout
+(qmake6 && make at its top), beside this one or named by LUNEOS_COMPONENTS:
+
+```
+QT_QPA_PLATFORM=offscreen tests/run-tests.sh
+```
+
+The tests/tst_*.qml run once. tests/screens/tst_screens.qml opens every page the
+category window knows, as the device does, once per device size in PROFILES - by
+default "mindphone" (480x800), "q25" (720x720), "tp" (1024x768) and "radon" (720x1600,
+with a notch and rounded corners). It checks that the header and the page are there,
+have a size and sit inside the window, and that the page does not scroll sideways, and
+saves each page as build/test-output/ui/<profile>-<page>.png to look at. Pick the sizes
+with, for example, `PROFILES="q25 radon" tests/run-tests.sh`; `PROFILES=` runs only the
+tests that do not depend on the screen.
+
 Services that are not there yet
 -------------------------------
 
