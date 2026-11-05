@@ -114,217 +114,204 @@ BasePage {
         retrieveProperties();
     }
 
-    Flickable {
-        id: flickableItem
-        anchors.fill: parent
-        anchors.margins: Units.gu(1)
-        contentWidth: width
-        contentHeight: contentItem.childrenRect.height
-        flickableDirection: Flickable.AutoFlickIfNeeded
-        clip: true
+    SettingsPageContent {
+        /*
+         * Everything sound-related disappears while the master switch is
+         * off, the way the original collapsed its "Sounds" group.
+         */
+        GroupBox {
+            width: parent.width
+            visible: pageRoot.soundsOn
 
-        Column {
-            width: flickableItem.width
-            spacing: Units.gu(2)
-
-            /*
-             * Everything sound-related disappears while the master switch is
-             * off, the way the original collapsed its "Sounds" group.
-             */
-            GroupBox {
+            title: "Sounds"
+            Column {
                 width: parent.width
-                visible: pageRoot.soundsOn
 
-                title: "Sounds"
-                Column {
+                LabelAndSlider {
+                    id: systemVolumeSlider
                     width: parent.width
+                    label: "Volume"
 
-                    LabelAndSlider {
-                        id: systemVolumeSlider
-                        width: parent.width
-                        label: "Volume"
-
-                        // Don't fight the finger: only follow the service while
-                        // the user isn't dragging.
-                        value: pageRoot.systemVolume
-                        Connections {
-                            target: pageRoot
-                            function onSystemVolumeChanged() {
-                                if (!systemVolumeSlider.pressed)
-                                    systemVolumeSlider.value = pageRoot.systemVolume;
-                            }
-                        }
-
-                        onMoved: (newVolume) => pageRoot.applySystemVolume(newVolume)
-                        onReleased: (newVolume) => {
-                            pageRoot.applySystemVolume(newVolume);
-                            pageRoot.playVolumeFeedback();
+                    // Don't fight the finger: only follow the service while
+                    // the user isn't dragging.
+                    value: pageRoot.systemVolume
+                    Connections {
+                        target: pageRoot
+                        function onSystemVolumeChanged() {
+                            if (!systemVolumeSlider.pressed)
+                                systemVolumeSlider.value = pageRoot.systemVolume;
                         }
                     }
-                    HorizontalSeparator {
-                        width: parent.width
+
+                    onMoved: (newVolume) => pageRoot.applySystemVolume(newVolume)
+                    onReleased: (newVolume) => {
+                        pageRoot.applySystemVolume(newVolume);
+                        pageRoot.playVolumeFeedback();
                     }
-                    Switch {
-                        id: systemSoundsSwitch
-                        width: parent.width
-                        text: "System Sounds"
-                        font.pixelSize: FontUtils.sizeToPixels("16pt")
-                        font.weight: Font.Normal
-                        LayoutMirroring.enabled: true // by default the switch is on the left in Qt, not very webOS-ish
+                }
+                HorizontalSeparator {
+                    width: parent.width
+                }
+                Switch {
+                    id: systemSoundsSwitch
+                    width: parent.width
+                    text: "System Sounds"
+                    font.pixelSize: FontUtils.sizeToPixels("16pt")
+                    font.weight: Font.Normal
+                    LayoutMirroring.enabled: true // by default the switch is on the left in Qt, not very webOS-ish
 
 
-                        checked: pageRoot.systemSounds
-                        Connections {
-                            target: pageRoot
-                            function onSystemSoundsChanged() {
-                                systemSoundsSwitch.checked = pageRoot.systemSounds;
-                            }
+                    checked: pageRoot.systemSounds
+                    Connections {
+                        target: pageRoot
+                        function onSystemSoundsChanged() {
+                            systemSoundsSwitch.checked = pageRoot.systemSounds;
                         }
-                        onToggled: pageRoot.setSystemSounds(checked)
                     }
-                    HorizontalSeparator {
-                        width: parent.width
-                    }
-                    Switch {
-                        id: keyboardClicksSwitch
-                        width: parent.width
-                        text: "Keyboard Clicks"
-                        font.pixelSize: FontUtils.sizeToPixels("16pt")
-                        font.weight: Font.Normal
-                        LayoutMirroring.enabled: true
+                    onToggled: pageRoot.setSystemSounds(checked)
+                }
+                HorizontalSeparator {
+                    width: parent.width
+                }
+                Switch {
+                    id: keyboardClicksSwitch
+                    width: parent.width
+                    text: "Keyboard Clicks"
+                    font.pixelSize: FontUtils.sizeToPixels("16pt")
+                    font.weight: Font.Normal
+                    LayoutMirroring.enabled: true
 
 
-                        checked: pageRoot.keyboardClicks
-                        Connections {
-                            target: pageRoot
-                            function onKeyboardClicksChanged() {
-                                keyboardClicksSwitch.checked = pageRoot.keyboardClicks;
-                            }
+                    checked: pageRoot.keyboardClicks
+                    Connections {
+                        target: pageRoot
+                        function onKeyboardClicksChanged() {
+                            keyboardClicksSwitch.checked = pageRoot.keyboardClicks;
                         }
-                        onToggled: pageRoot.setKeyboardClicks(checked)
                     }
-                    HorizontalSeparator {
-                        width: parent.width
-                    }
-                    LabelAndPicker {
-                        width: parent.width
-                        label: "Ringtone"
-                        value: pageRoot.displayName(pageRoot.ringtoneName)
-                        placeholder: "Pick a ringtone"
+                    onToggled: pageRoot.setKeyboardClicks(checked)
+                }
+                HorizontalSeparator {
+                    width: parent.width
+                }
+                LabelAndPicker {
+                    width: parent.width
+                    label: "Ringtone"
+                    value: pageRoot.displayName(pageRoot.ringtoneName)
+                    placeholder: "Pick a ringtone"
 
-                        onClicked: pageRoot.openTonePicker("ringtone", "Ringtone",
-                                                           pageRoot.ringtonePath)
-                    }
-                    HorizontalSeparator {
-                        width: parent.width
-                    }
-                    LabelAndSlider {
-                        id: ringtoneVolumeSlider
-                        width: parent.width
-                        label: "Ringtone Volume"
+                    onClicked: pageRoot.openTonePicker("ringtone", "Ringtone",
+                                                       pageRoot.ringtonePath)
+                }
+                HorizontalSeparator {
+                    width: parent.width
+                }
+                LabelAndSlider {
+                    id: ringtoneVolumeSlider
+                    width: parent.width
+                    label: "Ringtone Volume"
 
-                        value: pageRoot.ringtoneVolume
-                        Connections {
-                            target: pageRoot
-                            function onRingtoneVolumeChanged() {
-                                if (!ringtoneVolumeSlider.pressed)
-                                    ringtoneVolumeSlider.value = pageRoot.ringtoneVolume;
-                            }
+                    value: pageRoot.ringtoneVolume
+                    Connections {
+                        target: pageRoot
+                        function onRingtoneVolumeChanged() {
+                            if (!ringtoneVolumeSlider.pressed)
+                                ringtoneVolumeSlider.value = pageRoot.ringtoneVolume;
                         }
+                    }
 
-                        onMoved: (newVolume) => pageRoot.applyRingtoneVolume(newVolume)
-                        // The original played the ringtone back for a few
-                        // seconds once the slider was let go, so you could hear
-                        // what you had picked.
-                        onReleased: (newVolume) => {
-                            pageRoot.applyRingtoneVolume(newVolume);
-                            pageRoot.previewRingtone();
-                        }
+                    onMoved: (newVolume) => pageRoot.applyRingtoneVolume(newVolume)
+                    // The original played the ringtone back for a few
+                    // seconds once the slider was let go, so you could hear
+                    // what you had picked.
+                    onReleased: (newVolume) => {
+                        pageRoot.applyRingtoneVolume(newVolume);
+                        pageRoot.previewRingtone();
                     }
                 }
             }
+        }
 
-            /*
-             * Not part of the 3.0.5 app, but the shell rings the alert and the
-             * notification tone off these two preferences and nothing else on
-             * the device sets them.
-             */
-            GroupBox {
+        /*
+         * Not part of the 3.0.5 app, but the shell rings the alert and the
+         * notification tone off these two preferences and nothing else on
+         * the device sets them.
+         */
+        GroupBox {
+            width: parent.width
+            visible: pageRoot.soundsOn
+
+            title: "Alerts"
+            Column {
                 width: parent.width
-                visible: pageRoot.soundsOn
 
-                title: "Alerts"
-                Column {
+                LabelAndPicker {
                     width: parent.width
+                    label: "Alert Tone"
+                    value: pageRoot.displayName(pageRoot.alertToneName)
+                    placeholder: "Pick an alert tone"
 
-                    LabelAndPicker {
-                        width: parent.width
-                        label: "Alert Tone"
-                        value: pageRoot.displayName(pageRoot.alertToneName)
-                        placeholder: "Pick an alert tone"
+                    onClicked: pageRoot.openTonePicker("alerttone", "Alert Tone",
+                                                       pageRoot.alertTonePath)
+                }
+                HorizontalSeparator {
+                    width: parent.width
+                }
+                LabelAndPicker {
+                    width: parent.width
+                    label: "Notification Tone"
+                    value: pageRoot.displayName(pageRoot.notificationToneName)
+                    placeholder: "Pick a notification tone"
 
-                        onClicked: pageRoot.openTonePicker("alerttone", "Alert Tone",
-                                                           pageRoot.alertTonePath)
-                    }
-                    HorizontalSeparator {
-                        width: parent.width
-                    }
-                    LabelAndPicker {
-                        width: parent.width
-                        label: "Notification Tone"
-                        value: pageRoot.displayName(pageRoot.notificationToneName)
-                        placeholder: "Pick a notification tone"
-
-                        onClicked: pageRoot.openTonePicker("notificationtone", "Notification Tone",
-                                                           pageRoot.notificationTonePath)
-                    }
+                    onClicked: pageRoot.openTonePicker("notificationtone", "Notification Tone",
+                                                       pageRoot.notificationTonePath)
                 }
             }
+        }
 
-            /*
-             * Stays put when the master switch goes off: what the device does
-             * with the sound off is exactly what this group is about.
-             */
-            GroupBox {
+        /*
+         * Stays put when the master switch goes off: what the device does
+         * with the sound off is exactly what this group is about.
+         */
+        GroupBox {
+            width: parent.width
+
+            title: "Vibrate"
+            Column {
                 width: parent.width
 
-                title: "Vibrate"
-                Column {
+                LabelAndSelector {
+                    id: vibrateWhenOnSelector
                     width: parent.width
+                    label: "Sounds on"
+                    model: ["Sound & Vibrate", "Sound"]
 
-                    LabelAndSelector {
-                        id: vibrateWhenOnSelector
-                        width: parent.width
-                        label: "Sounds on"
-                        model: ["Sound & Vibrate", "Sound"]
-
-                        currentIndex: pageRoot.vibrateWhenSoundsOn ? 0 : 1
-                        Connections {
-                            target: pageRoot
-                            function onVibrateWhenSoundsOnChanged() {
-                                vibrateWhenOnSelector.currentIndex = pageRoot.vibrateWhenSoundsOn ? 0 : 1;
-                            }
+                    currentIndex: pageRoot.vibrateWhenSoundsOn ? 0 : 1
+                    Connections {
+                        target: pageRoot
+                        function onVibrateWhenSoundsOnChanged() {
+                            vibrateWhenOnSelector.currentIndex = pageRoot.vibrateWhenSoundsOn ? 0 : 1;
                         }
-                        onActivated: (index) => pageRoot.setVibrateWhenSoundsOn(index === 0)
                     }
-                    HorizontalSeparator {
-                        width: parent.width
-                    }
-                    LabelAndSelector {
-                        id: vibrateWhenOffSelector
-                        width: parent.width
-                        label: "Sounds off"
-                        model: ["Vibrate", "Mute"]
+                    onActivated: (index) => pageRoot.setVibrateWhenSoundsOn(index === 0)
+                }
+                HorizontalSeparator {
+                    width: parent.width
+                }
+                LabelAndSelector {
+                    id: vibrateWhenOffSelector
+                    width: parent.width
+                    label: "Sounds off"
+                    model: ["Vibrate", "Mute"]
 
-                        currentIndex: pageRoot.vibrateWhenSoundsOff ? 0 : 1
-                        Connections {
-                            target: pageRoot
-                            function onVibrateWhenSoundsOffChanged() {
-                                vibrateWhenOffSelector.currentIndex = pageRoot.vibrateWhenSoundsOff ? 0 : 1;
-                            }
+                    currentIndex: pageRoot.vibrateWhenSoundsOff ? 0 : 1
+                    Connections {
+                        target: pageRoot
+                        function onVibrateWhenSoundsOffChanged() {
+                            vibrateWhenOffSelector.currentIndex = pageRoot.vibrateWhenSoundsOff ? 0 : 1;
                         }
-                        onActivated: (index) => pageRoot.setVibrateWhenSoundsOff(index === 0)
                     }
+                    onActivated: (index) => pageRoot.setVibrateWhenSoundsOff(index === 0)
                 }
             }
         }

@@ -284,7 +284,13 @@ BasePage {
     }
 
     ColumnLayout {
-        anchors.fill: parent
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.margins: Units.gu(1)
+        // The page margin, and on a wide screen the width of a phone's
+        // column in the middle, as SettingsPageContent gives the other pages
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: Math.min(parent.width - Units.gu(2), Units.gu(56))
         spacing: Units.gu(1)
 
         Label {

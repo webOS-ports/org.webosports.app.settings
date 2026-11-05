@@ -72,124 +72,111 @@ BasePage {
     }
 
     /* A settings page has a vertical layout: put everything in a Column */
-    Flickable {
-        id: flickableItem
-        anchors.fill: parent
-        anchors.margins: Units.gu(1)
-        contentWidth: width
-        contentHeight: contentItem.childrenRect.height
-        flickableDirection: Flickable.AutoFlickIfNeeded
-        clip: true
+    SettingsPageContent {
+        GroupBox {
+            width: parent.width
 
-        Column {
-            width: flickableItem.width
-            spacing: Units.gu(2)
-
-            GroupBox {
+            title: "Device"
+            Column {
                 width: parent.width
 
-                title: "Device"
-                Column {
+                LabelAndValue {
+                    id: deviceNameLabel
                     width: parent.width
-
-                    LabelAndValue {
-                        id: deviceNameLabel
-                        width: parent.width
-                        label: "Name"
-                    }
-                    HorizontalSeparator {
-                        width: parent.width
-                    }
-                    LabelAndValue {
-                        id: deviceSerialLabel
-                        width: parent.width
-                        label: "Serial number"
-                    }
-                    HorizontalSeparator {
-                        width: parent.width
-                    }
-                    LabelAndValue {
-                        id: deviceMACAddrLabel
-                        width: parent.width
-                        label: "Wi-Fi MAC Address"
-                    }
+                    label: "Name"
+                }
+                HorizontalSeparator {
+                    width: parent.width
+                }
+                LabelAndValue {
+                    id: deviceSerialLabel
+                    width: parent.width
+                    label: "Serial number"
+                }
+                HorizontalSeparator {
+                    width: parent.width
+                }
+                LabelAndValue {
+                    id: deviceMACAddrLabel
+                    width: parent.width
+                    label: "Wi-Fi MAC Address"
                 }
             }
+        }
 
-            GroupBox {
+        GroupBox {
+            width: parent.width
+
+            title: "Software"
+            Column {
                 width: parent.width
 
-                title: "Software"
-                Column {
+                LabelAndValue {
+                    id: softwareVersionLabel
                     width: parent.width
+                    label: "Version"
+                }
+                HorizontalSeparator {
+                    width: parent.width
+                }
+                LabelAndValue {
+                    id: softwareCodenameLabel
+                    width: parent.width
+                    label: "Codename"
+                }
+                HorizontalSeparator {
+                    width: parent.width
+                }
+                LabelAndValue {
+                    id: softwareBuildTreeLabel
+                    width: parent.width
+                    label: "Build Tree"
+                }
+                HorizontalSeparator {
+                    width: parent.width
+                }
+                LabelAndValue {
+                    id: softwareBuildNumberLabel
+                    width: parent.width
+                    label: "Build Number"
+                }
+                HorizontalSeparator {
+                    width: parent.width
+                }
+                LabelAndValue {
+                    id: softwareKernelVersionLabel
+                    width: parent.width
+                    label: "Kernel"
+                }
 
-                    LabelAndValue {
-                        id: softwareVersionLabel
-                        width: parent.width
-                        label: "Version"
-                    }
-                    HorizontalSeparator {
-                        width: parent.width
-                    }
-                    LabelAndValue {
-                        id: softwareCodenameLabel
-                        width: parent.width
-                        label: "Codename"
-                    }
-                    HorizontalSeparator {
-                        width: parent.width
-                    }
-                    LabelAndValue {
-                        id: softwareBuildTreeLabel
-                        width: parent.width
-                        label: "Build Tree"
-                    }
-                    HorizontalSeparator {
-                        width: parent.width
-                    }
-                    LabelAndValue {
-                        id: softwareBuildNumberLabel
-                        width: parent.width
-                        label: "Build Number"
-                    }
-                    HorizontalSeparator {
-                        width: parent.width
-                    }
-                    LabelAndValue {
-                        id: softwareKernelVersionLabel
-                        width: parent.width
-                        label: "Kernel"
-                    }
-
-                    /* Only on a Halium device. A mainline device or the
-                       emulator has no Android underneath, and a row there
-                       saying so told nobody anything. */
-                    HorizontalSeparator {
-                        width: parent.width
-                        visible: softwareAndroidVersionLabel.visible
-                    }
-                    LabelAndValue {
-                        id: softwareAndroidVersionLabel
-                        width: parent.width
-                        visible: value !== ""
-                        label: "Android Version"
-                    }
-                    /* The vendor partition - the HALs - can be a different
-                       Android release from the system image LuneOS runs on
-                       (the Q25: a 16 system on a 12 vendor), and it is the
-                       vendor's that decides what the device can do. Hidden
-                       where the image predates that split and has no vendor
-                       release to report. */
-                    HorizontalSeparator {
-                        width: parent.width
-                        visible: softwareAndroidVendorLabel.visible
-                    }
-                    LabelAndValue {
-                        id: softwareAndroidVendorLabel
-                        width: parent.width
-                        visible: value !== ""
-                        label: "Android Vendor"
-                    }
+                /* Only on a Halium device. A mainline device or the
+                   emulator has no Android underneath, and a row there
+                   saying so told nobody anything. */
+                HorizontalSeparator {
+                    width: parent.width
+                    visible: softwareAndroidVersionLabel.visible
+                }
+                LabelAndValue {
+                    id: softwareAndroidVersionLabel
+                    width: parent.width
+                    visible: value !== ""
+                    label: "Android Version"
+                }
+                /* The vendor partition - the HALs - can be a different
+                   Android release from the system image LuneOS runs on
+                   (the Q25: a 16 system on a 12 vendor), and it is the
+                   vendor's that decides what the device can do. Hidden
+                   where the image predates that split and has no vendor
+                   release to report. */
+                HorizontalSeparator {
+                    width: parent.width
+                    visible: softwareAndroidVendorLabel.visible
+                }
+                LabelAndValue {
+                    id: softwareAndroidVendorLabel
+                    width: parent.width
+                    visible: value !== ""
+                    label: "Android Vendor"
                 }
             }
         }

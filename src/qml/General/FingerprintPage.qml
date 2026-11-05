@@ -262,7 +262,13 @@ BasePage {
     }
 
     ColumnLayout {
-        anchors.fill: parent
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.topMargin: Units.gu(1)
+        // The page margin, and on a wide screen the width of a phone's
+        // column in the middle, as SettingsPageContent gives the other pages
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: Math.min(parent.width - Units.gu(2), Units.gu(56))
         // Keyed on the keyboard actually being up, not only on a row being in
         // edit mode. editingIndex is cleared when a rename is committed or when
         // the tap lands elsewhere, but not when the keyboard is simply
@@ -270,7 +276,7 @@ BasePage {
         // permanently short by a keyboard's height, and the list inside it short
         // enough that three entries began to scroll.
         anchors.bottomMargin: (fingerprintPageId.editingIndex >= 0 && Qt.inputMethod.visible)
-                              ? Qt.inputMethod.keyboardRectangle.height : 0
+                              ? Qt.inputMethod.keyboardRectangle.height : Units.gu(1)
         spacing: Units.gu(1)
 
         Behavior on anchors.bottomMargin { NumberAnimation { duration: 150 } }

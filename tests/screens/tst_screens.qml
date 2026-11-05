@@ -26,9 +26,10 @@ import LunaNext.Common 0.1
  * profile in PROFILES. luneos-components' test/imports stand in for the
  * services the pages call. Each page is checked for the basics a layout
  * break shows up as - the header and the page are there, have a size and sit
- * inside the window, and the page's own scroll area does not run wider than
- * the window - and saved as build/test-output/ui/<profile>-<page>.png to look
- * at.
+ * inside the window, the page's own scroll area does not run wider than
+ * the window, the header's title is not cut off, no text runs to the edge of
+ * the screen, and on a wide screen the page is a column in the middle - and
+ * saved as build/test-output/ui/<profile>-<page>.png to look at.
  */
 TestCase {
     id: test
@@ -106,6 +107,65 @@ TestCase {
         return out;
     }
 
+    // The visible pieces of text on the page that can be seen: a tab
+    // swiped away sits beside the page, outside what its view shows. left
+    // and right are where the text itself starts and ends, in the page.
+    function pageTexts(item, page, out, clipLeft, clipRight) {
+        if (!item || !item.visible || item.opacity === 0)
+            return out;
+        var r = item.mapToItem(page, 0, 0, item.width, item.height);
+        if (item.clip) {
+            clipLeft = Math.max(clipLeft, r.x);
+            clipRight = Math.min(clipRight, r.x + r.width);
+        }
+        if (item.text !== undefined && typeof item.text === "string" && item.text !== ""
+                && item.contentWidth !== undefined && item.width > 0 && item.height > 0
+                && r.x < clipRight - 0.5 && r.x + r.width > clipLeft + 0.5)
+            out.push({ item: item, left: r.x + (item.leftPadding || 0),
+                       right: r.x + r.width - (item.rightPadding || 0) });
+        var kids = item.children || [];
+        for (var i = 0; i < kids.length; i++)
+            pageTexts(kids[i], page, out, clipLeft, clipRight);
+        return out;
+    }
+
+    // The header's title label: the item with its title that elides.
+    function headerTitle(header) {
+        var kids = header.contentChildren;
+        for (var i = 0; i < kids.length; i++)
+            if (kids[i].text === header.title && kids[i].elide !== undefined)
+                return kids[i];
+        return null;
+    }
+
+    function itemByText(item, text) {
+        if (!item)
+            return null;
+        if (item.text === text)
+            return item;
+        var kids = item.children || [];
+        for (var i = 0; i < kids.length; i++) {
+            var found = itemByText(kids[i], text);
+            if (found)
+                return found;
+        }
+        return null;
+    }
+
+    function itemByObjectName(item, name) {
+        if (!item)
+            return null;
+        if (item.objectName === name)
+            return item;
+        var kids = item.children || [];
+        for (var i = 0; i < kids.length; i++) {
+            var found = itemByObjectName(kids[i], name);
+            if (found)
+                return found;
+        }
+        return null;
+    }
+
     function test_page(data) {
         app = makeWindow(data.appId);
         app.requestActivate();
@@ -131,6 +191,50 @@ TestCase {
         verify(header !== null, data.tag + ": no header");
         verifyInside(header, data.tag + "'s header");
         verify(loader.y >= header.y + header.height - 0.5, data.tag + ": the page starts under the header");
+        // The whole title, at whichever of the header's two sizes it fits.
+        // "System Updates (placeholder)" is too long for a phone's header
+        // even at the small size, and the header elides rather than wraps;
+        // the placeholders may, as long as it is at the small size.
+        var title = headerTitle(header);
+        verify(title !== null, data.tag + ": no title in the header");
+        if (!/\(placeholder\)$/.test(app.categoryTitle) || !header.compact)
+            verify(!title.truncated, data.tag + ": the title \"" + app.categoryTitle + "\" is cut off in its "
+                   + title.width + " px");
+
+        // No text runs to the edge of the screen: every page keeps the
+        // margin SettingsPageContent gives it. On a wide screen the page is a
+        // column in the middle, not the full width.
+        var texts = pageTexts(page, page, [], 0, page.width);
+        verify(texts.length > 0, data.tag + ": no text on the page");
+        var minLeft = page.width, maxRight = 0;
+        for (var t = 0; t < texts.length; t++) {
+            verify(texts[t].left >= Units.gu(1) - 0.5,
+                   data.tag + ": \"" + texts[t].item.text + "\" starts " + texts[t].left + " px from the left edge");
+            verify(texts[t].right <= page.width - Units.gu(1) + 0.5,
+                   data.tag + ": \"" + texts[t].item.text + "\" ends " + (page.width - texts[t].right)
+                   + " px from the right edge");
+            minLeft = Math.min(minLeft, texts[t].left);
+            maxRight = Math.max(maxRight, texts[t].right);
+        }
+        if (page.width > Units.gu(80))
+            verify(minLeft > page.width * 0.1 && maxRight < page.width * 0.9,
+                   data.tag + ": the page runs the width of the screen (" + minLeft + " to " + maxRight + " of "
+                   + page.width + ") instead of a column in the middle");
+
+        // Tabs are the size of every other page's.
+        var tab = data.tag === "esim" ? itemByText(page, "Profiles")
+                : data.tag === "nfc" ? itemByText(page, "Tag") : null;
+        if (tab)
+            compare(tab.font.pixelSize, FontUtils.sizeToPixels("medium"), data.tag + "'s tabs");
+
+        // The list of networks has the page's room: on a short screen the
+        // explanation line under it makes way.
+        if (data.tag === "wifi") {
+            var list = itemByObjectName(page, "wifiList");
+            verify(list !== null, "no Wi-Fi list");
+            verify(list.height >= page.height * 2 / 3,
+                   "the Wi-Fi list has " + list.height + " px of the page's " + page.height);
+        }
 
         var flicks = pageFlickables(page, page, []);
         for (var i = 0; i < flicks.length; i++) {

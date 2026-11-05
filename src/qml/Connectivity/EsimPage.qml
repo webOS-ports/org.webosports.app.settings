@@ -403,11 +403,11 @@ BasePage {
     Item {
         id: esimTabBar
         anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.leftMargin: Units.gu(1)
-        anchors.rightMargin: Units.gu(1)
         anchors.topMargin: Units.gu(0.5)
+        // The page margin, and on a wide screen the width of a phone's
+        // column in the middle, as SettingsPageContent gives the other pages
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: Math.min(parent.width - Units.gu(2), Units.gu(56))
         height: Units.gu(4)
 
         property int currentIndex: 0
@@ -443,7 +443,8 @@ BasePage {
                     height: esimTabBar.height
 
                     text: modelData
-                    font.pixelSize: FontUtils.sizeToPixels("large")
+                    // The size of NFC's tabs and of the rows' labels
+                    font.pixelSize: FontUtils.sizeToPixels("medium")
                     font.weight: checked ? Font.Bold : Font.Normal
 
                     onClicked: esimTabBar.currentIndex = index
@@ -456,9 +457,12 @@ BasePage {
         id: esimTabView
         anchors.top: esimTabBar.bottom
         anchors.topMargin: Units.gu(0.5)
-        anchors.left: parent.left
-        anchors.right: parent.right
         anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: esimTabBar.width
+        // Narrower than the page, so the tab next to this one would show
+        // at its sides
+        clip: true
 
         onCurrentIndexChanged: esimTabBar.currentIndex = currentIndex
 

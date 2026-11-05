@@ -53,8 +53,9 @@ The tests/tst_*.qml run once. tests/screens/tst_screens.qml opens every page the
 category window knows, as the device does, once per device size in PROFILES - by
 default "mindphone" (480x800), "q25" (720x720), "tp" (1024x768) and "radon" (720x1600,
 with a notch and rounded corners). It checks that the header and the page are there,
-have a size and sit inside the window, and that the page does not scroll sideways, and
-saves each page as build/test-output/ui/<profile>-<page>.png to look at. Pick the sizes
+have a size and sit inside the window, that the page does not scroll sideways, that the
+header's title is not cut off, that no text runs to the edge of the screen and that on
+the TouchPad the page is a column in the middle, and saves each page as build/test-output/ui/<profile>-<page>.png to look at. Pick the sizes
 with, for example, `PROFILES="q25 radon" tests/run-tests.sh`; `PROFILES=` runs only the
 tests that do not depend on the screen.
 

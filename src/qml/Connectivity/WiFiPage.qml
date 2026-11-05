@@ -57,186 +57,199 @@ BasePage {
         }
     }
 
-    /* GroupBoxes look good! */
-    GroupBox {
-        anchors.fill: parent
+    ColumnLayout {
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.margins: Units.gu(1)
+        // The page margin, and on a wide screen the width of a phone's
+        // column in the middle, as SettingsPageContent gives the other pages
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: Math.min(parent.width - Units.gu(2), Units.gu(56))
+        spacing: Units.gu(1)
 
-        title: "Choose a network"
-        ColumnLayout {
-            anchors.fill: parent
+        /* GroupBoxes look good! */
+        GroupBox {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
 
-            ListView {
-                objectName: "wifiList"
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                clip: true
+            title: "Choose a network"
+            ColumnLayout {
+                anchors.fill: parent
 
-                model: wifiModel
-
-                delegate: ItemDelegate {
-                    property NetworkService delegateService: modelData
-
-                    width: parent.width
-                    height: Units.gu(6)
-
-                    RowLayout {
-                        anchors.fill: parent
-
-                        Label {
-                            height: parent.height
-                            text: delegateService.name
-                            font.bold: delegateService.connected
-                            Layout.fillWidth: true
-                            font.pixelSize: FontUtils.sizeToPixels("medium")
-                        }
-                        Label {
-                            id: networkStatus
-                            text: "connecting..."
-                            visible: delegateService.connecting
-                            color: "darkblue"
-                            font.pixelSize: FontUtils.sizeToPixels("small")
-                        }
-                        Image {
-                            source: "../images/wifi/checkmark.png"
-                            visible: delegateService.connected
-
-                            fillMode: Image.PreserveAspectFit
-                            verticalAlignment: Image.AlignVCenter
-                            horizontalAlignment: Image.AlignHCenter
-                            Layout.preferredHeight: Units.gu(3.2)
-                            Layout.preferredWidth: Units.gu(3.2)
-                        }
-                        Image {
-                            source: "../images/secure-icon.png"
-                            visible: delegateService.securityType !== NetworkService.SecurityNone
-
-                            fillMode: Image.PreserveAspectFit
-                            verticalAlignment: Image.AlignVCenter
-                            horizontalAlignment: Image.AlignHCenter
-                            Layout.preferredHeight: Units.gu(3.2)
-                            Layout.preferredWidth: Units.gu(1.5)
-                        }
-                        Image {
-                            source: "../images/wifi/signal-icon-" + Math.floor(delegateService.strength/25) + ".png"
-
-                            fillMode: Image.PreserveAspectFit
-                            verticalAlignment: Image.AlignVCenter
-                            horizontalAlignment: Image.AlignHCenter
-                            Layout.preferredHeight: Units.gu(3.2)
-                            Layout.preferredWidth: Units.gu(3.2)
-                        }
-                    }
-                    /*
-                     * A Connect that connman refused or that failed. Not
-                     * answering this is how the page went silent when
-                     * connman still held an earlier attempt: every tap got
-                     * InProgress and nothing at all happened on screen.
-                     */
-                    Connections {
-                        target: delegateService
-                        function onConnectRequestFailed(error) {
-                            wifiPageId.connectFailed(delegateService, error);
-                        }
-                    }
-
-                    // Show a separator between items
-                    HorizontalSeparator {
-                        anchors.bottom: parent.bottom
-                        width: parent.width
-                    }
-
-                    /*
-                     * A TapHandler and not a MouseArea, because this row
-                     * lives in a ListView.
-                     *
-                     * MouseArea.pressAndHold does not survive being inside a
-                     * Flickable: the list filters its children's mouse
-                     * events, and the first move takes the grab away and
-                     * cancels the hold timer with it. Measured with a
-                     * synthesised press: perfectly still, the hold fires;
-                     * four pixels of movement during it, and it never does -
-                     * and four pixels is less than the ten pixel drag
-                     * threshold, so the list does not even scroll. A finger
-                     * planted on glass reports no movement, which is why
-                     * this worked on a device and not with a mouse.
-                     *
-                     * A pointer handler is built to share a press with a
-                     * Flickable rather than lose it, so the hold survives
-                     * the drift and a real drag still scrolls the list.
-                     */
-                    TapHandler {
-                        id: networkTap
-
-                        // Set once the hold has fired, so the release that
-                        // follows does not also toggle the connection - what
-                        // MouseArea used to do for free by suppressing
-                        // clicked() after pressAndHold().
-                        property bool heldOpen: false
-
-                        longPressThreshold: 0.8
-
-                        onPressedChanged: if (pressed) networkTap.heldOpen = false
-
-                        onLongPressed: {
-                            networkTap.heldOpen = true;
-                            networkInfoPopup.service = delegateService;
-                            networkInfoPopup.open();
-                        }
-
-                        onTapped: {
-                            if (networkTap.heldOpen)
-                                return;
-
-                            if(delegateService.connected) {
-                                delegateService.requestDisconnect();
-                            }
-                            else if(delegateService.connecting) {
-                                // Another Connect would only be refused
-                                // with InProgress: offer to stop instead.
-                                connectProblemPopup.showBusy(delegateService);
-                            }
-                            else {
-                                // if this service needs a password and we don't have it yet,
-                                // connman will ask the user through the UserAgent down below
-                                delegateService.requestConnect();
-                            }
-                        }
-                    }
-                }
-
-                ScrollIndicator.vertical: ScrollIndicator { }
-            }
-
-            RowLayout {
-                Layout.fillWidth: true
-
-                height: Units.gu(3.2)
-                Image {
-                    source: "../images/icon-new.png"
-
-                    Layout.preferredHeight: parent.height
-                    Layout.preferredWidth: height
-
-                    fillMode: Image.PreserveAspectCrop
-                    verticalAlignment: Image.AlignTop
-                }
-                Label {
-                    height: parent.height
+                ListView {
+                    objectName: "wifiList"
                     Layout.fillWidth: true
-                    text: "Join Network"
+                    Layout.fillHeight: true
+                    clip: true
+
+                    model: wifiModel
+
+                    delegate: ItemDelegate {
+                        property NetworkService delegateService: modelData
+
+                        width: parent.width
+                        height: Units.gu(6)
+
+                        RowLayout {
+                            anchors.fill: parent
+
+                            Label {
+                                height: parent.height
+                                text: delegateService.name
+                                font.bold: delegateService.connected
+                                Layout.fillWidth: true
+                                font.pixelSize: FontUtils.sizeToPixels("medium")
+                            }
+                            Label {
+                                id: networkStatus
+                                text: "connecting..."
+                                visible: delegateService.connecting
+                                color: "darkblue"
+                                font.pixelSize: FontUtils.sizeToPixels("small")
+                            }
+                            Image {
+                                source: "../images/wifi/checkmark.png"
+                                visible: delegateService.connected
+
+                                fillMode: Image.PreserveAspectFit
+                                verticalAlignment: Image.AlignVCenter
+                                horizontalAlignment: Image.AlignHCenter
+                                Layout.preferredHeight: Units.gu(3.2)
+                                Layout.preferredWidth: Units.gu(3.2)
+                            }
+                            Image {
+                                source: "../images/secure-icon.png"
+                                visible: delegateService.securityType !== NetworkService.SecurityNone
+
+                                fillMode: Image.PreserveAspectFit
+                                verticalAlignment: Image.AlignVCenter
+                                horizontalAlignment: Image.AlignHCenter
+                                Layout.preferredHeight: Units.gu(3.2)
+                                Layout.preferredWidth: Units.gu(1.5)
+                            }
+                            Image {
+                                source: "../images/wifi/signal-icon-" + Math.floor(delegateService.strength/25) + ".png"
+
+                                fillMode: Image.PreserveAspectFit
+                                verticalAlignment: Image.AlignVCenter
+                                horizontalAlignment: Image.AlignHCenter
+                                Layout.preferredHeight: Units.gu(3.2)
+                                Layout.preferredWidth: Units.gu(3.2)
+                            }
+                        }
+                        /*
+                         * A Connect that connman refused or that failed. Not
+                         * answering this is how the page went silent when
+                         * connman still held an earlier attempt: every tap got
+                         * InProgress and nothing at all happened on screen.
+                         */
+                        Connections {
+                            target: delegateService
+                            function onConnectRequestFailed(error) {
+                                wifiPageId.connectFailed(delegateService, error);
+                            }
+                        }
+
+                        // Show a separator between items
+                        HorizontalSeparator {
+                            anchors.bottom: parent.bottom
+                            width: parent.width
+                        }
+
+                        /*
+                         * A TapHandler and not a MouseArea, because this row
+                         * lives in a ListView.
+                         *
+                         * MouseArea.pressAndHold does not survive being inside a
+                         * Flickable: the list filters its children's mouse
+                         * events, and the first move takes the grab away and
+                         * cancels the hold timer with it. Measured with a
+                         * synthesised press: perfectly still, the hold fires;
+                         * four pixels of movement during it, and it never does -
+                         * and four pixels is less than the ten pixel drag
+                         * threshold, so the list does not even scroll. A finger
+                         * planted on glass reports no movement, which is why
+                         * this worked on a device and not with a mouse.
+                         *
+                         * A pointer handler is built to share a press with a
+                         * Flickable rather than lose it, so the hold survives
+                         * the drift and a real drag still scrolls the list.
+                         */
+                        TapHandler {
+                            id: networkTap
+
+                            // Set once the hold has fired, so the release that
+                            // follows does not also toggle the connection - what
+                            // MouseArea used to do for free by suppressing
+                            // clicked() after pressAndHold().
+                            property bool heldOpen: false
+
+                            longPressThreshold: 0.8
+
+                            onPressedChanged: if (pressed) networkTap.heldOpen = false
+
+                            onLongPressed: {
+                                networkTap.heldOpen = true;
+                                networkInfoPopup.service = delegateService;
+                                networkInfoPopup.open();
+                            }
+
+                            onTapped: {
+                                if (networkTap.heldOpen)
+                                    return;
+
+                                if(delegateService.connected) {
+                                    delegateService.requestDisconnect();
+                                }
+                                else if(delegateService.connecting) {
+                                    // Another Connect would only be refused
+                                    // with InProgress: offer to stop instead.
+                                    connectProblemPopup.showBusy(delegateService);
+                                }
+                                else {
+                                    // if this service needs a password and we don't have it yet,
+                                    // connman will ask the user through the UserAgent down below
+                                    delegateService.requestConnect();
+                                }
+                            }
+                        }
+                    }
+
+                    ScrollIndicator.vertical: ScrollIndicator { }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    height: Units.gu(3.2)
+                    Image {
+                        source: "../images/icon-new.png"
+
+                        Layout.preferredHeight: parent.height
+                        Layout.preferredWidth: height
+
+                        fillMode: Image.PreserveAspectCrop
+                        verticalAlignment: Image.AlignTop
+                    }
+                    Label {
+                        height: parent.height
+                        Layout.fillWidth: true
+                        text: "Join Network"
+                    }
                 }
             }
         }
-    }
 
-    footer: Label {
-        width: parent.width
-        wrapMode: Label.WordWrap
-        font.italic: true
         // Press-and-hold is worth saying out loud: there is nothing on the
-        // row itself to suggest a network has a details page behind it.
-        text: "Your device automatically connects to known networks. "
-              + "Touch and hold a network to see its details."
+        // row itself to suggest a network has a details page behind it. On
+        // a short screen - the Q25's square - the list has the room instead,
+        // as AppPage does with its explanation line.
+        ExplanationText {
+            Layout.fillWidth: true
+            visible: wifiPageId.Window.height >= Units.gu(60)
+            text: "Your device automatically connects to known networks. "
+                  + "Touch and hold a network to see its details."
+        }
     }
 
     UserAgent {
