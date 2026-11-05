@@ -23,6 +23,7 @@ import QtQuick.Controls.LuneOS 2.0
 import LunaNext.Common 0.1
 
 import "../Common"
+import LuneOS.Forms 1.0
 
 /*
  * This is an example of what the code for some settings can look like
@@ -65,10 +66,12 @@ BasePage {
         ListElement { level: "Fatal" }
     }
 
-    /* A settings page has a vertical layout: put everything in a Column */
-    Column {
-        width: parent.width
-
+    /*
+     * A settings page has a vertical layout: put everything in a
+     * SettingsPageContent, the column with the page margin that scrolls
+     * and, on a wide screen, stays the width of a phone's in the middle.
+     */
+    SettingsPageContent {
         /* GroupBoxes look good! */
         GroupBox {
             width: parent.width

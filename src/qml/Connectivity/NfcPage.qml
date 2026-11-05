@@ -275,8 +275,11 @@ BasePage {
     TabBar {
         id: nfcTabBar
         anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
+        anchors.topMargin: Units.gu(0.5)
+        // The page margin, and on a wide screen the width of a phone's
+        // column in the middle, as SettingsPageContent gives the other pages
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: Math.min(parent.width - Units.gu(2), Units.gu(56))
         height: Units.gu(4.8)
 
         TabButton {
@@ -292,15 +295,22 @@ BasePage {
     SwipeView {
         id: nfcTabView
         anchors.top: nfcTabBar.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
+        anchors.topMargin: Units.gu(0.5)
         anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: nfcTabBar.width
+        // Narrower than the page, so the tab next to this one would show
+        // at its sides
+        clip: true
 
         currentIndex: nfcTabBar.currentIndex
         onCurrentIndexChanged: nfcTabBar.currentIndex = currentIndex
 
     ScrollView {
         clip: true
+        // Up and down only: the column is as wide as the view, and its
+        // unwrapped text must not make the page scroll sideways too.
+        contentWidth: availableWidth
 
     ColumnLayout {
         width: nfcTabView.width
@@ -573,6 +583,9 @@ BasePage {
 
     ScrollView {
         clip: true
+        // Up and down only: the column is as wide as the view, and its
+        // unwrapped text must not make the page scroll sideways too.
+        contentWidth: availableWidth
 
     ColumnLayout {
         width: nfcTabView.width

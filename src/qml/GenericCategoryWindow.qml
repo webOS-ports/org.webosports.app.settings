@@ -222,6 +222,32 @@ WebOSWindow {
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
+
+        // A title that does not fit the header at its usual size takes the
+        // header's smaller one, rather than being cut off ("Sounds &
+        // Ringto...") on a phone; the short ones keep the large title.
+        compact: _titleLabel !== null && titleMetrics.advanceWidth > _titleLabel.width
+
+        // The header's title, for the room it has: what is left between the
+        // icon and the page's action, which only the header knows.
+        property Item _titleLabel: null
+        Component.onCompleted: {
+            for (var i = 0; i < contentChildren.length; i++) {
+                var child = contentChildren[i];
+                if (child.text === title && child.elide !== undefined)
+                    _titleLabel = child;
+            }
+        }
+    }
+
+    // The title at the header's large size: its own font follows compact,
+    // so it cannot say whether the large one would fit.
+    TextMetrics {
+        id: titleMetrics
+        text: settingsCategoryAppWindow.categoryTitle
+        font.family: categoryHeader._titleLabel ? categoryHeader._titleLabel.font.family : ""
+        font.pixelSize: FontUtils.sizeToPixels("large")
+        font.weight: Font.Bold
     }
 
     Loader {
