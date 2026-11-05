@@ -301,6 +301,9 @@ BasePage {
 
     ScrollView {
         clip: true
+        // Up and down only: the column is as wide as the view, and its
+        // unwrapped text must not make the page scroll sideways too.
+        contentWidth: availableWidth
 
     ColumnLayout {
         width: nfcTabView.width
@@ -573,6 +576,9 @@ BasePage {
 
     ScrollView {
         clip: true
+        // Up and down only: the column is as wide as the view, and its
+        // unwrapped text must not make the page scroll sideways too.
+        contentWidth: availableWidth
 
     ColumnLayout {
         width: nfcTabView.width
