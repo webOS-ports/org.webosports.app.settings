@@ -10,6 +10,7 @@ foreach(CATEGORY
   applications
   battery
   bluetooth
+  buttons
   cellbroadcast
   certificate
   dateandtime

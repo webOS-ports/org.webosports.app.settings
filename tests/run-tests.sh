@@ -44,6 +44,10 @@ if ! ls "$LUNEOS_COMPONENTS"/modules/QtQuick/Controls/LuneOS/libluneosstyleplugi
 fi
 
 export QT_QUICK_CONTROLS_STYLE=QtQuick.Controls.LuneOS
+# As on the device, where SAM exports it for QML applications: the Buttons page
+# reads the device's key file with a file:// XMLHttpRequest, which Qt refuses
+# without this, and tst_buttons_page feeds it the files in data/.
+export QML_XHR_ALLOW_FILE_READ=1
 
 status=0
 for t in tst_*.qml; do
