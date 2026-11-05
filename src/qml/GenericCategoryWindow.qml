@@ -197,7 +197,7 @@ WebOSWindow {
         "org.webosports.app.settings.updates": {
             "source": "General/UpdatePage.qml",
             "icon": "images/icons/icon-updates.png",
-            "title": "System Updates (placeholder)"
+            "title": "System Updates"
         },
         "org.webosports.app.settings.textassist": {
             "source": "General/TextAssistPage.qml",
