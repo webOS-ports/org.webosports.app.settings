@@ -39,6 +39,11 @@ WebOSWindow {
             "icon": "images/icons/icon-battery.png",
             "title": "Battery"
         },
+        "org.webosports.app.settings.buttons": {
+            "source": "General/ButtonsPage.qml",
+            "icon": "images/icons/icon-buttons.png",
+            "title": "Buttons"
+        },
         "org.webosports.app.settings.display": {
             "source": "General/DisplayPage.qml",
             "icon": "images/icons/icon-display.png",

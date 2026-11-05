@@ -1,0 +1,19 @@
+{
+    "title": "Buttons",
+    "id": "org.webosports.app.settings.buttons",
+    "category": "Settings",
+    "version": "0.4.0",
+    "trustLevel": "trusted",
+    "vendor": "WebOS Ports",
+    "vendorurl": "https://github.com/webOS-ports/org.webosports.app.settings",
+    "type": "qml",
+    "useLuneOSStyle": true,
+    "main": "qml/GenericCategoryWindow.qml",
+    "icon": "qml/images/icons/icon-buttons.png",
+    "uiRevision": "2",
+    "visible": true,
+    "requiredPermissions": [
+        "tweaks-service.operation",
+        "application.operation"
+    ]
+}

@@ -127,6 +127,12 @@ GenericCategoryWindow {
         }
 
         ListElement {
+            title: "Buttons"
+            categorySection: "General"
+            appId: "org.webosports.app.settings.buttons"
+        }
+
+        ListElement {
             title: "Certificate Manager"
             categorySection: "General"
             appId: "org.webosports.app.settings.certificate"
