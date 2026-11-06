@@ -58,7 +58,7 @@ BasePage {
         onRequestAuthorizationFromUser: {
             console.log("onRequestAuthorizationFromUser: device="+device.name+", request="+request);
             popupLoader.setSource(Qt.resolvedUrl("BluetoothConfirmAuthorizePopup.qml"),
-                                  {"bluezRequest": request, "deviceName": device.name, "passkey": passkey});
+                                  {"bluezRequest": request, "deviceName": device.name});
         }
         onAuthorizeServiceFromUser: {
             console.log("onAuthorizeServiceFromUser: device="+device.name+", uuid="+uuid+", request="+request);
