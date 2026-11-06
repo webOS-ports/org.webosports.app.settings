@@ -268,7 +268,14 @@ BasePage {
     // it starts a new one, since a headset may have been put into pairing
     // mode in the meantime. BluetoothManager outlives the page (it is a
     // singleton), so the page has to say when it goes too.
+    //
+    // The agent answers BlueZ for the pairings this page starts. Without it
+    // BlueZ pairs as NoInputNoOutput: Just Works, with no passkey and no
+    // popup here. It is registered when Bluetooth comes up, and here when it
+    // already was up as the page opened, since then no change follows.
     Component.onCompleted: {
+        if (BluetoothManager.bluetoothOperational)
+            btAgent.registerToManager(BluetoothManager.btManager);
         BluetoothManager.discoveringMode = true;
         luna.subscribe(autoReconnectService + "/getStatus", JSON.stringify({"subscribe": true}),
                        _handleAutoReconnectStatus, _handleAutoReconnectError);
