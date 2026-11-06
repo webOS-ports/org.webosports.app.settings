@@ -144,25 +144,28 @@ Popup {
             Layout.fillWidth: true
             spacing: Units.gu(1)
 
-            Button {
-                objectName: "connectProblemStop"
-                Layout.fillWidth: true
-                visible: connectProblemPopup.busy
-                text: "Stop connecting"
-                LuneOSButton.mainColor: LuneOSButton.negativeColor
-                LuneOSButton.textColor: "white"
-                onClicked: {
-                    if (connectProblemPopup.service)
-                        connectProblemPopup.service.requestDisconnect();
-                    connectProblemPopup.close();
-                }
-            }
+            // The way out left of the action (webOS).
             Button {
                 objectName: "connectProblemDismiss"
                 Layout.fillWidth: true
                 text: connectProblemPopup.busy ? "Keep waiting" : "OK"
                 LuneOSButton.mainColor: LuneOSButton.secondaryColor
                 onClicked: connectProblemPopup.close()
+            }
+            Button {
+                objectName: "connectProblemStop"
+                Layout.fillWidth: true
+                visible: connectProblemPopup.busy
+                text: "Stop connecting"
+                // The action the popup offers: the primary (dark grey)
+                // button; stopping an attempt destroys nothing, and red is
+                // for destructive actions only.
+                LuneOSButton.mainColor: LuneOSButton.grayColor
+                onClicked: {
+                    if (connectProblemPopup.service)
+                        connectProblemPopup.service.requestDisconnect();
+                    connectProblemPopup.close();
+                }
             }
         }
     }

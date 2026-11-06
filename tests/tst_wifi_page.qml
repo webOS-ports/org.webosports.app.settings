@@ -15,6 +15,7 @@
  */
 
 import QtQuick
+import QtQuick.Controls.LuneOS
 import QtTest
 import Connman 0.2
 
@@ -106,6 +107,21 @@ Item {
             // clicked() stands for.
             stop.clicked();
             compare(disconnectSpy.count, 1, "Stop connecting did not disconnect");
+            tryCompare(popup(), "opened", false, 2000);
+        }
+
+        // webOS: stopping destroys nothing, so it is the primary dark grey
+        // button, not red; the way out (Keep waiting) left of it.
+        function test_stopIsNotRedAndKeepWaitingIsLeft() {
+            var item = row();
+            item.delegateService.connectRequestFailed("In progress");
+            tryCompare(popup(), "opened", true, 2000);
+            var stop = popupChild("connectProblemStop");
+            var wait = popupChild("connectProblemDismiss");
+            compare(stop.LuneOSButton.mainColor, stop.LuneOSButton.grayColor);
+            verify(stop.LuneOSButton.mainColor !== stop.LuneOSButton.negativeColor);
+            tryVerify(function() { return wait.width > 0 && wait.mapToItem(null, 0, 0).x < stop.mapToItem(null, 0, 0).x; }, 2000, "Keep waiting left of Stop connecting");
+            wait.clicked();
             tryCompare(popup(), "opened", false, 2000);
         }
 
