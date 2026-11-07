@@ -20,6 +20,7 @@ import QtQuick.Controls 2.2
 import LunaNext.Common 0.1
 import Eos.Window 0.1
 import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 WebOSWindow {
     id: settingsCategoryAppWindow
@@ -265,5 +266,37 @@ WebOSWindow {
 
         property alias actionHeaderComponent: categoryHeader.actionComponent
         onActionHeaderComponentChanged: console.log("actionHeaderComponent="+actionHeaderComponent);
+
+        onLoaded: settingsCategoryAppWindow._deliverLaunchParams()
+    }
+
+    /*
+     * What a launch asks the page to do. The status bar's Wi-Fi menu opens
+     * the Wi-Fi page with {"target": {"servicePath": ...}} for a network that
+     * wants a passphrase. A page that acts on its launches implements
+     * handleLaunchParams(params); the parameters wait here for the page, since
+     * on a first launch they arrive before it has loaded. Relaunches of a
+     * running app come through LaunchParams too.
+     */
+    property var _pendingLaunchParams: null
+
+    function _deliverLaunchParams() {
+        var page = categoryLoader.item;
+        if (!_pendingLaunchParams || !page || typeof page.handleLaunchParams !== "function")
+            return;
+        var params = _pendingLaunchParams;
+        _pendingLaunchParams = null;
+        page.handleLaunchParams(params);
+    }
+
+    LaunchParams {
+        id: launch
+        window: settingsCategoryAppWindow
+        onLaunched: function(params) {
+            if (launch.isCommand(params))
+                return;
+            settingsCategoryAppWindow._pendingLaunchParams = params;
+            settingsCategoryAppWindow._deliverLaunchParams();
+        }
     }
 }
