@@ -182,6 +182,89 @@ Item {
             verify(popupChild("connectProblemText").text.indexOf("Input/output error") >= 0);
         }
 
+        // Launched by the status bar's Wi-Fi menu for one network: the page
+        // connects to it, so connman asks this page's agent for the passphrase.
+        function test_launchTargetConnects() {
+            var item = row();
+            page.handleLaunchParams({"target": {"servicePath": item.delegateService.path}});
+            compare(connectSpy.count, 1, "the launch target was not connected");
+        }
+
+        // The same, one "params" down, as a relaunch can carry it.
+        function test_launchTargetNestedConnects() {
+            var item = row();
+            page.handleLaunchParams({"params": {"target": {"servicePath": item.delegateService.path}}});
+            compare(connectSpy.count, 1);
+        }
+
+        // connman is still unwinding an attempt: no Connect until it is done,
+        // or it would only be refused with InProgress.
+        function test_launchTargetWaitsWhileConnecting() {
+            var item = row();
+            item.delegateService.connecting = true;
+            page.handleLaunchParams({"target": {"servicePath": item.delegateService.path}});
+            wait(50);
+            compare(connectSpy.count, 0, "connected while connman was still busy");
+            item.delegateService.connecting = false;
+            compare(connectSpy.count, 1, "did not connect once connman was done");
+        }
+
+        function test_launchWithoutTargetDoesNothing() {
+            var item = row();
+            page.handleLaunchParams({});
+            page.handleLaunchParams({"target": {}});
+            page.handleLaunchParams({"target": {"servicePath": "/net/connman/service/not_here"}});
+            wait(50);
+            compare(connectSpy.count, 0);
+        }
+
+        // Through the window, as qml-runner hands the launch over.
+        function test_windowDeliversLaunchTarget() {
+            var item = row();
+            var path = item.delegateService.path;
+            var component = Qt.createComponent(Qt.resolvedUrl("../src/qml/GenericCategoryWindow.qml"));
+            verify(component.status !== Component.Error, component.errorString());
+            var window = createTemporaryObject(component, null, {
+                appId: "org.webosports.app.settings.wifi",
+                launchParams: JSON.stringify({"target": {"servicePath": path}})
+            });
+            verify(window !== null);
+            // The window's own page and model, not this test's.
+            tryVerify(function() { return window._categoryLoader.status === Loader.Ready; }, 5000);
+            var join = findChild(window._categoryLoader.item, "joinTarget");
+            verify(join !== null);
+            tryCompare(join, "servicePath", "", 3000);
+            var list = findChild(window._categoryLoader.item, "wifiList");
+            var service = null;
+            for (var i = 0; i < list.model.count; ++i)
+                if (list.model.get(i).path === path)
+                    service = list.model.get(i);
+            verify(service !== null);
+            verify(service.connecting || service.connected, "the window's page did not connect");
+            compare(window.launchParams, "", "the launch was not consumed");
+        }
+
+        // A launch that comes before its page has loaded waits for it.
+        function test_windowKeepsLaunchForPageLoadedLater() {
+            var item = row();
+            var path = item.delegateService.path;
+            var component = Qt.createComponent(Qt.resolvedUrl("../src/qml/GenericCategoryWindow.qml"));
+            verify(component.status !== Component.Error, component.errorString());
+            // The example page has no handleLaunchParams: the launch is kept.
+            var window = createTemporaryObject(component, null, {
+                appId: "org.webosports.app.settings.example",
+                launchParams: JSON.stringify({"target": {"servicePath": path}})
+            });
+            verify(window !== null);
+            verify(window._pendingLaunchParams !== null, "the launch was not kept for the page");
+            window.appId = "org.webosports.app.settings.wifi";
+            tryVerify(function() {
+                return window._categoryLoader.status === Loader.Ready
+                    && findChild(window._categoryLoader.item, "joinTarget") !== null;
+            }, 5000);
+            compare(window._pendingLaunchParams, null, "the loaded page was not given the launch");
+        }
+
         // Cancelling the passphrase prompt, or stopping the attempt, is the
         // user's own doing: nothing to report.
         function test_userCancelIsNotReported() {

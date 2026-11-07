@@ -327,4 +327,80 @@ BasePage {
     function retrieveProperties() {
         // nothing special to retrieve here
     }
+
+    /*
+     * Launched for one network: the status bar's Wi-Fi menu was tapped on a
+     * network that wants a passphrase. The menu does not connect to it
+     * itself, because connman asks the agent of whoever called Connect and
+     * the menu has no field to type into. This page connects instead, so
+     * connman asks connmanUserAgent above and the passphrase popup comes up.
+     */
+    function handleLaunchParams(params) {
+        var target = params.target || (params.params ? params.params.target : undefined);
+        if (!target || typeof target.servicePath !== "string" || target.servicePath === "")
+            return;
+        joinTarget.servicePath = target.servicePath;
+        joinTarget.giveUp.restart();
+        joinTarget.tryJoin();
+    }
+
+    QtObject {
+        id: joinTarget
+        objectName: "joinTarget"
+
+        property string servicePath: ""
+
+        function find() {
+            for (var i = 0; i < wifiModel.count; ++i) {
+                var service = wifiModel.get(i);
+                if (service && service.path === servicePath)
+                    return service;
+            }
+            return null;
+        }
+
+        function clear() {
+            servicePath = "";
+            serviceWatch.target = null;
+            giveUp.stop();
+        }
+
+        function tryJoin() {
+            if (servicePath === "")
+                return;
+            // On a first launch the list may not have the network yet:
+            // wifiModel's countChanged comes back here.
+            var service = find();
+            if (!service)
+                return;
+            // A connect the menu began for a saved network is still being
+            // unwound after it cancelled connman's request; another Connect
+            // now would only get InProgress.
+            if (service.connecting) {
+                serviceWatch.target = service;
+                return;
+            }
+            clear();
+            if (!service.connected)
+                service.requestConnect();
+        }
+
+        property Connections listWatch: Connections {
+            target: wifiModel
+            function onCountChanged() { joinTarget.tryJoin(); }
+        }
+
+        property Connections serviceWatch: Connections {
+            target: null
+            ignoreUnknownSignals: true
+            function onConnectingChanged() { joinTarget.tryJoin(); }
+        }
+
+        // The network went out of range, or Wi-Fi is off: the list is there
+        // for the user to pick from.
+        property Timer giveUp: Timer {
+            interval: 15000
+            onTriggered: joinTarget.clear()
+        }
+    }
 }
