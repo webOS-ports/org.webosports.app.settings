@@ -131,8 +131,11 @@ BasePage {
     readonly property var layoutValues: ["LuneOS", "Dvorak", "Thumb", "Pre (Orange)", "Pre (White)",
                                          "Pre Keyboard"]
 
-    //! The Pre Keyboard is the one chosen: its own settings show, LuneOS's step aside.
-    readonly property bool preChosen: keyboardLayout === "Pre Keyboard"
+    //! The Pre Keyboard is LuneOS's keyboard: only its settings show. The LuneOS
+    //! keyboard's own rows (layout, size, text correction, its dictionary) are
+    //! kept below but hidden.
+    // Was: keyboardLayout === "Pre Keyboard", when it was one choice of Layout.
+    readonly property bool preChosen: true
 
     /*
      * The Pre Keyboard's settings: the "pre" object inside the keyboard
@@ -265,6 +268,8 @@ BasePage {
         GroupBox {
             width: parent.width
             title: "Keyboard"
+            // Layout and Size are the LuneOS keyboard's; the Pre Keyboard has its own Height.
+            visible: !pageRoot.preChosen
 
             Column {
                 width: parent.width
@@ -561,6 +566,8 @@ BasePage {
         }
 
         ExplanationText {
+            // The LuneOS keyboard's languages; the Pre Keyboard's are chosen above.
+            visible: !pageRoot.preChosen
             text: "Which languages the keyboard offers is set under Regional Settings."
         }
     }
