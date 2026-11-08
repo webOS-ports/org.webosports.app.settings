@@ -133,6 +133,26 @@ Item {
             tryVerify(function() { return monitor.dashboard === null; });
         }
 
+        // A PDF (a web page from Atlas): the print service gives no page
+        // numbers, as it cannot tell how many pages one file holds.
+        function test_aPdfWithoutPageNumbers() {
+            var pdf = { description: "webOS - Wikipedia", appName: "Browser", blockedReasons: [] };
+            root.post("getStatus", { jobID: 9, description: "webOS - Wikipedia", appName: "Browser",
+                                     statusId: "PAGESTARTINFO", pageNum: 1, currentPage: 0, totalPages: 0 });
+            var d = monitor.dashboard;
+            verify(d !== null, "the dashboard");
+            root.post("getStatus", root.state(9, "QUEUED", Object.assign({ currentPage: 0, totalPages: 0 }, pdf)));
+            compare(d.title, "webOS - Wikipedia");
+            compare(d.text, "Waiting for the printer...");
+            root.post("getStatus", root.state(9, "RUNNING", Object.assign({ currentPage: 0, totalPages: 0 }, pdf)));
+            compare(d.title, "Printing from Browser");
+            compare(d.text, "webOS - Wikipedia");
+            root.post("getStatus", root.state(9, "BLOCKED", Object.assign({ currentPage: 0, totalPages: 0 }, pdf,
+                                                                            { blockedReasons: ["toner-low"] })));
+            verify(d.title.indexOf("Page") < 0, d.title);
+            compare(d.text, "webOS - Wikipedia");
+        }
+
         function test_aJobOutOfPaper() {
             root.post("getStatus", root.state(8, "RUNNING", { currentPage: 1, totalPages: 1, blockedReasons: [] }));
             root.post("getStatus", root.state(8, "BLOCKED", { currentPage: 1, totalPages: 1,
