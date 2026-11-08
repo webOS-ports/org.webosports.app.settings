@@ -125,8 +125,37 @@ BasePage {
 
     // The layouts and sizes webos-keyboard accepts. A layout a language or
     // form factor has no file for falls back to the stock one there; Dvorak
-    // and Thumb are tablet layouts, the two Pre ones phone layouts.
-    readonly property var layoutValues: ["LuneOS", "Dvorak", "Thumb", "Pre (Orange)", "Pre (White)"]
+    // and Thumb are tablet layouts, the two Pre ones phone layouts. "Pre
+    // Keyboard" is a keyboard of its own rather than a layout: the Palm Pre's,
+    // with its own corrections, suggestions and swipe (webos-keyboard src/pre).
+    readonly property var layoutValues: ["LuneOS", "Dvorak", "Thumb", "Pre (Orange)", "Pre (White)",
+                                         "Pre Keyboard"]
+
+    //! The Pre Keyboard is the one chosen: its own settings show, LuneOS's step aside.
+    readonly property bool preChosen: keyboardLayout === "Pre Keyboard"
+
+    /*
+     * The Pre Keyboard's settings: the "pre" object inside the keyboard
+     * preference, which the keyboard reads and also writes (the style and Hold
+     * for more can be switched from the keys, and words added there).
+     */
+    property var pre: ({})
+
+    // Its languages, in the order a flick on the space bar goes through them.
+    readonly property var preLanguageIds: ["en_US", "en_GB", "en_CA", "en_AU", "fr", "de", "es", "it"]
+    readonly property var preLanguageNames: ["English (US)", "English (UK)", "English (Canada)",
+                                             "English (Australia)", "Français", "Deutsch",
+                                             "Español", "Italiano"]
+    readonly property var preHeightValues: ["small", "medium", "large"]
+
+    function preFlag(key, fallback) {
+        return pageRoot.pre.hasOwnProperty(key) ? pageRoot.pre[key] === true : fallback;
+    }
+
+    function preLanguages() {
+        var ids = pageRoot.pre.languages;
+        return (ids && ids.length > 0) ? ids : ["en_US"];
+    }
     readonly property var sizeValues: ["XS", "S", "M", "L"]
     readonly property var sizeLabels: ["Extra small", "Small", "Medium", "Large"]
 
@@ -144,6 +173,7 @@ BasePage {
         GroupBox {
             width: parent.width
             title: "Text Correction"
+            visible: !pageRoot.preChosen
 
             Column {
                 width: parent.width
@@ -219,6 +249,7 @@ BasePage {
         }
 
         ExplanationText {
+            visible: !pageRoot.preChosen
             text: "Auto-correction fixes a word as you finish it. Spell checking " +
                   "only underlines it. Predictive text offers the next word above " +
                   "the keyboard."
@@ -226,6 +257,7 @@ BasePage {
 
         Button {
             width: parent.width
+            visible: !pageRoot.preChosen
             text: "Edit User Dictionary"
             onClicked: dictionaryPopup.open()
         }
@@ -259,10 +291,13 @@ BasePage {
 
                 HorizontalSeparator {
                     width: parent.width
+                    visible: sizeSelector.visible
                 }
 
                 LabelAndSelector {
                     id: sizeSelector
+                    // The Pre Keyboard has its own Height, below.
+                    visible: !pageRoot.preChosen
                     width: parent.width
                     label: "Size"
                     model: pageRoot.sizeLabels
@@ -281,6 +316,152 @@ BasePage {
                                      "keyboardSize", pageRoot.sizeValues[index])
                 }
             }
+        }
+
+
+        /*
+         * The Pre Keyboard: what its Android app's setup screen offers, less
+         * speech input (no recogniser on LuneOS) and updates (the image has them).
+         */
+        GroupBox {
+            width: parent.width
+            title: "Pre Keyboard"
+            visible: pageRoot.preChosen
+
+            Column {
+                width: parent.width
+
+                LabelAndSelector {
+                    id: preStyleSelector
+                    width: parent.width
+                    label: "Style"
+                    model: ["Orange", "White"]
+                    currentIndex: pageRoot.pre.style === "white" ? 1 : 0
+                    // Also switched from the keys (hold the globe): follow it.
+                    Connections {
+                        target: pageRoot
+                        function onPreChanged() {
+                            preStyleSelector.currentIndex = pageRoot.pre.style === "white" ? 1 : 0;
+                        }
+                    }
+                    onActivated: (index) => pageRoot.setPreSetting("style", index === 1 ? "white" : "orange")
+                }
+
+                HorizontalSeparator { width: parent.width }
+
+                LabelAndSelector {
+                    id: preHeightSelector
+                    width: parent.width
+                    label: "Height"
+                    model: ["Small", "Medium", "Large"]
+                    currentIndex: pageRoot._indexOf(pageRoot.preHeightValues, pageRoot.pre.height, 1)
+                    Connections {
+                        target: pageRoot
+                        function onPreChanged() {
+                            preHeightSelector.currentIndex =
+                                pageRoot._indexOf(pageRoot.preHeightValues, pageRoot.pre.height, 1);
+                        }
+                    }
+                    onActivated: (index) => pageRoot.setPreSetting("height", pageRoot.preHeightValues[index])
+                }
+
+                Repeater {
+                    model: [
+                        { key: "autocorrect", label: "Autocorrect", on: true },
+                        { key: "doubleSpacePeriod", label: "Double-Space Period", on: true },
+                        { key: "suggestions", label: "Suggestion Bar", on: false },
+                        { key: "swipe", label: "Swipe to Type", on: false },
+                        { key: "emojiSuggestions", label: "Emoji Suggestions", on: false },
+                        { key: "holdForMore", label: "Hold for More", on: false },
+                        { key: "vibrate", label: "Vibrate on Keys", on: false },
+                        { key: "sound", label: "Sound on Keys", on: false }
+                    ]
+
+                    delegate: Column {
+                        width: parent.width
+
+                        HorizontalSeparator { width: parent.width }
+
+                        LabelAndSwitch {
+                            id: preSwitch
+                            label: modelData.label
+                            checked: pageRoot.preFlag(modelData.key, modelData.on)
+                            onToggled: pageRoot.setPreSetting(modelData.key, checked)
+                            // Hold for More is also switched from the keys (hold the orange key).
+                            Connections {
+                                target: pageRoot
+                                function onPreChanged() {
+                                    preSwitch.checked = pageRoot.preFlag(modelData.key, modelData.on);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        ExplanationText {
+            visible: pageRoot.preChosen
+            text: "The Palm Pre's keyboard, key for key. Autocorrect fixes typos and puts the "
+                  + "apostrophe in contractions as you finish a word; tap a corrected word to "
+                  + "switch it back. The suggestion bar offers three words as you type, and the "
+                  + "next word before you start one; hold a word there to add it to your "
+                  + "dictionary. Swipe across the letters and lift at the end of a word. Hold for "
+                  + "More puts accents and extra symbols under a long press (hold the orange key "
+                  + "to switch it). Hold the space bar to move the cursor. Hold the globe on the "
+                  + "Sym page to switch styles."
+        }
+
+        GroupBox {
+            width: parent.width
+            title: "Pre Keyboard Languages"
+            visible: pageRoot.preChosen
+
+            Column {
+                width: parent.width
+
+                Repeater {
+                    model: pageRoot.preLanguageIds
+
+                    delegate: Column {
+                        width: parent.width
+
+                        HorizontalSeparator {
+                            width: parent.width
+                            visible: index > 0
+                        }
+
+                        LabelAndSwitch {
+                            id: languageSwitch
+                            label: pageRoot.preLanguageNames[index]
+                            checked: pageRoot.preLanguages().indexOf(modelData) >= 0
+                            // Never none: the last one checked stays.
+                            enabled: !checked || pageRoot.preLanguages().length > 1
+                            onToggled: pageRoot.setPreLanguage(modelData, checked)
+                            Connections {
+                                target: pageRoot
+                                function onPreChanged() {
+                                    languageSwitch.checked = pageRoot.preLanguages().indexOf(modelData) >= 0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        ExplanationText {
+            visible: pageRoot.preChosen
+            text: "Each language has its own keys (AZERTY for French, QWERTZ for German), "
+                  + "words and suggestions. With more than one checked, flick the space bar "
+                  + "left or right to change, or choose one from the globe on the Sym page."
+        }
+
+        Button {
+            width: parent.width
+            visible: pageRoot.preChosen
+            text: "Edit Pre Keyboard Dictionary"
+            onClicked: preDictionaryPopup.open()
         }
 
         /*
@@ -384,6 +565,16 @@ BasePage {
         }
     }
 
+    PreDictionaryPopup {
+        id: preDictionaryPopup
+
+        learned: pageRoot.pre.learned || ({})
+        families: pageRoot.preFamilies()
+
+        onAddWordRequested: (family, word) => pageRoot.setPreWord(family, word, true)
+        onRemoveWordRequested: (family, word) => pageRoot.setPreWord(family, word, false)
+    }
+
     DictionaryPopup {
         id: dictionaryPopup
 
@@ -437,6 +628,7 @@ BasePage {
             pageRoot.keyboardLayout = pageRoot.keyboardPrefs.keyboardLayout;
         if (pageRoot.keyboardPrefs.hasOwnProperty("keyboardSize"))
             pageRoot.keyboardSize = pageRoot.keyboardPrefs.keyboardSize;
+        pageRoot.pre = pageRoot.keyboardPrefs.pre || {};
 
     }
 
@@ -466,6 +658,65 @@ BasePage {
         pageRoot.keyboardPrefs = prefs;
 
         systemPrefs.set("keyboard", prefs);
+    }
+
+    /*
+     * The Pre Keyboard's settings, in the "pre" object. Copied whole and written
+     * back whole, as the keyboard object is: the keyboard keeps the owner's
+     * words and recent emoji in there too.
+     */
+    function setPreSetting(key, value) {
+        var pre = {};
+        for (var existing in pageRoot.pre)
+            pre[existing] = pageRoot.pre[existing];
+        pre[key] = value;
+        pageRoot.pre = pre;
+        pageRoot.setKeyboardPreference("pre", pre);
+    }
+
+    function setPreLanguage(id, on) {
+        var now = pageRoot.preLanguages();
+        var next = [];
+        // Kept in this page's order, whatever order they were checked in.
+        for (var i = 0; i < pageRoot.preLanguageIds.length; ++i) {
+            var l = pageRoot.preLanguageIds[i];
+            if (l === id ? on : now.indexOf(l) >= 0)
+                next.push(l);
+        }
+        if (next.length === 0)
+            return;
+        pageRoot.setPreSetting("languages", next);
+        if (next.indexOf(pageRoot.pre.language) < 0)
+            pageRoot.setPreSetting("language", next[0]);
+    }
+
+    //! The word lists the dictionary shows: one per family of the languages checked.
+    function preFamilies() {
+        var out = [];
+        var langs = pageRoot.preLanguages();
+        for (var i = 0; i < langs.length; ++i) {
+            var family = langs[i].split("_")[0];
+            if (out.indexOf(family) < 0)
+                out.push(family);
+        }
+        return out;
+    }
+
+    function setPreWord(family, word, add) {
+        var learned = {};
+        var had = pageRoot.pre.learned || {};
+        for (var f in had)
+            learned[f] = had[f].slice();
+        var list = learned[family] || [];
+        var w = word.toLowerCase();
+        var at = list.indexOf(w);
+        if (add && at < 0)
+            list.push(w);
+        else if (!add && at >= 0)
+            list.splice(at, 1);
+        list.sort();
+        learned[family] = list;
+        pageRoot.setPreSetting("learned", learned);
     }
 
     /*
