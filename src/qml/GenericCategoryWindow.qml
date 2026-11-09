@@ -282,7 +282,8 @@ WebOSWindow {
     /*
      * What a launch asks the page to do. The status bar's Wi-Fi menu opens
      * the Wi-Fi page with {"target": {"servicePath": ...}} for a network that
-     * wants a passphrase. A page that acts on its launches implements
+     * wants a passphrase, and with "view": "details" in the target for one
+     * held there. A page that acts on its launches implements
      * handleLaunchParams(params); the parameters wait here for the page, since
      * on a first launch they arrive before it has loaded. Relaunches of a
      * running app come through LaunchParams too.

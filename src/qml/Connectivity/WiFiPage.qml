@@ -281,6 +281,7 @@ BasePage {
 
     WiFiNetworkInfoPopup {
         id: networkInfoPopup
+        objectName: "networkInfoPopup"
         // For the dBm reading and the channel width, which connman has no
         // way to report - see the popup for why.
         luna: wifiPageId.luna
@@ -329,17 +330,23 @@ BasePage {
     }
 
     /*
-     * Launched for one network: the status bar's Wi-Fi menu was tapped on a
-     * network that wants a passphrase. The menu does not connect to it
-     * itself, because connman asks the agent of whoever called Connect and
-     * the menu has no field to type into. This page connects instead, so
-     * connman asks connmanUserAgent above and the passphrase popup comes up.
+     * Launched for one network from the status bar's Wi-Fi menu.
+     *
+     * A tap there on a network that wants a passphrase: the menu does not
+     * connect to it itself, because connman asks the agent of whoever called
+     * Connect and the menu has no field to type into. This page connects
+     * instead, so connman asks connmanUserAgent above and the passphrase
+     * popup comes up.
+     *
+     * A hold there ("view": "details"): the network's details, as a hold on
+     * its row here shows them.
      */
     function handleLaunchParams(params) {
         var target = params.target || (params.params ? params.params.target : undefined);
         if (!target || typeof target.servicePath !== "string" || target.servicePath === "")
             return;
         joinTarget.servicePath = target.servicePath;
+        joinTarget.view = target.view === "details" ? "details" : "";
         joinTarget.giveUp.restart();
         joinTarget.tryJoin();
     }
@@ -349,6 +356,8 @@ BasePage {
         objectName: "joinTarget"
 
         property string servicePath: ""
+        // "details" to show the network rather than connect to it
+        property string view: ""
 
         function find() {
             for (var i = 0; i < wifiModel.count; ++i) {
@@ -361,6 +370,7 @@ BasePage {
 
         function clear() {
             servicePath = "";
+            view = "";
             serviceWatch.target = null;
             giveUp.stop();
         }
@@ -373,6 +383,12 @@ BasePage {
             var service = find();
             if (!service)
                 return;
+            if (view === "details") {
+                clear();
+                networkInfoPopup.service = service;
+                networkInfoPopup.open();
+                return;
+            }
             // A connect the menu began for a saved network is still being
             // unwound after it cancelled connman's request; another Connect
             // now would only get InProgress.
