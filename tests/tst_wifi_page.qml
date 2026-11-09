@@ -209,6 +209,31 @@ Item {
             compare(connectSpy.count, 1, "did not connect once connman was done");
         }
 
+        // Held in the status bar's menu: the details, and no Connect.
+        function test_launchDetailsShowsTheNetwork() {
+            var item = row();
+            var info = findChild(page, "networkInfoPopup");
+            verify(info !== null);
+            page.handleLaunchParams({"target": {"servicePath": item.delegateService.path, "view": "details"}});
+            tryCompare(info, "opened", true, 2000);
+            compare(info.service, item.delegateService);
+            compare(connectSpy.count, 0, "showing the details connected");
+            info.close();
+            tryCompare(info, "opened", false, 2000);
+        }
+
+        // Details do not wait for connman: a network mid-connect has them too.
+        function test_launchDetailsWhileConnecting() {
+            var item = row();
+            item.delegateService.connecting = true;
+            var info = findChild(page, "networkInfoPopup");
+            page.handleLaunchParams({"target": {"servicePath": item.delegateService.path, "view": "details"}});
+            tryCompare(info, "opened", true, 2000);
+            compare(connectSpy.count, 0);
+            info.close();
+            tryCompare(info, "opened", false, 2000);
+        }
+
         function test_launchWithoutTargetDoesNothing() {
             var item = row();
             page.handleLaunchParams({});
