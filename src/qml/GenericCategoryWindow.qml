@@ -24,7 +24,16 @@ import LuneOS.System 1.0
 
 WebOSWindow {
     id: settingsCategoryAppWindow
-    visible: true
+    // The Print Manager starts out of sight: a print job starts it headless
+    // ({"runHeadless": true}) to tell how the printing goes, and it shows
+    // its queue only when launched otherwise or its dashboard is tapped.
+    // qml-runner hands the launch over only once the window is made.
+    visible: appId !== printManagerId
+
+    readonly property string printManagerId: "org.webosports.app.settings.printmanager"
+    readonly property bool isPrintManager: appId === printManagerId
+    // Its card closed while jobs print, it stays to follow them
+    keepAlive: isPrintManager
 
     width: Settings.displayWidth
     height: Settings.displayHeight
@@ -288,6 +297,43 @@ WebOSWindow {
         _pendingLaunchParams = null;
         page.handleLaunchParams(params);
     }
+
+    Component.onCompleted: if (isPrintManager) Qt.callLater(_showUnlessHeadless)
+
+    function _showUnlessHeadless() {
+        if (launch.params.runHeadless !== true)
+            visible = true;
+    }
+
+    // How the printing goes, for the Print Manager (General/PrintMonitor.qml)
+    Loader {
+        id: printMonitorLoader
+        active: settingsCategoryAppWindow.isPrintManager
+        source: "General/PrintMonitor.qml"
+        onLoaded: {
+            item.appId = settingsCategoryAppWindow.appId;
+            item.start();
+        }
+        Connections {
+            target: printMonitorLoader.item
+            ignoreUnknownSignals: true
+            function onOpenQueue() { settingsCategoryAppWindow.visible = true; }
+        }
+    }
+    property alias _printMonitor: printMonitorLoader.item  // for the tests
+
+    // Headless and nothing left to tell: the Print Manager goes, as the next
+    // job starts it again. Not before it has heard of a job, unless none
+    // comes at all.
+    Timer {
+        id: printManagerQuit
+        interval: printMonitorLoader.item && printMonitorLoader.item.heardOfAJob ? 5000 : 120000
+        running: settingsCategoryAppWindow.isPrintManager && !settingsCategoryAppWindow.visible
+                 && !!printMonitorLoader.item && printMonitorLoader.item.idle
+        onTriggered: settingsCategoryAppWindow.quitWhenIdle()
+    }
+    // Qt.quit(), which a test replaces
+    property var quitWhenIdle: function() { Qt.quit(); }
 
     LaunchParams {
         id: launch
