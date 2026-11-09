@@ -576,10 +576,12 @@ BasePage {
         id: preDictionaryPopup
 
         learned: pageRoot.pre.learned || ({})
+        removed: pageRoot.pre.removed || ({})
         families: pageRoot.preFamilies()
 
         onAddWordRequested: (family, word) => pageRoot.setPreWord(family, word, true)
         onRemoveWordRequested: (family, word) => pageRoot.setPreWord(family, word, false)
+        onRestoreWordRequested: (family, word) => pageRoot.restorePreWord(family, word)
     }
 
     DictionaryPopup {
@@ -673,10 +675,18 @@ BasePage {
      * words and recent emoji in there too.
      */
     function setPreSetting(key, value) {
+        var change = {};
+        change[key] = value;
+        pageRoot.setPreSettings(change);
+    }
+
+    //! Several of the "pre" object's keys in one write.
+    function setPreSettings(change) {
         var pre = {};
         for (var existing in pageRoot.pre)
             pre[existing] = pageRoot.pre[existing];
-        pre[key] = value;
+        for (var key in change)
+            pre[key] = change[key];
         pageRoot.pre = pre;
         pageRoot.setKeyboardPreference("pre", pre);
     }
@@ -709,12 +719,13 @@ BasePage {
         return out;
     }
 
-    function setPreWord(family, word, add) {
-        var learned = {};
-        var had = pageRoot.pre.learned || {};
+    //! A copy of the "pre" object's [key] ("learned", "removed") with [word] put in or taken out of [family]'s list.
+    function preWordsWith(key, family, word, add) {
+        var out = {};
+        var had = pageRoot.pre[key] || {};
         for (var f in had)
-            learned[f] = had[f].slice();
-        var list = learned[family] || [];
+            out[f] = had[f].slice();
+        var list = out[family] || [];
         var w = word.toLowerCase();
         var at = list.indexOf(w);
         if (add && at < 0)
@@ -722,8 +733,24 @@ BasePage {
         else if (!add && at >= 0)
             list.splice(at, 1);
         list.sort();
-        learned[family] = list;
-        pageRoot.setPreSetting("learned", learned);
+        out[family] = list;
+        return out;
+    }
+
+    //! A word added is no longer among the deleted, if it was (as on Android).
+    function setPreWord(family, word, add) {
+        var learned = pageRoot.preWordsWith("learned", family, word, add);
+        if (add) {
+            var removed = pageRoot.preWordsWith("removed", family, word, false);
+            pageRoot.setPreSettings({ "learned": learned, "removed": removed });
+        } else {
+            pageRoot.setPreSetting("learned", learned);
+        }
+    }
+
+    //! A deleted word put back in the dictionary.
+    function restorePreWord(family, word) {
+        pageRoot.setPreSetting("removed", pageRoot.preWordsWith("removed", family, word, false));
     }
 
     /*

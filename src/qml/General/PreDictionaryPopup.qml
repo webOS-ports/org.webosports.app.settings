@@ -35,6 +35,9 @@ import LuneOS.Forms 1.0
  * theirs): a tab for each family of the languages checked. Same look as the
  * LuneOS keyboard's dictionary beside it: a row to add, a swipe to take one away.
  *
+ * Below them, the dictionary's own words the owner deleted (by holding them in
+ * the suggestion bar: "yest"), each with Put back, in case one went by mistake.
+ *
  * The page owns the storage (the keyboard preference's "pre" object); this
  * only shows what it is given and says what was asked for.
  */
@@ -43,15 +46,19 @@ Popup {
 
     // { "en": ["luneos", ...], "fr": [...] }
     property var learned: ({})
+    // The dictionary's words deleted, the same way: { "en": ["yest"] }
+    property var removed: ({})
     // The families to show, in order: ["en", "fr"]
     property var families: ["en"]
 
     signal addWordRequested(string family, string word)
     signal removeWordRequested(string family, string word)
+    signal restoreWordRequested(string family, string word)
 
     readonly property string family: families.length > 0
                                      ? families[Math.min(tabBar.currentIndex, families.length - 1)] : "en"
     readonly property var words: learned[family] || []
+    readonly property var deletedWords: (removed[family] || []).slice().sort()
 
     function familyName(f) {
         switch (f) {
@@ -205,6 +212,63 @@ Popup {
                             wordRow.pendingDelete = false;
                         }
                     }
+                }
+
+                HorizontalSeparator {
+                    anchors.bottom: parent.bottom
+                    width: parent.width
+                }
+            }
+        }
+
+        Label {
+            Layout.fillWidth: true
+            visible: preDictionaryPopup.deletedWords.length > 0
+            text: "Deleted words"
+            font.pixelSize: FontUtils.sizeToPixels("16pt")
+            font.weight: Font.Bold
+        }
+
+        Label {
+            Layout.fillWidth: true
+            visible: preDictionaryPopup.deletedWords.length > 0
+            wrapMode: Text.WordWrap
+            text: "Words you deleted by holding them in the suggestion bar. They aren't offered or corrected to."
+            color: Colors.secondaryText
+            font.pixelSize: FontUtils.sizeToPixels("medium")
+        }
+
+        ListView {
+            Layout.fillWidth: true
+            visible: preDictionaryPopup.deletedWords.length > 0
+            Layout.preferredHeight: visible ? Math.min(contentHeight, Units.gu(18)) : 0
+            clip: true
+            interactive: contentHeight > height
+
+            model: preDictionaryPopup.deletedWords
+
+            delegate: Item {
+                width: ListView.view.width
+                height: Units.gu(6)
+
+                Label {
+                    anchors.left: parent.left
+                    anchors.leftMargin: Units.gu(1)
+                    anchors.right: putBackButton.left
+                    anchors.rightMargin: Units.gu(1)
+                    anchors.verticalCenter: parent.verticalCenter
+                    elide: Text.ElideRight
+                    text: modelData
+                    font.pixelSize: FontUtils.sizeToPixels("16pt")
+                }
+
+                Button {
+                    id: putBackButton
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Put back"
+                    LuneOSButton.mainColor: LuneOSButton.secondaryColor
+                    onClicked: preDictionaryPopup.restoreWordRequested(preDictionaryPopup.family, modelData)
                 }
 
                 HorizontalSeparator {
