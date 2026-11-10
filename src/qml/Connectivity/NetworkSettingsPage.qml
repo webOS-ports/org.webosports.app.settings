@@ -448,7 +448,9 @@ BasePage {
                                 }
                                 Label {
                                     text: modelData.operatorName + " · " +
-                                          modelData.bars + "/4"
+                                          // telephonyd reports 0-5 bars (ofono's 0-100 Strength / 20),
+                                          // the scale of the status bar's rssi-0 .. rssi-5 icons
+                                          modelData.bars + "/5"
                                     color: Colors.secondaryText
                                     font.pixelSize: FontUtils.sizeToPixels("small")
                                 }
