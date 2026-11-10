@@ -58,10 +58,11 @@ import LuneOS.Forms 1.0
  *    manual network scan/selection (OfonoNetworkRegistration/
  *    OfonoNetworkOperator), SIM PIN lock (OfonoSimManager, already declared
  *    below as `simManager`) and APN management (OfonoConnMan/
- *    OfonoContextConnection). APN contexts are read and edited here but not
- *    created or removed - libqofono's QML wrapper exposes no add/remove
- *    call, only editing whatever the SIM's own provider database already
- *    provisioned.
+ *    OfonoContextConnection). APN contexts are listed, edited, added and
+ *    removed here (OfonoConnMan.addContext/removeContext), MMS ones with
+ *    their message center and proxy. There is no "reset to the operator's
+ *    defaults": libqofono's resetContexts() calls ofono's DeactivateAll,
+ *    not ResetContexts.
  */
 BasePage {
     id: pageRoot
@@ -395,7 +396,7 @@ BasePage {
                                 }
                                 Label {
                                     width: parent.width
-                                    text: apnCtx.accessPointName
+                                    text: pageRoot.contextTypeLabel(apnCtx.type) + " · " + apnCtx.accessPointName
                                     elide: Text.ElideRight
                                     color: Colors.secondaryText
                                     font.pixelSize: FontUtils.sizeToPixels("small")
@@ -405,6 +406,7 @@ BasePage {
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
+                                    apnEditPopup.isNew = false;
                                     apnEditPopup.contextPath = modelData;
                                     apnEditPopup.open();
                                 }
@@ -415,6 +417,29 @@ BasePage {
                             width: parent.width
                         }
                     }
+                }
+
+                Button {
+                    objectName: "apnAddButton"
+                    width: parent.width
+                    text: "Add Access Point"
+                    enabled: connMan.valid && !pageRoot.addingContext
+                    onClicked: {
+                        // the editor opens on the new context once ofono reports it
+                        pageRoot.apnError = "";
+                        pageRoot.addingContext = true;
+                        connMan.addContext("internet");
+                    }
+                }
+
+                Label {
+                    objectName: "apnListError"
+                    width: parent.width
+                    visible: pageRoot.apnError !== ""
+                    text: pageRoot.apnError
+                    wrapMode: Text.Wrap
+                    color: "#e05050"
+                    font.pixelSize: FontUtils.sizeToPixels("small")
                 }
             }
         }
@@ -570,7 +595,36 @@ BasePage {
     }
     OfonoConnMan {
         id: connMan
+        objectName: "apnConnMan"
         modemPath: modemManager.defaultModem
+
+        onContextAdded: function(path) {
+            if (!pageRoot.addingContext)
+                return;
+            pageRoot.addingContext = false;
+            apnEditPopup.isNew = true;
+            apnEditPopup.contextPath = path;
+            apnEditPopup.open();
+        }
+        onReportError: function(errorString) {
+            pageRoot.addingContext = false;
+            if (apnEditPopup.opened)
+                apnEditPopup.errorText = errorString;
+            else
+                pageRoot.apnError = errorString;
+        }
+    }
+
+    // ofono's context types (src/gprs.c) and how they are shown
+    readonly property var contextTypes: ["internet", "mms", "wap", "ims", "supl", "ia"]
+    readonly property var contextTypeLabels: ["Internet", "MMS", "WAP", "IMS", "SUPL", "Initial attach"]
+    property bool addingContext: false
+    // a failed add or remove while the editor is closed
+    property string apnError: ""
+
+    function contextTypeLabel(type) {
+        var i = contextTypes.indexOf(type);
+        return i >= 0 ? contextTypeLabels[i] : type;
     }
 
     Popup {
@@ -819,8 +873,12 @@ BasePage {
 
     Popup {
         id: apnEditPopup
+        objectName: "apnEditPopup"
 
         property string contextPath: ""
+        // a context added for this editor: Cancel removes it again
+        property bool isNew: false
+        property string errorText: ""
 
         modal: true
         focus: true
@@ -832,10 +890,15 @@ BasePage {
 
         OfonoContextConnection {
             id: editCtx
+            objectName: "apnEditContext"
             contextPath: apnEditPopup.contextPath
         }
 
         onOpened: {
+            errorText = "";
+            typeCombo.currentIndex = Math.max(0, pageRoot.contextTypes.indexOf(editCtx.type));
+            mmsCenterField.text = editCtx.messageCenter;
+            mmsProxyField.text = editCtx.messageProxy;
             nameField.text = editCtx.name;
             apnField.text = editCtx.accessPointName;
             userField.text = editCtx.username;
@@ -859,7 +922,7 @@ BasePage {
             Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: "Edit Access Point"
+                text: apnEditPopup.isNew ? "New Access Point" : "Edit Access Point"
                 font.pixelSize: FontUtils.sizeToPixels("18pt")
                 font.weight: Font.Bold
             }
@@ -887,12 +950,33 @@ BasePage {
 
                     Label {
                         Layout.fillWidth: true
+                        text: "Type"
+                        color: Colors.secondaryText
+                        font.pixelSize: FontUtils.sizeToPixels("small")
+                    }
+                    ComboBox {
+                        id: typeCombo
+                        objectName: "apnTypeCombo"
+                        Layout.fillWidth: true
+                        model: pageRoot.contextTypeLabels
+
+                        delegate: ItemDelegate {
+                            width: typeCombo.width
+                            text: modelData
+                            font.weight: typeCombo.currentIndex === index ? Font.DemiBold : Font.Normal
+                            checked: typeCombo.currentIndex === index
+                        }
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
                         text: "Name"
                         color: Colors.secondaryText
                         font.pixelSize: FontUtils.sizeToPixels("small")
                     }
                     FormTextField {
                         id: nameField
+                        objectName: "apnNameField"
                         Layout.fillWidth: true
                         height: Units.gu(5)
                     }
@@ -905,6 +989,7 @@ BasePage {
                     }
                     FormTextField {
                         id: apnField
+                        objectName: "apnApnField"
                         Layout.fillWidth: true
                         height: Units.gu(5)
                     }
@@ -952,9 +1037,52 @@ BasePage {
                             checked: protocolCombo.currentIndex === index
                         }
                     }
+
+                    // only MMS contexts carry these (ofono: MessageCenter, MessageProxy)
+                    Label {
+                        Layout.fillWidth: true
+                        visible: typeCombo.currentIndex === 1
+                        text: "MMS center (MMSC URL)"
+                        color: Colors.secondaryText
+                        font.pixelSize: FontUtils.sizeToPixels("small")
+                    }
+                    FormTextField {
+                        id: mmsCenterField
+                        objectName: "apnMmsCenterField"
+                        Layout.fillWidth: true
+                        visible: typeCombo.currentIndex === 1
+                        height: Units.gu(5)
+                        inputMethodHints: Qt.ImhUrlCharactersOnly | Qt.ImhNoAutoUppercase
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        visible: typeCombo.currentIndex === 1
+                        text: "MMS proxy (host:port)"
+                        color: Colors.secondaryText
+                        font.pixelSize: FontUtils.sizeToPixels("small")
+                    }
+                    FormTextField {
+                        id: mmsProxyField
+                        objectName: "apnMmsProxyField"
+                        Layout.fillWidth: true
+                        visible: typeCombo.currentIndex === 1
+                        height: Units.gu(5)
+                        inputMethodHints: Qt.ImhUrlCharactersOnly | Qt.ImhNoAutoUppercase
+                    }
                 }
 
                 ScrollIndicator.vertical: ScrollIndicator { }
+            }
+
+            Label {
+                objectName: "apnErrorText"
+                Layout.fillWidth: true
+                visible: apnEditPopup.errorText !== ""
+                text: apnEditPopup.errorText
+                wrapMode: Text.Wrap
+                color: "#e05050"
+                font.pixelSize: FontUtils.sizeToPixels("small")
             }
 
             RowLayout {
@@ -962,16 +1090,41 @@ BasePage {
                 spacing: Units.gu(1)
 
                 Button {
+                    objectName: "apnCancelButton"
                     Layout.fillWidth: true
                     text: "Cancel"
                     LuneOSButton.mainColor: LuneOSButton.secondaryColor
-                    onClicked: apnEditPopup.close()
+                    onClicked: {
+                        if (apnEditPopup.isNew)
+                            connMan.removeContext(apnEditPopup.contextPath);
+                        apnEditPopup.close();
+                    }
                 }
                 Button {
+                    objectName: "apnDeleteButton"
+                    Layout.fillWidth: true
+                    visible: !apnEditPopup.isNew
+                    text: "Delete"
+                    LuneOSButton.mainColor: LuneOSButton.negativeColor
+                    onClicked: {
+                        // ofono deactivates an active context before removing it
+                        connMan.removeContext(apnEditPopup.contextPath);
+                        apnEditPopup.close();
+                    }
+                }
+                Button {
+                    objectName: "apnSaveButton"
                     Layout.fillWidth: true
                     text: "Save"
                     LuneOSButton.mainColor: LuneOSButton.affirmativeColor
                     onClicked: {
+                        // ofono refuses a type change on an active context; the rest still applies
+                        if (editCtx.type !== pageRoot.contextTypes[typeCombo.currentIndex])
+                            editCtx.type = pageRoot.contextTypes[typeCombo.currentIndex];
+                        if (typeCombo.currentIndex === 1) {
+                            editCtx.messageCenter = mmsCenterField.text;
+                            editCtx.messageProxy = mmsProxyField.text;
+                        }
                         editCtx.name = nameField.text;
                         editCtx.accessPointName = apnField.text;
                         editCtx.username = userField.text;
