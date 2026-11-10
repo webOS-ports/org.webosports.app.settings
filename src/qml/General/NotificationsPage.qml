@@ -68,6 +68,17 @@ import LuneOS.System 1.0
  * Preferences.cpp read into m_ledThrobberEnabled and the one the shell now
  * checks before lighting the LED. It is read here only to say why a colour
  * would have no effect.
+ *
+ * How the notifications look and where they sit is the shell's
+ * (luna-next-cardshell's NotificationLayout), and the three preferences it
+ * reads are set here: notificationStyle, the rows as webOS 2.2.4 drew them on
+ * a phone or as webOS 3.0 did on the TouchPad, and
+ * notificationLocationPortrait and notificationLocationLandscape, the list over
+ * the gesture area or dropping from the status bar. A phone on its side has
+ * little height to spare for a list at the bottom, which is why the two
+ * orientations are separate - Lunacy, the webOS look on Android, moves them to
+ * the top in landscape. "auto" is what the device is, and sideways on a phone
+ * that is the top.
  */
 BasePage {
     id: pageRoot
@@ -79,7 +90,23 @@ BasePage {
     property var blockedApps: []
     property var apps: []
 
-    // Whether the LED blinks at all, owned by Screen & Lock; read only here.
+    // The shell's notification look and place; see the comment above.
+    property string notificationStyle: "auto"
+    property string notificationLocationPortrait: "auto"
+    property string notificationLocationLandscape: "auto"
+
+    readonly property var styleChoices: [
+        { "key": "auto",   "label": "Automatic" },
+        { "key": "phone",  "label": "Phone" },
+        { "key": "tablet", "label": "Tablet" }
+    ]
+    readonly property var locationChoices: [
+        { "key": "auto",   "label": "Automatic" },
+        { "key": "bottom", "label": "Bottom" },
+        { "key": "top",    "label": "Top" }
+    ]
+
+        // Whether the LED blinks at all, owned by Screen & Lock; read only here.
     property bool blinkNotifications: true
 
     /*
@@ -125,6 +152,24 @@ BasePage {
 
     Component.onCompleted: retrieveProperties();
 
+    // A dropdown's entries and what each stands for. Plain strings for the
+    // model: LabelAndSelector's ComboBox has no textRole.
+    function choiceLabels(choices) {
+        return choices.map(function(c) { return c.label; });
+    }
+
+    function choiceKeys(choices) {
+        return choices.map(function(c) { return c.key; });
+    }
+
+    function _choiceKey(choices, value) {
+        for (var i = 0; i < choices.length; i++) {
+            if (choices[i].key === value)
+                return value;
+        }
+        return "auto";
+    }
+
     // Colour stored for an application, or "" when it has none of its own.
     function ledColorFor(appId) {
         if (pageRoot.ledColors && pageRoot.ledColors.hasOwnProperty(appId))
@@ -169,6 +214,58 @@ BasePage {
     }
 
     SettingsPageContent {
+        GroupBox {
+            width: parent.width
+            title: "Look & Position"
+
+            Column {
+                width: parent.width
+
+                LabelAndSelector {
+                    objectName: "notificationStyle"
+                    width: parent.width
+                    label: "Style"
+                    model: pageRoot.choiceLabels(pageRoot.styleChoices)
+                    values: pageRoot.choiceKeys(pageRoot.styleChoices)
+                    value: pageRoot.notificationStyle
+                    onChosen: (key) => pageRoot.setLayoutPreference("notificationStyle", key)
+                }
+
+                HorizontalSeparator { width: parent.width }
+
+                LabelAndSelector {
+                    objectName: "notificationLocationPortrait"
+                    width: parent.width
+                    label: "Portrait"
+                    model: pageRoot.choiceLabels(pageRoot.locationChoices)
+                    values: pageRoot.choiceKeys(pageRoot.locationChoices)
+                    value: pageRoot.notificationLocationPortrait
+                    onChosen: (key) => pageRoot.setLayoutPreference("notificationLocationPortrait", key)
+                }
+
+                HorizontalSeparator { width: parent.width }
+
+                LabelAndSelector {
+                    objectName: "notificationLocationLandscape"
+                    width: parent.width
+                    label: "Landscape"
+                    model: pageRoot.choiceLabels(pageRoot.locationChoices)
+                    values: pageRoot.choiceKeys(pageRoot.locationChoices)
+                    value: pageRoot.notificationLocationLandscape
+                    onChosen: (key) => pageRoot.setLayoutPreference("notificationLocationLandscape", key)
+                }
+            }
+        }
+
+        ExplanationText {
+            text: "Phone draws a notification as an icon and a text bar, as " +
+                  "webOS 2 did; Tablet as one card, as webOS 3 did. Bottom " +
+                  "lists them above the gesture area, Top in the status bar. " +
+                  "Automatic follows the device: a tablet has them at the top, " +
+                  "a phone at the bottom, and at the top when it is held " +
+                  "sideways."
+        }
+
         ServiceUnavailableNotice {
             visible: !pageRoot.notificationServiceAvailable
             serviceName: "com.webos.notification"
@@ -397,15 +494,27 @@ BasePage {
     }
 
     // Subscribed so that the swatches follow a colour changed elsewhere, and
-    // so that turning the LED off on Screen & Lock shows up here
+    // so that turning the LED off on Screen & Lock shows up here; the look and
+    // position likewise
     SystemPreferences {
         id: prefs
         clientName: appId
-        keys: ["BlinkNotifications", "notificationLedColors"]
+        keys: ["BlinkNotifications", "notificationLedColors", "notificationStyle",
+               "notificationLocationPortrait", "notificationLocationLandscape"]
         onUpdated: (response) => pageRoot._handleGetPreferences(response)
     }
 
     function _handleGetPreferences(response) {
+        if (response.hasOwnProperty("notificationStyle"))
+            pageRoot.notificationStyle = _choiceKey(pageRoot.styleChoices,
+                                                    response.notificationStyle);
+        if (response.hasOwnProperty("notificationLocationPortrait"))
+            pageRoot.notificationLocationPortrait = _choiceKey(pageRoot.locationChoices,
+                                                               response.notificationLocationPortrait);
+        if (response.hasOwnProperty("notificationLocationLandscape"))
+            pageRoot.notificationLocationLandscape = _choiceKey(pageRoot.locationChoices,
+                                                                response.notificationLocationLandscape);
+
         if (response.hasOwnProperty("BlinkNotifications"))
             pageRoot.blinkNotifications = response.BlinkNotifications;
 
@@ -532,6 +641,13 @@ BasePage {
         pageRoot.ledColors = updated;
 
         prefs.set("notificationLedColors", updated);
+    }
+
+    // Shown at once; the subscription confirms it, and the shell follows it.
+    function setLayoutPreference(key, value) {
+        if (!prefs.set(key, value))
+            return;
+        pageRoot[key] = value;
     }
 
     // Each settings category is its own launchable application on the device.
