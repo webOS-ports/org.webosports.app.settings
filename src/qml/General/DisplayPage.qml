@@ -317,8 +317,12 @@ BasePage {
     function _handleGetPreferences(response) {
         if (response.hasOwnProperty("enableALS"))
             pageRoot.autoDim = response.enableALS;
+        // Only a number is an angle. Anything else (a false from an older
+        // store) is not locked: the int took it as 0, and the switch showed
+        // a lock the shell does not keep.
         if (response.hasOwnProperty("rotationLock"))
-            pageRoot.rotationLockAngle = response.rotationLock;
+            pageRoot.rotationLockAngle = typeof response.rotationLock === "number"
+                    ? response.rotationLock : pageRoot.rotationUnlocked;
     }
 
     function _handleGetDisplayProperties(message) {
