@@ -358,6 +358,7 @@ BasePage {
 
                 Repeater {
                     model: [
+                        { key: "swipe", label: "Swipe to Type", on: true },
                         { key: "holdForMore", label: "Hold for More", on: false },
                         { key: "followShift", label: "Small Letters Until Shift", on: false },
                         { key: "vibrate", label: "Vibrate on Keys", on: false }
@@ -392,7 +393,9 @@ BasePage {
                   + "Text Correction switches and the user dictionary above apply to it. "
                   + "The bar above the keys offers words as you type; the middle one is "
                   + "what space types. Hold a word there to add it to the dictionary or "
-                  + "take it out. Hold for More puts accents and extra symbols under a "
+                  + "take it out. Swipe to Type: draw a finger across a word's letters "
+                  + "and lift; the word goes in, with the next likeliest beside it in the bar. "
+                  + "Hold for More puts accents and extra symbols under a "
                   + "long press (hold the orange key to switch it). Small Letters Until "
                   + "Shift prints the keys in small letters, capitals only while Shift is "
                   + "on; off, they are always capitals, as on the Pre. Number and phone "
