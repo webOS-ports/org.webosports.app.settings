@@ -359,6 +359,7 @@ BasePage {
                 Repeater {
                     model: [
                         { key: "holdForMore", label: "Hold for More", on: false },
+                        { key: "followShift", label: "Small Letters Until Shift", on: false },
                         { key: "vibrate", label: "Vibrate on Keys", on: false }
                     ]
 
@@ -392,7 +393,10 @@ BasePage {
                   + "The bar above the keys offers words as you type; the middle one is "
                   + "what space types. Hold a word there to add it to the dictionary or "
                   + "take it out. Hold for More puts accents and extra symbols under a "
-                  + "long press (hold the orange key to switch it). Hold the space bar to "
+                  + "long press (hold the orange key to switch it). Small Letters Until "
+                  + "Shift prints the keys in small letters, capitals only while Shift is "
+                  + "on; off, they are always capitals, as on the Pre. Number and phone "
+                  + "fields show only the keys they take. Hold the space bar to "
                   + "move the cursor, and flick it left or right to change language. Hold "
                   + "the globe on the Sym page to switch styles."
         }
