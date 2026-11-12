@@ -42,8 +42,9 @@ import LuneOS.System 1.0
  *    Those are the switches here, so each one moves something the keyboard
  *    actually reads. Predictive Text and Spell Checking are new rows: the
  *    keyboard has them and nothing on the device could turn them on.
- *  - "Double Space For Period" is gone. It was a webOS virtual keyboard
- *    behaviour (spaces2period) that this keyboard does not have.
+ *  - "Double Space For Period" was a webOS virtual keyboard behaviour
+ *    (spaces2period). LuneOS's own keys do not have it; the Pre Keyboard does,
+ *    so it is back as one of the Pre Keyboard's switches.
  *  - the correction alert selector (System Sound / Vibrate / Mute) is gone
  *    with the com.palm.audio TextEntryCorrectionHapticPolicy it set. Key
  *    press feedback lives on the Sounds & Ringtones page.
@@ -150,6 +151,31 @@ BasePage {
     function preFlag(key, fallback) {
         return pageRoot.pre.hasOwnProperty(key) ? pageRoot.pre[key] === true : fallback;
     }
+    //! The Pre Keyboard's deleted words, as [{ language, word }], by language then word.
+    function preDeletedWords() {
+        var out = [];
+        var removed = pageRoot.pre.removed || {};
+        var languages = Object.keys(removed).sort();
+        for (var i = 0; i < languages.length; ++i) {
+            var words = (removed[languages[i]] || []).slice().sort();
+            for (var j = 0; j < words.length; ++j)
+                out.push({ "language": languages[i], "word": words[j] });
+        }
+        return out;
+    }
+
+    //! A deleted word offered and corrected to again in [language].
+    function putBackPreWord(language, word) {
+        var removed = {};
+        var had = pageRoot.pre.removed || {};
+        for (var l in had) {
+            var list = had[l].filter(function (w) { return !(l === language && w === word); });
+            if (list.length > 0)
+                removed[l] = list;
+        }
+        pageRoot.setPreSetting("removed", removed);
+    }
+
     //! Vibrate on Keys' strength as an index: 0 Light (also when unset), 1 Firmer, 2 Strong.
     function preLevel() {
         var level = pageRoot.pre.vibrateLevel;
@@ -364,6 +390,7 @@ BasePage {
                 Repeater {
                     model: [
                         { key: "swipe", label: "Swipe to Type", on: true },
+                        { key: "doubleSpacePeriod", label: "Double Space for Period", on: true },
                         { key: "holdForMore", label: "Hold for More", on: false },
                         { key: "followShift", label: "Small Letters Until Shift", on: false },
                         { key: "vibrate", label: "Vibrate on Keys", on: false }
@@ -410,6 +437,54 @@ BasePage {
                         onActivated: (index) => pageRoot.setPreSetting("vibrateLevel", index + 1)
                     }
                 }
+
+                /*
+                 * Words of the dictionaries the owner deleted, by holding them
+                 * in the bar ("Delete from dictionary?"): never offered or
+                 * corrected to in that language. Put back, they are again.
+                 */
+                Column {
+                    width: parent.width
+                    visible: pageRoot.preDeletedWords().length > 0
+
+                    HorizontalSeparator { width: parent.width }
+
+                    Label {
+                        width: parent.width
+                        topPadding: Units.gu(1)
+                        leftPadding: Units.gu(1)
+                        text: "Deleted Words"
+                        font.weight: Font.Bold
+                    }
+
+                    Repeater {
+                        model: pageRoot.preDeletedWords()
+
+                        delegate: Item {
+                            width: parent.width
+                            height: Units.gu(6)
+
+                            Label {
+                                anchors.left: parent.left
+                                anchors.leftMargin: Units.gu(1)
+                                anchors.right: putBack.left
+                                anchors.rightMargin: Units.gu(1)
+                                anchors.verticalCenter: parent.verticalCenter
+                                elide: Text.ElideRight
+                                text: modelData.word + "  (" + modelData.language + ")"
+                            }
+
+                            Button {
+                                id: putBack
+                                anchors.right: parent.right
+                                anchors.rightMargin: Units.gu(1)
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: "Put Back"
+                                onClicked: pageRoot.putBackPreWord(modelData.language, modelData.word)
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -418,16 +493,20 @@ BasePage {
             text: "The Palm Pre's keyboard, key for key, on LuneOS's own words: the "
                   + "Text Correction switches and the user dictionary above apply to it. "
                   + "The bar above the keys offers words as you type; the middle one is "
-                  + "what space types. Hold a word there to add it to the dictionary or "
-                  + "take it out. Swipe to Type: draw a finger across a word's letters "
-                  + "and lift; the word goes in, with the next likeliest beside it in the bar. "
+                  + "what space types. Hold a word there to add it to the dictionary, or "
+                  + "to delete one the dictionary knows; Deleted Words puts it back. "
+                  + "Swipe to Type: draw a finger across a word's letters and lift; the "
+                  + "word goes in, with the next likeliest beside it in the bar. A period "
+                  + "brings its own space, and a comma or a period typed after a space goes "
+                  + "against the word. "
                   + "Hold for More puts accents and extra symbols under a "
                   + "long press (hold the orange key to switch it). Small Letters Until "
                   + "Shift prints the keys in small letters, capitals only while Shift is "
                   + "on; off, they are always capitals, as on the Pre. Number and phone "
-                  + "fields show only the keys they take. Hold the space bar to "
-                  + "move the cursor, and flick it left or right to change language. Hold "
-                  + "the globe on the Sym page to switch styles."
+                  + "fields show only the keys they take. Hold the space bar and slide to "
+                  + "move the cursor; hold it still and let go for the languages, or flick "
+                  + "it left or right for the next one. Hold the globe on the Sym page to "
+                  + "switch styles."
         }
 
         /*

@@ -13,7 +13,8 @@
         "caller": "org.webosports.keyboard.dictionary",
         "operations": {
             "read": "allow",
-            "create": "allow"
+            "create": "allow",
+            "delete": "allow"
         }
     }
 ]
