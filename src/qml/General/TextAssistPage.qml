@@ -150,6 +150,11 @@ BasePage {
     function preFlag(key, fallback) {
         return pageRoot.pre.hasOwnProperty(key) ? pageRoot.pre[key] === true : fallback;
     }
+    //! Vibrate on Keys' strength as an index: 0 Light (also when unset), 1 Firmer, 2 Strong.
+    function preLevel() {
+        var level = pageRoot.pre.vibrateLevel;
+        return typeof level === "number" ? Math.max(0, Math.min(2, Math.round(level) - 1)) : 0;
+    }
     readonly property var sizeValues: ["XS", "S", "M", "L"]
     readonly property var sizeLabels: ["Extra small", "Small", "Medium", "Large"]
 
@@ -310,7 +315,7 @@ BasePage {
 
 
         /*
-         * The Pre Keyboard: the four settings it reads from the "pre" object.
+         * The Pre Keyboard: the settings it reads from the "pre" object.
          * Corrections, suggestions and key sounds are the Text Correction rows
          * above and the Sounds page, as for the LuneOS keys.
          */
@@ -382,6 +387,27 @@ BasePage {
                                 }
                             }
                         }
+                    }
+                }
+
+                // How strong Vibrate on Keys is: a longer buzz for each step.
+                Column {
+                    width: parent.width
+                    visible: pageRoot.preFlag("vibrate", false)
+
+                    HorizontalSeparator { width: parent.width }
+
+                    LabelAndSelector {
+                        id: preVibrateSelector
+                        width: parent.width
+                        label: "Vibration Strength"
+                        model: ["Light", "Firmer", "Strong"]
+                        currentIndex: pageRoot.preLevel()
+                        Connections {
+                            target: pageRoot
+                            function onPreChanged() { preVibrateSelector.currentIndex = pageRoot.preLevel(); }
+                        }
+                        onActivated: (index) => pageRoot.setPreSetting("vibrateLevel", index + 1)
                     }
                 }
             }
