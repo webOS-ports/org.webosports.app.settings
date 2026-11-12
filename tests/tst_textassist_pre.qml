@@ -84,6 +84,14 @@ Item {
             verify(findByText(p, "Vibration Strength") !== null, "no strength while vibrating");
         }
 
+        function test_size_on_a_phone() {
+            var p = page();
+            p.phone = true;
+            verify(findByText(p, "Size") !== null, "no Size on a phone: the Pre Keyboard's height");
+            compare(findByText(p, "Layout"), null);
+            compare(findByText(p, "Height"), null);
+        }
+
         function test_emoji_suggestions_switch() {
             var p = page();
             p.phone = true;

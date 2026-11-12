@@ -133,8 +133,9 @@ BasePage {
      * A phone gets the Pre Keyboard (webos-keyboard src/pre), a tablet keeps
      * the LuneOS keys. The keyboard decides that from the same setting
      * (its UI.formFactor), so this page and the keyboard always agree. On a
-     * phone the Layout and Size rows would move nothing, so they go and the
-     * Pre Keyboard's own Style and Height take their place.
+     * phone the Layout row would move nothing, so it goes and the Pre
+     * Keyboard's own Style takes its place; Size is the Pre Keyboard's height
+     * there (Extra small and Small are both its Small).
      */
     readonly property bool phone: !Settings.tabletUi
 
@@ -146,7 +147,6 @@ BasePage {
      */
     property var pre: ({})
 
-    readonly property var preHeightValues: ["small", "medium", "large"]
 
     function preFlag(key, fallback) {
         return pageRoot.pre.hasOwnProperty(key) ? pageRoot.pre[key] === true : fallback;
@@ -287,14 +287,15 @@ BasePage {
         GroupBox {
             width: parent.width
             title: "Keyboard"
-            // Layout and Size are the LuneOS keys'; a phone's Pre Keyboard has its own.
-            visible: !pageRoot.phone
+            // Size is both keyboards': the Pre Keyboard's height on a phone.
 
             Column {
                 width: parent.width
 
+                // The layouts are the LuneOS keys'; a phone has the Pre Keyboard.
                 LabelAndSelector {
                     id: layoutSelector
+                    visible: !pageRoot.phone
                     width: parent.width
                     label: "Layout"
                     model: pageRoot.layoutValues
@@ -314,6 +315,7 @@ BasePage {
                 }
 
                 HorizontalSeparator {
+                    visible: !pageRoot.phone
                     width: parent.width
                 }
 
@@ -367,24 +369,6 @@ BasePage {
                         }
                     }
                     onActivated: (index) => pageRoot.setPreSetting("style", index === 1 ? "white" : "orange")
-                }
-
-                HorizontalSeparator { width: parent.width }
-
-                LabelAndSelector {
-                    id: preHeightSelector
-                    width: parent.width
-                    label: "Height"
-                    model: ["Small", "Medium", "Large"]
-                    currentIndex: pageRoot._indexOf(pageRoot.preHeightValues, pageRoot.pre.height, 1)
-                    Connections {
-                        target: pageRoot
-                        function onPreChanged() {
-                            preHeightSelector.currentIndex =
-                                pageRoot._indexOf(pageRoot.preHeightValues, pageRoot.pre.height, 1);
-                        }
-                    }
-                    onActivated: (index) => pageRoot.setPreSetting("height", pageRoot.preHeightValues[index])
                 }
 
                 Repeater {
