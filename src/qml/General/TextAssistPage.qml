@@ -124,10 +124,10 @@ BasePage {
     property var words: []
     property var shortcuts: []
 
-    // The layouts and sizes webos-keyboard accepts. A layout a language or
-    // form factor has no file for falls back to the stock one there; Dvorak
-    // and Thumb are tablet layouts, the two Pre ones phone layouts.
-    readonly property var layoutValues: ["LuneOS", "Dvorak", "Thumb", "Pre (Orange)", "Pre (White)"]
+    // The tablet layouts webos-keyboard accepts; a language with no file for
+    // one falls back to the stock layout. The Pre look (orange or white) is
+    // the phone's only, as its Style below, so it is not one of these.
+    readonly property var layoutValues: ["LuneOS", "Dvorak", "Thumb"]
 
     /*
      * A phone gets the Pre Keyboard (webos-keyboard src/pre), a tablet keeps

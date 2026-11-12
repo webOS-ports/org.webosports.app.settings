@@ -92,6 +92,15 @@ Item {
             compare(findByText(p, "Height"), null);
         }
 
+        function test_tablet_layouts_are_luneos_only() {
+            var p = page();
+            p.phone = false;
+            verify(findByText(p, "Layout") !== null, "no Layout on a tablet");
+            compare(JSON.stringify(p.layoutValues), JSON.stringify(["LuneOS", "Dvorak", "Thumb"]),
+                    "the Pre look is the phone's only");
+            compare(findByText(p, "Pre Keyboard"), null, "the Pre Keyboard's settings on a tablet");
+        }
+
         function test_emoji_suggestions_switch() {
             var p = page();
             p.phone = true;
