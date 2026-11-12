@@ -391,6 +391,7 @@ BasePage {
                     model: [
                         { key: "swipe", label: "Swipe to Type", on: true },
                         { key: "doubleSpacePeriod", label: "Double Space for Period", on: true },
+                        { key: "emojiSuggestions", label: "Emoji Suggestions", on: false },
                         { key: "holdForMore", label: "Hold for More", on: false },
                         { key: "followShift", label: "Small Letters Until Shift", on: false },
                         { key: "vibrate", label: "Vibrate on Keys", on: false }

@@ -84,6 +84,13 @@ Item {
             verify(findByText(p, "Vibration Strength") !== null, "no strength while vibrating");
         }
 
+        function test_emoji_suggestions_switch() {
+            var p = page();
+            p.phone = true;
+            p.pre = {};
+            verify(findByText(p, "Emoji Suggestions") !== null, "no Emoji Suggestions switch");
+        }
+
         function test_deleted_words_listed_and_put_back() {
             var p = page();
             p.phone = true;
