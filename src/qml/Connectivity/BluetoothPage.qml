@@ -317,7 +317,11 @@ BasePage {
                 }
             }
             checked: BluetoothManager.powered
-            onCheckedChanged: BluetoothManager.powered = checked;
+            // Only the user's toggle switches Bluetooth: checked also follows
+            // BluetoothManager.powered, and writing that back when airplane
+            // mode turned the radio off made connman save Bluetooth as
+            // disabled, so it stayed off after airplane mode.
+            onToggled: BluetoothManager.powered = checked;
         }
     }
 

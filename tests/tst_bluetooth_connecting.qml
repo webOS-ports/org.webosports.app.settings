@@ -290,5 +290,22 @@ Item {
             wait(0);
         }
 
+        // B3: only the user's toggle switches Bluetooth. The switch follows
+        // BluetoothManager.powered; writing that back when airplane mode
+        // turned the radio off made connman keep Bluetooth disabled.
+        function test_thePowerSwitchWritesOnlyWhatTheUserToggles() {
+            BluetoothManager.powered = true;
+            var sw = createTemporaryObject(page.pageActionHeaderComponent, root);
+            verify(sw !== null);
+            compare(sw.checked, true);
+            sw.checked = false;     // as its sync with powered does
+            compare(BluetoothManager.powered, true, "the switch following the state wrote it back");
+            sw.checked = true;
+            mouseClick(sw);
+            compare(sw.checked, false);
+            compare(BluetoothManager.powered, false, "the user's toggle did not switch Bluetooth off");
+            mouseClick(sw);
+            compare(BluetoothManager.powered, true);
+        }
     }
 }
