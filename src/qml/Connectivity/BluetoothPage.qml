@@ -217,7 +217,10 @@ BasePage {
         _setDeviceOperation(address, op);
         if (call.finished) {
             call.finished.connect(function (finishedCall) {
-                bluetoothPageId._deviceCallFinished(address, op, finishedCall || call);
+                // The call is BluetoothManager's, and can finish after the
+                // page has gone (the card closing while it connects).
+                if (bluetoothPageId)
+                    bluetoothPageId._deviceCallFinished(address, op, finishedCall || call);
             });
         }
         _deviceStateChanged(address, connected);
@@ -314,7 +317,11 @@ BasePage {
                 }
             }
             checked: BluetoothManager.powered
-            onCheckedChanged: BluetoothManager.powered = checked;
+            // Only the user's toggle switches Bluetooth: checked also follows
+            // BluetoothManager.powered, and writing that back when airplane
+            // mode turned the radio off made connman save Bluetooth as
+            // disabled, so it stayed off after airplane mode.
+            onToggled: BluetoothManager.powered = checked;
         }
     }
 
