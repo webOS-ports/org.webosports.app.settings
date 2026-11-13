@@ -32,6 +32,9 @@ Popup {
     dim: true
     modal: true
     visible: true
+    // A width of its own: the LuneOS style Popup otherwise takes it from its
+    // content, and the text here takes its width from the popup.
+    width: Math.min(parent.width - Units.gu(4), Units.gu(46))
 
     property LuneOSBluetoothRequest bluezRequest;
     property string deviceName;
@@ -40,6 +43,7 @@ Popup {
     onClosed: if(!requestHandled) bluezRequest.cancel();
 
     Column {
+        width: parent.width
         spacing: Units.gu(2)
         Label {
             anchors.horizontalCenter: parent.horizontalCenter
