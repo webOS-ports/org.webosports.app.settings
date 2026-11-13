@@ -31,6 +31,9 @@ Popup {
     dim: true
     modal: true
     visible: true
+    // A width of its own: the LuneOS style Popup otherwise takes it from its
+    // content, and the text here takes its width from the popup.
+    width: Math.min(parent.width - Units.gu(4), Units.gu(46))
 
     property LuneOSBluetoothRequest bluezRequest;
     property string deviceName: "";
@@ -40,11 +43,11 @@ Popup {
     onClosed: if(!requestHandled) bluezRequest.cancel();
 
     Column {
-        anchors.horizontalCenter: parent.horizontalCenter
+        width: parent.width
         spacing: Units.gu(2)
         Label {
             anchors.horizontalCenter: parent.horizontalCenter
-            width: displayAuthorizePopup.width - Units.gu(2)
+            width: parent.width
             wrapMode: Label.Wrap
             horizontalAlignment: Text.AlignHCenter
             text: "Authorize service "+serviceUUID+" for " + deviceName
@@ -56,7 +59,7 @@ Popup {
                 onClicked: {
                     bluezRequest.accept();
                     requestHandled = true;
-                    providePassKeyPopup.close();
+                    displayAuthorizePopup.close();
                 }
             }
             Button {
@@ -64,7 +67,7 @@ Popup {
                 onClicked: {
                     bluezRequest.cancel();
                     requestHandled = true;
-                    providePassKeyPopup.close();
+                    displayAuthorizePopup.close();
                 }
             }
         }
