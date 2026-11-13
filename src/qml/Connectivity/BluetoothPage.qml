@@ -217,7 +217,10 @@ BasePage {
         _setDeviceOperation(address, op);
         if (call.finished) {
             call.finished.connect(function (finishedCall) {
-                bluetoothPageId._deviceCallFinished(address, op, finishedCall || call);
+                // The call is BluetoothManager's, and can finish after the
+                // page has gone (the card closing while it connects).
+                if (bluetoothPageId)
+                    bluetoothPageId._deviceCallFinished(address, op, finishedCall || call);
             });
         }
         _deviceStateChanged(address, connected);

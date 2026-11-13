@@ -275,5 +275,20 @@ Item {
             mouseClick(button);
             verify(BluetoothManager.discovering, "\"Search again\" did not take its tap");
         }
+
+        // The call is the manager's and can finish after the page has gone:
+        // the card closing while a device connects.
+        function test_aCallFinishingAfterThePageIsHarmless() {
+            failOnWarning(/TypeError/);
+            var call = tap(1);
+            verify(call !== null);
+            page.destroy();
+            wait(0);
+            call.error = 130;
+            call.errorText = "Failed to connect with remote device";
+            call.finished(call);
+            wait(0);
+        }
+
     }
 }
