@@ -42,8 +42,9 @@ import LuneOS.System 1.0
  *    Those are the switches here, so each one moves something the keyboard
  *    actually reads. Predictive Text and Spell Checking are new rows: the
  *    keyboard has them and nothing on the device could turn them on.
- *  - "Double Space For Period" is gone. It was a webOS virtual keyboard
- *    behaviour (spaces2period) that this keyboard does not have.
+ *  - "Double Space For Period" was a webOS virtual keyboard behaviour
+ *    (spaces2period). LuneOS's own keys do not have it; the Pre Keyboard does,
+ *    so it is back as one of the Pre Keyboard's switches.
  *  - the correction alert selector (System Sound / Vibrate / Mute) is gone
  *    with the com.palm.audio TextEntryCorrectionHapticPolicy it set. Key
  *    press feedback lives on the Sounds & Ringtones page.
@@ -123,10 +124,63 @@ BasePage {
     property var words: []
     property var shortcuts: []
 
-    // The layouts and sizes webos-keyboard accepts. A layout a language or
-    // form factor has no file for falls back to the stock one there; Dvorak
-    // and Thumb are tablet layouts, the two Pre ones phone layouts.
-    readonly property var layoutValues: ["LuneOS", "Dvorak", "Thumb", "Pre (Orange)", "Pre (White)"]
+    // The tablet layouts webos-keyboard accepts; a language with no file for
+    // one falls back to the stock layout. The Pre look (orange or white) is
+    // the phone's only, as its Style below, so it is not one of these.
+    readonly property var layoutValues: ["LuneOS", "Dvorak", "Thumb"]
+
+    /*
+     * A phone gets the Pre Keyboard (webos-keyboard src/pre), a tablet keeps
+     * the LuneOS keys. The keyboard decides that from the same setting
+     * (its UI.formFactor), so this page and the keyboard always agree. On a
+     * phone the Layout row would move nothing, so it goes and the Pre
+     * Keyboard's own Style takes its place; Size is the Pre Keyboard's height
+     * there (Extra small and Small are both its Small).
+     */
+    readonly property bool phone: !Settings.tabletUi
+
+    /*
+     * The Pre Keyboard's settings: the "pre" object inside the keyboard
+     * preference, which the keyboard reads and also writes (the style and Hold
+     * for More can be switched from the keys). Everything about words and
+     * languages is LuneOS's own, set by the rows and pages it always was.
+     */
+    property var pre: ({})
+
+
+    function preFlag(key, fallback) {
+        return pageRoot.pre.hasOwnProperty(key) ? pageRoot.pre[key] === true : fallback;
+    }
+    //! The Pre Keyboard's deleted words, as [{ language, word }], by language then word.
+    function preDeletedWords() {
+        var out = [];
+        var removed = pageRoot.pre.removed || {};
+        var languages = Object.keys(removed).sort();
+        for (var i = 0; i < languages.length; ++i) {
+            var words = (removed[languages[i]] || []).slice().sort();
+            for (var j = 0; j < words.length; ++j)
+                out.push({ "language": languages[i], "word": words[j] });
+        }
+        return out;
+    }
+
+    //! A deleted word offered and corrected to again in [language].
+    function putBackPreWord(language, word) {
+        var removed = {};
+        var had = pageRoot.pre.removed || {};
+        for (var l in had) {
+            var list = had[l].filter(function (w) { return !(l === language && w === word); });
+            if (list.length > 0)
+                removed[l] = list;
+        }
+        pageRoot.setPreSetting("removed", removed);
+    }
+
+    //! Vibrate on Keys' strength as an index: 0 Light (also when unset), 1 Firmer, 2 Strong.
+    function preLevel() {
+        var level = pageRoot.pre.vibrateLevel;
+        return typeof level === "number" ? Math.max(0, Math.min(2, Math.round(level) - 1)) : 0;
+    }
     readonly property var sizeValues: ["XS", "S", "M", "L"]
     readonly property var sizeLabels: ["Extra small", "Small", "Medium", "Large"]
 
@@ -233,12 +287,15 @@ BasePage {
         GroupBox {
             width: parent.width
             title: "Keyboard"
+            // Size is both keyboards': the Pre Keyboard's height on a phone.
 
             Column {
                 width: parent.width
 
+                // The layouts are the LuneOS keys'; a phone has the Pre Keyboard.
                 LabelAndSelector {
                     id: layoutSelector
+                    visible: !pageRoot.phone
                     width: parent.width
                     label: "Layout"
                     model: pageRoot.layoutValues
@@ -258,6 +315,7 @@ BasePage {
                 }
 
                 HorizontalSeparator {
+                    visible: !pageRoot.phone
                     width: parent.width
                 }
 
@@ -281,6 +339,159 @@ BasePage {
                                      "keyboardSize", pageRoot.sizeValues[index])
                 }
             }
+        }
+
+
+        /*
+         * The Pre Keyboard: the settings it reads from the "pre" object.
+         * Corrections, suggestions and key sounds are the Text Correction rows
+         * above and the Sounds page, as for the LuneOS keys.
+         */
+        GroupBox {
+            width: parent.width
+            title: "Pre Keyboard"
+            visible: pageRoot.phone
+
+            Column {
+                width: parent.width
+
+                LabelAndSelector {
+                    id: preStyleSelector
+                    width: parent.width
+                    label: "Style"
+                    model: ["Orange", "White"]
+                    currentIndex: pageRoot.pre.style === "white" ? 1 : 0
+                    // Also switched from the keys (hold the globe): follow it.
+                    Connections {
+                        target: pageRoot
+                        function onPreChanged() {
+                            preStyleSelector.currentIndex = pageRoot.pre.style === "white" ? 1 : 0;
+                        }
+                    }
+                    onActivated: (index) => pageRoot.setPreSetting("style", index === 1 ? "white" : "orange")
+                }
+
+                Repeater {
+                    model: [
+                        { key: "swipe", label: "Swipe to Type", on: true },
+                        { key: "doubleSpacePeriod", label: "Double Space for Period", on: true },
+                        { key: "emojiSuggestions", label: "Emoji Suggestions", on: false },
+                        { key: "holdForMore", label: "Hold for More", on: false },
+                        { key: "followShift", label: "Small Letters Until Shift", on: false },
+                        { key: "vibrate", label: "Vibrate on Keys", on: false }
+                    ]
+
+                    delegate: Column {
+                        width: parent.width
+
+                        HorizontalSeparator { width: parent.width }
+
+                        LabelAndSwitch {
+                            id: preSwitch
+                            label: modelData.label
+                            checked: pageRoot.preFlag(modelData.key, modelData.on)
+                            onToggled: pageRoot.setPreSetting(modelData.key, checked)
+                            // Hold for More is also switched from the keys (hold the orange key).
+                            Connections {
+                                target: pageRoot
+                                function onPreChanged() {
+                                    preSwitch.checked = pageRoot.preFlag(modelData.key, modelData.on);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // How strong Vibrate on Keys is: a longer buzz for each step.
+                Column {
+                    width: parent.width
+                    visible: pageRoot.preFlag("vibrate", false)
+
+                    HorizontalSeparator { width: parent.width }
+
+                    LabelAndSelector {
+                        id: preVibrateSelector
+                        width: parent.width
+                        label: "Vibration Strength"
+                        model: ["Light", "Firmer", "Strong"]
+                        currentIndex: pageRoot.preLevel()
+                        Connections {
+                            target: pageRoot
+                            function onPreChanged() { preVibrateSelector.currentIndex = pageRoot.preLevel(); }
+                        }
+                        onActivated: (index) => pageRoot.setPreSetting("vibrateLevel", index + 1)
+                    }
+                }
+
+                /*
+                 * Words of the dictionaries the owner deleted, by holding them
+                 * in the bar ("Delete from dictionary?"): never offered or
+                 * corrected to in that language. Put back, they are again.
+                 */
+                Column {
+                    width: parent.width
+                    visible: pageRoot.preDeletedWords().length > 0
+
+                    HorizontalSeparator { width: parent.width }
+
+                    Label {
+                        width: parent.width
+                        topPadding: Units.gu(1)
+                        leftPadding: Units.gu(1)
+                        text: "Deleted Words"
+                        font.weight: Font.Bold
+                    }
+
+                    Repeater {
+                        model: pageRoot.preDeletedWords()
+
+                        delegate: Item {
+                            width: parent.width
+                            height: Units.gu(6)
+
+                            Label {
+                                anchors.left: parent.left
+                                anchors.leftMargin: Units.gu(1)
+                                anchors.right: putBack.left
+                                anchors.rightMargin: Units.gu(1)
+                                anchors.verticalCenter: parent.verticalCenter
+                                elide: Text.ElideRight
+                                text: modelData.word + "  (" + modelData.language + ")"
+                            }
+
+                            Button {
+                                id: putBack
+                                anchors.right: parent.right
+                                anchors.rightMargin: Units.gu(1)
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: "Put Back"
+                                onClicked: pageRoot.putBackPreWord(modelData.language, modelData.word)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        ExplanationText {
+            visible: pageRoot.phone
+            text: "The Palm Pre's keyboard, key for key, on LuneOS's own words: the "
+                  + "Text Correction switches and the user dictionary above apply to it. "
+                  + "The bar above the keys offers words as you type; the middle one is "
+                  + "what space types. Hold a word there to add it to the dictionary, or "
+                  + "to delete one the dictionary knows; Deleted Words puts it back. "
+                  + "Swipe to Type: draw a finger across a word's letters and lift; the "
+                  + "word goes in, with the next likeliest beside it in the bar. A period "
+                  + "brings its own space, and a comma or a period typed after a space goes "
+                  + "against the word. "
+                  + "Hold for More puts accents and extra symbols under a "
+                  + "long press (hold the orange key to switch it). Small Letters Until "
+                  + "Shift prints the keys in small letters, capitals only while Shift is "
+                  + "on; off, they are always capitals, as on the Pre. Number and phone "
+                  + "fields show only the keys they take. Hold the space bar and slide to "
+                  + "move the cursor; hold it still and let go for the languages, or flick "
+                  + "it left or right for the next one. Hold the globe on the Sym page to "
+                  + "switch styles."
         }
 
         /*
@@ -437,6 +648,7 @@ BasePage {
             pageRoot.keyboardLayout = pageRoot.keyboardPrefs.keyboardLayout;
         if (pageRoot.keyboardPrefs.hasOwnProperty("keyboardSize"))
             pageRoot.keyboardSize = pageRoot.keyboardPrefs.keyboardSize;
+        pageRoot.pre = pageRoot.keyboardPrefs.pre || {};
 
     }
 
@@ -466,6 +678,20 @@ BasePage {
         pageRoot.keyboardPrefs = prefs;
 
         systemPrefs.set("keyboard", prefs);
+    }
+
+    /*
+     * The Pre Keyboard's settings, in the "pre" object. Copied whole and written
+     * back whole, as the keyboard object is: the keyboard keeps the recent
+     * emoji in there too.
+     */
+    function setPreSetting(key, value) {
+        var pre = {};
+        for (var existing in pageRoot.pre)
+            pre[existing] = pageRoot.pre[existing];
+        pre[key] = value;
+        pageRoot.pre = pre;
+        pageRoot.setKeyboardPreference("pre", pre);
     }
 
     /*
