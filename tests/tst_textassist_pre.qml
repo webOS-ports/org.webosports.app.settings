@@ -108,6 +108,25 @@ Item {
             verify(findByText(p, "Emoji Suggestions") !== null, "no Emoji Suggestions switch");
         }
 
+        // Checked against the "pre" object the switches write (the page's own, before it is saved).
+        function test_number_row_switches() {
+            var p = createTemporaryObject(pageComponent, root);
+            verify(p !== null, "the page did not load");
+            if (!p.phone)
+                skip("the stand-ins' profile is a tablet: no Pre Keyboard group");
+            p.pre = {};
+            verify(findByText(p, "Number Row") !== null, "no Number Row switch");
+            compare(findByText(p, "Hide Digits on Letters"), null, "Hide Digits shown with the number row off");
+            p.setPreSetting("numberRow", true);
+            compare(p.pre.numberRow, true);
+            verify(findByText(p, "Hide Digits on Letters") !== null, "no Hide Digits with the number row on");
+            p.setPreSetting("hideKeyDigits", true);
+            compare(p.pre.hideKeyDigits, true);
+            compare(p.pre.numberRow, true, "the number row kept");
+            p.setPreSetting("numberRow", false);
+            compare(findByText(p, "Hide Digits on Letters"), null, "Hide Digits shown with the number row off again");
+        }
+
         function test_deleted_words_listed_and_put_back() {
             var p = page();
             p.phone = true;

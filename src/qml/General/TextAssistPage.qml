@@ -371,6 +371,38 @@ BasePage {
                     onActivated: (index) => pageRoot.setPreSetting("style", index === 1 ? "white" : "orange")
                 }
 
+                /*
+                 * The digits in a row of their own above the letters (and the
+                 * Sym page's in the same place); with it on, the digits printed
+                 * on the letters may be left off.
+                 */
+                Repeater {
+                    model: [
+                        { key: "numberRow", label: "Number Row", on: false, shown: true },
+                        { key: "hideKeyDigits", label: "Hide Digits on Letters", on: false, shown: false }
+                    ]
+
+                    delegate: Column {
+                        width: parent.width
+                        visible: modelData.shown || pageRoot.preFlag("numberRow", false)
+
+                        HorizontalSeparator { width: parent.width }
+
+                        LabelAndSwitch {
+                            id: numberSwitch
+                            label: modelData.label
+                            checked: pageRoot.preFlag(modelData.key, modelData.on)
+                            onToggled: pageRoot.setPreSetting(modelData.key, checked)
+                            Connections {
+                                target: pageRoot
+                                function onPreChanged() {
+                                    numberSwitch.checked = pageRoot.preFlag(modelData.key, modelData.on);
+                                }
+                            }
+                        }
+                    }
+                }
+
                 Repeater {
                     model: [
                         { key: "swipe", label: "Swipe to Type", on: true },
