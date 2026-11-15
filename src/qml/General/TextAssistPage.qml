@@ -78,8 +78,8 @@ BasePage {
     property bool predictiveText: true
     property string keyboardLayout: "LuneOS"
     property string keyboardSize: "M"
-    //! The key click (keyPressFeedback), also Sounds & Alerts' Keyboard Clicks. Off when unset, as the keyboard reads it.
-    property bool keyPressFeedback: false
+    //! The key click sound, stored as the keyboard's keyPressFeedback (the name the keyboard and Sounds & Alerts' Keyboard Clicks read). Off when unset, as the keyboard reads it.
+    property bool keyPressSoundFeedback: false
 
     /*
      * The physical keyboard, from com.webos.service.ime rather than the
@@ -473,10 +473,10 @@ BasePage {
                         id: soundSwitch
                         objectName: "soundOnKeys"
                         label: "Sound on Keys"
-                        checked: pageRoot.keyPressFeedback
+                        checked: pageRoot.keyPressSoundFeedback
                         Connections {
                             target: pageRoot
-                            function onKeyPressFeedbackChanged() { soundSwitch.checked = pageRoot.keyPressFeedback; }
+                            function onKeyPressSoundFeedbackChanged() { soundSwitch.checked = pageRoot.keyPressSoundFeedback; }
                         }
                         onToggled: pageRoot.setKeyboardPreference("keyPressFeedback", checked)
                     }
@@ -707,7 +707,7 @@ BasePage {
             pageRoot.keyboardLayout = pageRoot.keyboardPrefs.keyboardLayout;
         if (pageRoot.keyboardPrefs.hasOwnProperty("keyboardSize"))
             pageRoot.keyboardSize = pageRoot.keyboardPrefs.keyboardSize;
-        pageRoot.keyPressFeedback = pageRoot.keyboardPrefs.keyPressFeedback === true;
+        pageRoot.keyPressSoundFeedback = pageRoot.keyboardPrefs.keyPressFeedback === true;
         pageRoot.pre = pageRoot.keyboardPrefs.pre || {};
 
     }
@@ -731,7 +731,7 @@ BasePage {
         else if (key === "keyboardSize")
             pageRoot.keyboardSize = value;
         else if (key === "keyPressFeedback")
-            pageRoot.keyPressFeedback = value;
+            pageRoot.keyPressSoundFeedback = value;
 
         var prefs = {};
         for (var existing in pageRoot.keyboardPrefs)

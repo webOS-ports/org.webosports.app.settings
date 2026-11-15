@@ -140,10 +140,10 @@ Item {
             p._handleGetPreferences({ "keyboard": { "pre": {} } });
             var sw = findByText(p, "Sound on Keys");
             verify(sw !== null, "no Sound on Keys switch");
-            compare(p.keyPressFeedback, false, "unset is off, as the keyboard reads it");
+            compare(p.keyPressSoundFeedback, false, "unset is off, as the keyboard reads it");
             compare(sw.checked, false);
             p._handleGetPreferences({ "keyboard": { "keyPressFeedback": true, "pre": { "vibrate": true } } });
-            compare(p.keyPressFeedback, true);
+            compare(p.keyPressSoundFeedback, true);
             compare(sw.checked, true, "the switch did not follow the preference");
             compare(p.pre.vibrate, true, "the pre object kept");
             p._handleGetPreferences({ "keyboard": { "keyPressFeedback": false, "pre": {} } });
