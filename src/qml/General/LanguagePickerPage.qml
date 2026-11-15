@@ -34,8 +34,9 @@ import LuneOS.System 1.0
  * Regional Settings, after the webOS 3.0.5 app of the same name
  * (com.palm.app.languagepicker, its regionalsettings scene).
  *
- * Same rows in the same order as the original: the display language, the list
- * of keyboards with an Add row under it, the region used for phone numbers,
+ * Same rows in the same order as the original: the display language, the
+ * keyboards (each one installed with an On/Off switch, and the default one
+ * above them), the region used for phone numbers,
  * the region used for date, time, number and currency formats, a live preview
  * of those formats, and the Apply button that only appears once something has
  * actually changed.
@@ -127,6 +128,20 @@ BasePage {
         pageRoot._installedKeyboards = codes;
     }
 
+    /*
+     * The rows of the Keyboards group: every keyboard installed, and any
+     * enabled one that is not (so it can still be turned off), by name.
+     */
+    readonly property var keyboardRows: {
+        var codes = keyboardLanguageCodes.slice();
+        for (var i = 0; i < enabledKeyboards.length; i++) {
+            if (codes.indexOf(enabledKeyboards[i]) < 0)
+                codes.push(enabledKeyboards[i]);
+        }
+        codes.sort(function(a, b) { return keyboardLabel(a).localeCompare(keyboardLabel(b)); });
+        return codes;
+    }
+
     // Chinese is typed in Pinyin; it is the only layout that says how
     function keyboardLabel(code) {
         return (code === "zh" || code === "pinyin") ? "Chinese (Pinyin)"
@@ -172,9 +187,11 @@ BasePage {
         }
 
         /*
-         * Keyboards. The original let you swipe one away and tap Add to get
-         * another; the same two things are here, with the one marked Default
-         * being the keyboard that comes up first.
+         * Keyboards. The original listed the ones set up, to swipe away, with
+         * an Add row for the rest. Here every keyboard the device has is a
+         * row with a switch, so what can be typed in is all in one place. The
+         * last one on cannot be turned off: the keyboard needs a language.
+         * Default is the one the keyboard comes up in (activeLanguage).
          */
         GroupBox {
             width: parent.width
@@ -183,66 +200,54 @@ BasePage {
             Column {
                 width: parent.width
 
+                LabelAndPicker {
+                    width: parent.width
+                    label: "Default"
+                    value: pageRoot.activeKeyboard !== "" ? pageRoot.keyboardLabel(pageRoot.activeKeyboard) : ""
+                    placeholder: "No keyboard is on"
+                    enabled: pageRoot.enabledKeyboards.length > 0
+
+                    onClicked: {
+                        defaultKeyboardPicker.entries = pageRoot.defaultKeyboardEntries();
+                        defaultKeyboardPicker.currentKey = pageRoot.activeKeyboard;
+                        defaultKeyboardPicker.open();
+                    }
+                }
+
                 Repeater {
-                    model: pageRoot.enabledKeyboards
+                    model: pageRoot.keyboardRows
 
                     delegate: Column {
                         width: parent.width
 
-                        SwipeRow {
-                            text: pageRoot.keyboardLabel(modelData)
-
-                            LuneOSSwipeDelegate.confirmText: "Remove Keyboard"
-                            LuneOSSwipeDelegate.onConfirmed: pageRoot.removeKeyboard(modelData)
-
-                            // Tapping the row makes it the one the keyboard
-                            // starts in, which is what activeLanguage is.
-                            onClicked: pageRoot.setActiveKeyboard(modelData)
-
-                            Label {
-                                anchors.right: parent.right
-                                anchors.rightMargin: Units.gu(1)
-                                anchors.verticalCenter: parent.verticalCenter
-                                visible: modelData === pageRoot.activeKeyboard
-                                text: "Default"
-                                color: Colors.secondaryText
-                                font.pixelSize: FontUtils.sizeToPixels("small")
-                            }
-                        }
-
                         HorizontalSeparator {
                             width: parent.width
                         }
-                    }
-                }
 
-                Label {
-                    width: parent.width
-                    visible: pageRoot.enabledKeyboards.length === 0
-                    height: visible ? Units.gu(6) : 0
-                    verticalAlignment: Text.AlignVCenter
-                    text: "No keyboard is set up."
-                    color: Colors.secondaryText
-                    font.pixelSize: FontUtils.sizeToPixels("medium")
-                }
+                        LabelAndSwitch {
+                            id: keyboardSwitch
+                            readonly property bool on: pageRoot.enabledKeyboards.indexOf(modelData) >= 0
 
-                ItemDelegate {
-                    width: parent.width
-                    height: Units.gu(6)
-                    text: "Add..."
-                    font.pixelSize: FontUtils.sizeToPixels("16pt")
-
-                    onClicked: {
-                        keyboardPicker.entries = pageRoot.keyboardEntries();
-                        keyboardPicker.open();
+                            width: parent.width
+                            label: pageRoot.keyboardLabel(modelData)
+                            checked: on
+                            // Toggling a switch ends its binding: it follows the
+                            // preference again whenever that changes.
+                            onOnChanged: keyboardSwitch.checked = on
+                            enabled: !(on && pageRoot.enabledKeyboards.length === 1)
+                            onToggled: {
+                                pageRoot.setKeyboardEnabled(modelData, checked);
+                                keyboardSwitch.checked = on;
+                            }
+                        }
                     }
                 }
             }
         }
 
         ExplanationText {
-            text: "Swipe a keyboard sideways to remove it. Tap one to make it " +
-                  "the keyboard that comes up first."
+            text: "Turn on the keyboards you want to type in, and switch between " +
+                  "them on the keyboard. The default keyboard is the one that comes up first."
         }
 
         GroupBox {
@@ -381,11 +386,10 @@ BasePage {
     }
 
     ListPickerPopup {
-        id: keyboardPicker
-        title: "Add a Keyboard"
-        emptyText: "Every available keyboard is already set up."
+        id: defaultKeyboardPicker
+        title: "Default Keyboard"
 
-        onPicked: (key, entry) => pageRoot.addKeyboard(key)
+        onPicked: (key, entry) => pageRoot.setActiveKeyboard(key)
     }
 
     Dialog {
@@ -529,16 +533,13 @@ BasePage {
         return entries;
     }
 
-    function keyboardEntries() {
+    // The keyboards that are on, for the Default picker, by name
+    function defaultKeyboardEntries() {
         var entries = [];
-        for (var i = 0; i < keyboardLanguageCodes.length; i++) {
-            var code = keyboardLanguageCodes[i];
-            if (enabledKeyboards.indexOf(code) >= 0)
-                continue;
-
+        for (var i = 0; i < enabledKeyboards.length; i++) {
             entries.push({
-                "key": code,
-                "label": pageRoot.keyboardLabel(code)
+                "key": enabledKeyboards[i],
+                "label": pageRoot.keyboardLabel(enabledKeyboards[i])
             });
         }
         entries.sort(function(a, b) { return a.label.localeCompare(b.label); });
@@ -618,6 +619,17 @@ BasePage {
             active = keyboards.length > 0 ? keyboards[0] : "";
 
         _writeKeyboards(keyboards, active);
+    }
+
+    // A keyboard's switch. The last one on stays on (its switch is disabled too).
+    function setKeyboardEnabled(languageCode, on) {
+        if (on) {
+            addKeyboard(languageCode);
+            return;
+        }
+        if (enabledKeyboards.length === 1 && enabledKeyboards[0] === languageCode)
+            return;
+        removeKeyboard(languageCode);
     }
 
     function setActiveKeyboard(languageCode) {
