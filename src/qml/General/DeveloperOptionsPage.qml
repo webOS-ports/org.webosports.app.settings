@@ -261,8 +261,9 @@ BasePage {
 
         ExplanationText {
             text: pageRoot.devModeEnabled
-                  ? "ssh answers over the USB cable, and on Wi-Fi as well " +
-                    "while SSH over Wi-Fi is on."
+                  ? "ssh answers over the USB cable (on an emulator, through " +
+                    "the host's port forward), and on Wi-Fi as well while " +
+                    "SSH over Wi-Fi is on."
                   : "Turn Developer Mode on first to set a password, add a " +
                     "key or open SSH to Wi-Fi."
         }
@@ -366,7 +367,8 @@ BasePage {
             objectName: "passwordHelp"
             text: "Root's password is for logging in on the device itself, " +
                   "such as on a serial console, and over ssh on the USB " +
-                  "cable only (on an emulator, through its NAT). Over Wi-Fi, " +
+                  "cable. An emulator takes it through the host's port " +
+                  "forward, with no need for SSH over Wi-Fi. Over Wi-Fi, " +
                   "ssh takes a key only."
         }
 
