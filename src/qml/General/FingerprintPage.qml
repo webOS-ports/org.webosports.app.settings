@@ -52,7 +52,14 @@ BasePage {
     property string enrollResult: ""
     property var _enrollCall: null
 
+    // The passcode's token, kept for the next finger while luna-authmanager
+    // still honours it for enrolling (enrollLifetime), as Android Settings
+    // keeps its Gatekeeper password handle for 10 minutes.
+    property string _enrollToken: ""
+    property real _enrollTokenUntil: 0
+
     Component.onCompleted: subscribeStatus();
+    Component.onDestruction: _forgetEnrollToken();
 
     // When enrollment starts, the Cancel button appears in the exact spot the
     // Add button occupied, so the second half of a double-tap (or a touch
@@ -131,6 +138,11 @@ BasePage {
      */
     function askPasscodeThenEnroll() {
         enrollResult = "";
+        if (_enrollToken !== "" && Date.now() < _enrollTokenUntil) {
+            startEnroll(_enrollToken);
+            return;
+        }
+        _forgetEnrollToken();
         luna.call("luna://com.webos.service.auth/getDeviceLockMode", "{}",
                   _lockModeForEnroll, _enrollPasscodeError);
     }
@@ -165,7 +177,16 @@ BasePage {
             return;
         }
         enrollPasscodePopup.close();
+        // No enrollLifetime (an older luna-authmanager): good for this finger only.
+        _enrollToken = response.unlockToken;
+        _enrollTokenUntil = response.enrollLifetime > 0
+                            ? Date.now() + response.enrollLifetime * 1000 : 0;
         startEnroll(response.unlockToken);
+    }
+
+    function _forgetEnrollToken() {
+        _enrollToken = "";
+        _enrollTokenUntil = 0;
     }
 
     function _enrollPasscodeError(message) {
@@ -194,6 +215,9 @@ BasePage {
         var response = JSON.parse(message.payload);
 
         if (response.returnValue === false) {
+            // Refused before it started, e.g. the token was no longer good:
+            // the next finger asks for the passcode again.
+            _forgetEnrollToken();
             _endEnroll();
             enrollResult = "Enrollment failed: " +
                            (response.errorText !== undefined ? response.errorText : "unknown error");
