@@ -47,7 +47,9 @@ import LuneOS.System 1.0
  *    so it is back as one of the Pre Keyboard's switches.
  *  - the correction alert selector (System Sound / Vibrate / Mute) is gone
  *    with the com.palm.audio TextEntryCorrectionHapticPolicy it set. Key
- *    press feedback lives on the Sounds & Ringtones page.
+ *    press feedback lives on the Sounds & Ringtones page, and on a phone
+ *    also here as the Pre Keyboard's Sound on Keys, beside Vibrate on Keys
+ *    as the Android Pre Keyboard has them: the same keyPressFeedback.
  *  - the Input Method group offered other input methods to switch between.
  *    There is one keyboard on LuneOS, so the group holds what that keyboard
  *    can actually be told: its layout and its size.
@@ -76,6 +78,8 @@ BasePage {
     property bool predictiveText: true
     property string keyboardLayout: "LuneOS"
     property string keyboardSize: "M"
+    //! The key click sound, stored as the keyboard's keyPressFeedback (the name the keyboard and Sounds & Alerts' Keyboard Clicks read). Off when unset, as the keyboard reads it.
+    property bool keyPressSoundFeedback: false
 
     /*
      * The physical keyboard, from com.webos.service.ime rather than the
@@ -456,6 +460,29 @@ BasePage {
                 }
 
                 /*
+                 * A click as each key goes down: the keyboard's own setting
+                 * (keyPressFeedback), shared with the LuneOS keys and with
+                 * Sounds & Alerts' Keyboard Clicks, so either page turns it on.
+                 */
+                Column {
+                    width: parent.width
+
+                    HorizontalSeparator { width: parent.width }
+
+                    LabelAndSwitch {
+                        id: soundSwitch
+                        objectName: "soundOnKeys"
+                        label: "Sound on Keys"
+                        checked: pageRoot.keyPressSoundFeedback
+                        Connections {
+                            target: pageRoot
+                            function onKeyPressSoundFeedbackChanged() { soundSwitch.checked = pageRoot.keyPressSoundFeedback; }
+                        }
+                        onToggled: pageRoot.setKeyboardPreference("keyPressFeedback", checked)
+                    }
+                }
+
+                /*
                  * Words of the dictionaries the owner deleted, by holding them
                  * in the bar ("Delete from dictionary?"): never offered or
                  * corrected to in that language. Put back, they are again.
@@ -680,6 +707,7 @@ BasePage {
             pageRoot.keyboardLayout = pageRoot.keyboardPrefs.keyboardLayout;
         if (pageRoot.keyboardPrefs.hasOwnProperty("keyboardSize"))
             pageRoot.keyboardSize = pageRoot.keyboardPrefs.keyboardSize;
+        pageRoot.keyPressSoundFeedback = pageRoot.keyboardPrefs.keyPressFeedback === true;
         pageRoot.pre = pageRoot.keyboardPrefs.pre || {};
 
     }
@@ -702,6 +730,8 @@ BasePage {
             pageRoot.keyboardLayout = value;
         else if (key === "keyboardSize")
             pageRoot.keyboardSize = value;
+        else if (key === "keyPressFeedback")
+            pageRoot.keyPressSoundFeedback = value;
 
         var prefs = {};
         for (var existing in pageRoot.keyboardPrefs)
