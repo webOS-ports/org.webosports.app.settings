@@ -127,6 +127,29 @@ Item {
             compare(findByText(p, "Hide Digits on Letters"), null, "Hide Digits shown with the number row off again");
         }
 
+        /*
+         * Sound on Keys, beside Vibrate on Keys as on Android: the keyboard's
+         * keyPressFeedback (Sounds & Alerts' Keyboard Clicks), off when unset as
+         * the keyboard reads it, following the preference when it changes.
+         */
+        function test_sound_on_keys_switch() {
+            var p = createTemporaryObject(pageComponent, root);
+            verify(p !== null, "the page did not load");
+            if (!p.phone)
+                skip("the stand-ins' profile is a tablet: no Pre Keyboard group");
+            p._handleGetPreferences({ "keyboard": { "pre": {} } });
+            var sw = findByText(p, "Sound on Keys");
+            verify(sw !== null, "no Sound on Keys switch");
+            compare(p.keyPressFeedback, false, "unset is off, as the keyboard reads it");
+            compare(sw.checked, false);
+            p._handleGetPreferences({ "keyboard": { "keyPressFeedback": true, "pre": { "vibrate": true } } });
+            compare(p.keyPressFeedback, true);
+            compare(sw.checked, true, "the switch did not follow the preference");
+            compare(p.pre.vibrate, true, "the pre object kept");
+            p._handleGetPreferences({ "keyboard": { "keyPressFeedback": false, "pre": {} } });
+            compare(sw.checked, false);
+        }
+
         function test_deleted_words_listed_and_put_back() {
             var p = page();
             p.phone = true;
