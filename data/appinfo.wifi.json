@@ -14,6 +14,9 @@
     "visible": true,
     "requiredPermissions": [
         "wifi.query",
+        "wifi.secrets",
+        "auth.query",
+        "auth.verify",
         "application.operation"
     ]
 }

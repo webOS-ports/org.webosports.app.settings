@@ -108,6 +108,7 @@ BasePage {
 
     NetworkTechnology {
         id: wifiTechnology
+        objectName: "wifiTechnology"
         path: pageRoot.wifiPath
     }
 
@@ -200,6 +201,30 @@ BasePage {
                             wifiTechnology.tetheringPassphrase = text;
                     }
                 }
+
+                HorizontalSeparator {
+                    width: parent.width
+                }
+
+                /*
+                 * The hotspot as a QR code, for another phone to join from
+                 * its camera. connman's hotspot is always WPA2 with the
+                 * password above, which this page shows anyway, so no
+                 * passcode is asked for here.
+                 */
+                Button {
+                    objectName: "hotspotShareButton"
+                    width: parent.width
+                    text: "Share with a QR code"
+                    enabled: wifiTechnology.tetheringId !== ""
+                             && wifiTechnology.tetheringPassphrase.length >= 8
+                    onClicked: hotspotSharePopup.show({
+                        "ssid": wifiTechnology.tetheringId,
+                        "security": "psk",
+                        "passphrase": wifiTechnology.tetheringPassphrase,
+                        "hidden": false
+                    })
+                }
             }
         }
 
@@ -284,5 +309,10 @@ BasePage {
                 }
             }
         }
+    }
+
+    WiFiShareQrPopup {
+        id: hotspotSharePopup
+        objectName: "hotspotSharePopup"
     }
 }
