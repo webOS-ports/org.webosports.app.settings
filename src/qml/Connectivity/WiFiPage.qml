@@ -218,15 +218,18 @@ BasePage {
                     ScrollIndicator.vertical: ScrollIndicator { }
                 }
 
+                // The same icon box and gap as Scan QR code below, so the
+                // two labels start at the same x.
                 RowLayout {
                     Layout.fillWidth: true
+                    spacing: Units.gu(1)
 
                     height: Units.gu(3.2)
                     Image {
                         source: "../images/icon-new.png"
 
-                        Layout.preferredHeight: parent.height
-                        Layout.preferredWidth: height
+                        Layout.preferredHeight: Units.gu(3.2)
+                        Layout.preferredWidth: Units.gu(3.2)
 
                         fillMode: Image.PreserveAspectCrop
                         verticalAlignment: Image.AlignTop
@@ -252,39 +255,47 @@ BasePage {
                     contentItem: RowLayout {
                         spacing: Units.gu(1)
 
-                        // A QR code's three finder squares, as wide as the
-                        // "+" of Join Network so both labels line up.
+                        // A QR code's three finder squares, in the box the
+                        // "+" of Join Network has, so both labels line up.
                         Item {
                             Layout.preferredHeight: Units.gu(3.2)
                             Layout.preferredWidth: Units.gu(3.2)
 
-                            Repeater {
-                                model: [Qt.point(0, 0), Qt.point(1, 0), Qt.point(0, 1)]
-                                Rectangle {
-                                    readonly property real side: parent.width * 0.4
-                                    x: modelData.x * (parent.width - side)
-                                    y: modelData.y * (parent.height - side)
-                                    width: side
-                                    height: side
-                                    color: "transparent"
-                                    border.width: Math.max(1, Math.round(side / 6))
-                                    border.color: scanQrRow.palette.text
+                            // icon-new.png's "+" fills the middle 22 of its 32
+                            // pixels; draw the glyph the same size.
+                            Item {
+                                anchors.centerIn: parent
+                                width: Math.round(parent.width * 22 / 32)
+                                height: width
 
+                                Repeater {
+                                    model: [Qt.point(0, 0), Qt.point(1, 0), Qt.point(0, 1)]
                                     Rectangle {
-                                        anchors.centerIn: parent
-                                        width: parent.side / 3
-                                        height: width
-                                        color: scanQrRow.palette.text
+                                        readonly property real side: parent.width * 0.4
+                                        x: modelData.x * (parent.width - side)
+                                        y: modelData.y * (parent.height - side)
+                                        width: side
+                                        height: side
+                                        color: "transparent"
+                                        border.width: Math.max(1, Math.round(side / 6))
+                                        border.color: scanQrRow.palette.text
+
+                                        Rectangle {
+                                            anchors.centerIn: parent
+                                            width: parent.side / 3
+                                            height: width
+                                            color: scanQrRow.palette.text
+                                        }
                                     }
                                 }
-                            }
-                            Rectangle {
-                                x: parent.width * 0.62
-                                y: parent.height * 0.62
-                                width: parent.width * 0.38
-                                height: width
-                                color: scanQrRow.palette.text
-                                opacity: 0.6
+                                Rectangle {
+                                    x: parent.width * 0.62
+                                    y: parent.height * 0.62
+                                    width: parent.width * 0.38
+                                    height: width
+                                    color: scanQrRow.palette.text
+                                    opacity: 0.6
+                                }
                             }
                         }
 
@@ -311,8 +322,8 @@ BasePage {
 
     UserAgent {
         id: connmanUserAgent
-        onUserInputRequested: //(string servicePath, variant /*QVariantMap*/ fields);
-        {
+        // Named parameters: Qt 6 warns on injected ones, and drops them in Qt 7.
+        onUserInputRequested: function (servicePath, fields) {
             // A network joined from a QR code: the code has the answer.
             if (wifiQr.answerUserInput(servicePath, fields))
                 return;
