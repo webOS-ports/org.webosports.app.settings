@@ -169,6 +169,12 @@ Popup {
     }
 
     readonly property bool forgettable: !!service && (service.saved || service.favorite)
+    // A saved network a passphrase joins: one a QR code can describe.
+    readonly property bool shareable: forgettable && service.securityType !== NetworkService.SecurityIEEE802
+                                      && service.name !== ""
+
+    // "Share": the page shows the network as a QR code, after the passcode.
+    signal shareRequested(NetworkService service)
 
     /*
      * Addressing is only worth offering for a network the device has a
@@ -683,6 +689,21 @@ Popup {
                         }
                     }
                 }
+            }
+        }
+
+        // A row of its own: beside Forget and Done there is no room for three
+        // on a phone.
+        Button {
+            objectName: "wifiShareButton"
+            Layout.fillWidth: true
+            visible: networkInfoPopup.shareable
+            text: "Share with a QR code"
+            onClicked: {
+                // Closing lets go of the service; hand it over first.
+                var service = networkInfoPopup.service;
+                networkInfoPopup.close();
+                networkInfoPopup.shareRequested(service);
             }
         }
 

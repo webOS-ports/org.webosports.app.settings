@@ -218,15 +218,18 @@ BasePage {
                     ScrollIndicator.vertical: ScrollIndicator { }
                 }
 
+                // The same icon box and gap as Scan QR code below, so the
+                // two labels start at the same x.
                 RowLayout {
                     Layout.fillWidth: true
+                    spacing: Units.gu(1)
 
                     height: Units.gu(3.2)
                     Image {
                         source: "../images/icon-new.png"
 
-                        Layout.preferredHeight: parent.height
-                        Layout.preferredWidth: height
+                        Layout.preferredHeight: Units.gu(3.2)
+                        Layout.preferredWidth: Units.gu(3.2)
 
                         fillMode: Image.PreserveAspectCrop
                         verticalAlignment: Image.AlignTop
@@ -235,6 +238,71 @@ BasePage {
                         height: parent.height
                         Layout.fillWidth: true
                         text: "Join Network"
+                    }
+                }
+
+                // Join from the QR code another phone shows to share its
+                // network, or the one on a router - see WiFiQrSupport.
+                ItemDelegate {
+                    id: scanQrRow
+                    objectName: "wifiScanQrRow"
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Units.gu(4.4)
+                    leftPadding: 0
+                    text: "Scan QR code"
+                    onClicked: wifiQr.startScan()
+
+                    contentItem: RowLayout {
+                        spacing: Units.gu(1)
+
+                        // A QR code's three finder squares, in the box the
+                        // "+" of Join Network has, so both labels line up.
+                        Item {
+                            Layout.preferredHeight: Units.gu(3.2)
+                            Layout.preferredWidth: Units.gu(3.2)
+
+                            // icon-new.png's "+" fills the middle 22 of its 32
+                            // pixels; draw the glyph the same size.
+                            Item {
+                                anchors.centerIn: parent
+                                width: Math.round(parent.width * 22 / 32)
+                                height: width
+
+                                Repeater {
+                                    model: [Qt.point(0, 0), Qt.point(1, 0), Qt.point(0, 1)]
+                                    Rectangle {
+                                        readonly property real side: parent.width * 0.4
+                                        x: modelData.x * (parent.width - side)
+                                        y: modelData.y * (parent.height - side)
+                                        width: side
+                                        height: side
+                                        color: "transparent"
+                                        border.width: Math.max(1, Math.round(side / 6))
+                                        border.color: scanQrRow.palette.text
+
+                                        Rectangle {
+                                            anchors.centerIn: parent
+                                            width: parent.side / 3
+                                            height: width
+                                            color: scanQrRow.palette.text
+                                        }
+                                    }
+                                }
+                                Rectangle {
+                                    x: parent.width * 0.62
+                                    y: parent.height * 0.62
+                                    width: parent.width * 0.38
+                                    height: width
+                                    color: scanQrRow.palette.text
+                                    opacity: 0.6
+                                }
+                            }
+                        }
+
+                        Label {
+                            Layout.fillWidth: true
+                            text: scanQrRow.text
+                        }
                     }
                 }
             }
@@ -254,8 +322,12 @@ BasePage {
 
     UserAgent {
         id: connmanUserAgent
-        onUserInputRequested: //(string servicePath, variant /*QVariantMap*/ fields);
-        {
+        // Named parameters: Qt 6 warns on injected ones, and drops them in Qt 7.
+        onUserInputRequested: function (servicePath, fields) {
+            // A network joined from a QR code: the code has the answer.
+            if (wifiQr.answerUserInput(servicePath, fields))
+                return;
+
             // Find out the name of this servicePath
             var serviceName = "";
             for(var i=0; i<wifiModel.count; ++i) {
@@ -288,6 +360,16 @@ BasePage {
         // Nothing to keep once it is off screen, and holding the service
         // would keep this pinned to a network the list may have dropped.
         onClosed: service = null
+        onShareRequested: (service) => wifiQr.share(service)
+    }
+
+    WiFiQrSupport {
+        id: wifiQr
+        objectName: "wifiQr"
+        anchors.fill: parent
+        wifiModel: wifiModel
+        agent: connmanUserAgent
+        luna: wifiPageId.luna
     }
 
     WiFiConnectProblemPopup {
@@ -313,6 +395,7 @@ BasePage {
 
     Loader {
         id: popupLoader
+        objectName: "wifiPopupLoader"
         anchors.fill: parent
 
         onItemChanged: {
@@ -340,8 +423,17 @@ BasePage {
      *
      * A hold there ("view": "details"): the network's details, as a hold on
      * its row here shows them.
+     *
+     * "wifiQrCode": the text of a Wi-Fi QR code another app read (the Camera
+     * app, say), to join the network it describes.
      */
     function handleLaunchParams(params) {
+        var code = params.wifiQrCode !== undefined ? params.wifiQrCode
+                 : (params.params ? params.params.wifiQrCode : undefined);
+        if (typeof code === "string" && code !== "") {
+            wifiQr.joinCode(code);
+            return;
+        }
         var target = params.target || (params.params ? params.params.target : undefined);
         if (!target || typeof target.servicePath !== "string" || target.servicePath === "")
             return;
