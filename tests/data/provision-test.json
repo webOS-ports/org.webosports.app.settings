@@ -1,0 +1,29 @@
+[
+  {
+    "name": "Other Brand",
+    "ids": [ "20404" ],
+    "apns": [
+      { "name": "Other Brand internet", "apn": "other.brand", "type": [ "internet" ] }
+    ]
+  },
+  {
+    "name": "Mock Mobile",
+    "spn": "LuneOS Mock",
+    "ids": [ "20404", "20405" ],
+    "apns": [
+      { "name": "Mock Internet", "apn": "internet.mock", "type": [ "internet" ] },
+      { "name": "Mock Business", "apn": "business.mock", "type": [ "internet" ],
+        "username": "biz", "password": "secret", "authentication": "pap" },
+      { "name": "Mock MMS", "apn": "mms.mock", "type": [ "mms" ],
+        "mmsc": "http://mmsc.mock/", "mmsproxy": "10.1.1.1:8080" },
+      { "name": "Mock WAP", "apn": "wap.mock", "type": [ "wap" ] }
+    ]
+  },
+  {
+    "name": "Elsewhere",
+    "ids": [ "20416" ],
+    "apns": [
+      { "name": "Elsewhere", "apn": "elsewhere", "type": [ "internet" ] }
+    ]
+  }
+]
