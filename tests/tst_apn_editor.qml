@@ -372,6 +372,81 @@ Item {
             popup().close();
         }
 
+        // Make the MMS context the XCAP one ofono provisions, for a test;
+        // returns what to put back
+        function makeXcapContext() {
+            openExisting("/mock/modem0/context2");
+            var ctx = editContext();
+            var old = { "type": ctx.type, "accessPointName": ctx.accessPointName };
+            ctx.type = "xcap";
+            ctx.accessPointName = "xcap.old";
+            popup().close();
+            tryCompare(popup(), "opened", false, 2000);
+            return old;
+        }
+
+        function restoreContext(old) {
+            openExisting("/mock/modem0/context2");
+            var ctx = editContext();
+            ctx.type = old.type;
+            ctx.accessPointName = old.accessPointName;
+            popup().close();
+            tryCompare(popup(), "opened", false, 2000);
+        }
+
+        // The XCAP context (the access point the modem reaches the
+        // operator's XCAP server through, for call forwarding and the like)
+        // keeps its type when it is saved: the editor did not know the type,
+        // showed it as Internet and wrote that over it
+        function test_xcapTypeKept() {
+            var old = makeXcapContext();
+            openExisting("/mock/modem0/context2");
+            compare(child("apnTypeCombo").currentText, "XCAP");
+            child("apnApnField").text = "xcap.new";
+            child("apnSaveButton").clicked();
+            tryCompare(popup(), "opened", false, 2000);
+            compare(editContext().type, "xcap", "the type was written over");
+            compare(editContext().accessPointName, "xcap.new");
+            restoreContext(old);
+        }
+
+        // A type the editor does not know is shown as it is and not written
+        function test_unknownTypeKept() {
+            openExisting("/mock/modem0/context2");
+            var ctx = editContext();
+            var old = { "type": ctx.type, "accessPointName": ctx.accessPointName };
+            ctx.type = "future";
+            popup().close();
+            openExisting("/mock/modem0/context2");
+            compare(child("apnTypeCombo").currentIndex, -1);
+            compare(child("apnTypeCombo").displayText, "future");
+            child("apnApnField").text = "future.apn";
+            child("apnSaveButton").clicked();
+            tryCompare(popup(), "opened", false, 2000);
+            compare(ctx.type, "future", "the type was written over");
+            compare(ctx.accessPointName, "future.apn");
+            restoreContext(old);
+        }
+
+        // An XCAP context lists the network's XCAP access point and fills
+        // in its login
+        function test_xcapPreset() {
+            var old = makeXcapContext();
+            openExisting("/mock/modem0/context2");
+            tryVerify(function() { return popup().presets.length > 0; }, 2000);
+            compare(presetLabels(), ["XCAP (xcap.mock)"]);
+            child("apnPresetCombo").activated(0);
+            compare(child("apnApnField").text, "xcap.mock");
+            compare(child("apnUserField").text, "mockuser");
+            compare(child("apnPassField").text, "mockpass");
+            child("apnSaveButton").clicked();
+            tryCompare(popup(), "opened", false, 2000);
+            compare(editContext().type, "xcap");
+            compare(editContext().accessPointName, "xcap.mock");
+            compare(editContext().authMethod, "pap");
+            restoreContext(old);
+        }
+
         // A provider of the SIM's name listed only under another network
         // (Lebara NL under Telfort's 204/12, its SIMs on KPN's 204/08) is not
         // offered: that network's settings do not work on this one.

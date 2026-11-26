@@ -20,6 +20,15 @@
     ]
   },
   {
+    "name": "Mock XCAP",
+    "ids": [ "20404" ],
+    "apns": [
+      { "name": "XCAP", "apn": "xcap.mock", "type": [ "xcap" ],
+        "protocol": "ipv4v6", "username": "mockuser", "password": "mockpass",
+        "authentication": "pap" }
+    ]
+  },
+  {
     "name": "Elsewhere",
     "ids": [ "20416" ],
     "apns": [

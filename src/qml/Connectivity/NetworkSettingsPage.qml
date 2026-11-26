@@ -707,9 +707,12 @@ BasePage {
         }
     }
 
-    // ofono's context types (src/gprs.c) and how they are shown
-    readonly property var contextTypes: ["internet", "mms", "wap", "ims", "supl", "ia"]
-    readonly property var contextTypeLabels: ["Internet", "MMS", "WAP", "IMS", "SUPL", "Initial attach"]
+    // ofono's context types (src/gprs.c) and how they are shown. "xcap" is
+    // the access point the modem reaches the operator's XCAP server through,
+    // for call forwarding, waiting, barring and caller ID on LTE (LuneOS's
+    // ofono adds it). A type not listed here is shown as it is and left alone.
+    readonly property var contextTypes: ["internet", "mms", "wap", "ims", "supl", "ia", "xcap"]
+    readonly property var contextTypeLabels: ["Internet", "MMS", "WAP", "IMS", "SUPL", "Initial attach", "XCAP"]
     property bool addingContext: false
     // a failed add or remove while the editor is closed
     property string apnError: ""
@@ -973,7 +976,7 @@ BasePage {
         property string errorText: ""
 
         // The operator's access points for the type being edited.
-        readonly property var presets: pageRoot.apnChoices(pageRoot.contextTypes[typeCombo.currentIndex])
+        readonly property var presets: pageRoot.apnChoices(shownType())
         // What the list shows. Not bound to presets: that is worked out
         // again whenever a SIM property notifies, which ofono does while
         // the list is opening, and a ComboBox whose model is replaced while
@@ -1015,8 +1018,14 @@ BasePage {
         property bool downSeen: false
         property bool downAnswered: false
 
+        // The type the form shows: one it does not know stays the context's own
+        function shownType() {
+            return typeCombo.currentIndex >= 0 ? pageRoot.contextTypes[typeCombo.currentIndex]
+                                               : editCtx.type;
+        }
+
         function desired() {
-            var type = pageRoot.contextTypes[typeCombo.currentIndex];
+            var type = shownType();
             // Type first: ofono only takes MessageCenter/MessageProxy on an MMS context
             var keys = ["type"];
             var v = { "type": type };
@@ -1197,7 +1206,8 @@ BasePage {
             stage = "";
             presetAuth = "";
             presetCombo.currentIndex = -1;
-            typeCombo.currentIndex = Math.max(0, pageRoot.contextTypes.indexOf(editCtx.type));
+            // not Internet for a type the form does not know: Save would write it
+            typeCombo.currentIndex = pageRoot.contextTypes.indexOf(editCtx.type);
             mmsCenterField.text = editCtx.messageCenter;
             mmsProxyField.text = editCtx.messageProxy;
             nameField.text = editCtx.name;
@@ -1258,6 +1268,7 @@ BasePage {
                         objectName: "apnTypeCombo"
                         Layout.fillWidth: true
                         model: pageRoot.contextTypeLabels
+                        displayText: currentIndex < 0 ? editCtx.type : currentText
 
                         delegate: ItemDelegate {
                             width: typeCombo.width
@@ -1350,6 +1361,7 @@ BasePage {
                     }
                     FormTextField {
                         id: userField
+                        objectName: "apnUserField"
                         Layout.fillWidth: true
                         height: Units.gu(5)
                     }
@@ -1362,6 +1374,7 @@ BasePage {
                     }
                     FormTextField {
                         id: passField
+                        objectName: "apnPassField"
                         Layout.fillWidth: true
                         height: Units.gu(5)
                         echoMode: TextInput.Password
