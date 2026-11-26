@@ -60,9 +60,12 @@ import LuneOS.Forms 1.0
  *    below as `simManager`) and APN management (OfonoConnMan/
  *    OfonoContextConnection). APN contexts are listed, edited, added and
  *    removed here (OfonoConnMan.addContext/removeContext), MMS ones with
- *    their message center and proxy. There is no "reset to the operator's
- *    defaults": libqofono's resetContexts() calls ofono's DeactivateAll,
- *    not ResetContexts.
+ *    their message center and proxy. The editor offers the access points
+ *    ofono's provider database (provision.json) has for the SIM's network,
+ *    and saves an active context by deactivating it first, since ofono
+ *    takes no change to one that is active. There is no "reset to the
+ *    operator's defaults": libqofono's resetContexts() calls ofono's
+ *    DeactivateAll, not ResetContexts.
  */
 BasePage {
     id: pageRoot
@@ -108,6 +111,7 @@ BasePage {
 
     Component.onCompleted: {
         retrieveProperties();
+        loadApnDatabase();
     }
 
     // LabelAndSelector's ComboBox has no textRole of its own - plain names
@@ -532,9 +536,10 @@ BasePage {
 
         ExplanationText {
             text: "Switching to manual carrier selection opens a scan of " +
-                  "nearby networks to choose from. An access point cannot " +
-                  "be added or removed here, only edited - the SIM's own " +
-                  "provider already set up whatever is listed."
+                  "nearby networks to choose from. When editing an access " +
+                  "point, the ones your operator is known to use can be " +
+                  "picked from a list. Saving one that is in use reconnects " +
+                  "mobile data."
         }
     }
 
@@ -595,6 +600,91 @@ BasePage {
         id: network
         modemPath: modemManager.defaultModem
     }
+    // The SIM whose contexts are listed: its MCC/MNC picks the operator's
+    // access points out of the provider database below.
+    OfonoSimManager {
+        id: apnSim
+        objectName: "apnSim"
+        modemPath: modemManager.defaultModem
+    }
+
+    /*
+     * ofono's own provider database (data/provision.json in its source, the
+     * same data its provision.db is built from): every provider of a network
+     * with all of its access points. When ofono sets a SIM up it keeps only
+     * one access point per type; this lists the others to pick from.
+     */
+    property url apnDatabase: "file:///usr/share/ofono/provision.json"
+    property var apnProviders: []
+    function loadApnDatabase() {
+        // a file:// XMLHttpRequest, allowed by QML_XHR_ALLOW_FILE_READ (set
+        // for every webOS service and app in webos-global.conf)
+        var req = new XMLHttpRequest();
+        req.onreadystatechange = function() {
+            if (req.readyState !== XMLHttpRequest.DONE)
+                return;
+            try {
+                var list = JSON.parse(req.responseText);
+                pageRoot.apnProviders = Array.isArray(list) ? list : [];
+            } catch (e) {
+                console.warn("No provider database at " + pageRoot.apnDatabase + ": " + e);
+                pageRoot.apnProviders = [];
+            }
+        };
+        req.open("GET", pageRoot.apnDatabase);
+        req.send();
+    }
+
+    // The database's type for a context type: Initial attach uses the
+    // internet access point.
+    function apnUsageFor(contextType) {
+        return contextType === "ia" ? "internet" : contextType;
+    }
+
+    // The access points of one context type for the SIM's network. A network
+    // can have several providers (an operator and the brands on it): the
+    // ones whose name or SPN is the SIM's come first, as ofono prefers them,
+    // then the others in database order. Only the SIM's own network counts:
+    // a brand listed under another one (Lebara NL still under Telfort's
+    // 204/12, its SIMs now on KPN's 204/08) has that network's settings,
+    // which do not work on this one.
+    function apnChoices(contextType) {
+        var usage = pageRoot.apnUsageFor(contextType);
+        var mcc = apnSim.mobileCountryCode;
+        var mnc = apnSim.mobileNetworkCode;
+        var spn = (apnSim.serviceProviderName || "").toLowerCase();
+        var own = [], others = [];
+        if (!mcc || !mnc)
+            return own;
+        var id = mcc + mnc;
+        for (var i = 0; i < pageRoot.apnProviders.length; i++) {
+            var prov = pageRoot.apnProviders[i];
+            if (!prov.ids || prov.ids.indexOf(id) < 0)
+                continue;
+            var mine = spn !== "" && ((prov.spn || "").toLowerCase() === spn ||
+                                      (prov.name || "").toLowerCase() === spn);
+            var bucket = mine ? own : others;
+            var apns = prov.apns || [];
+            for (var j = 0; j < apns.length; j++) {
+                var a = apns[j];
+                if (!a.type || a.type.indexOf(usage) < 0)
+                    continue;
+                bucket.push({
+                    "label": a.name || prov.name,
+                    "provider": prov.name,
+                    "apn": a.apn || "",
+                    "user": a.username || "",
+                    "password": a.password || "",
+                    "mmsc": a.mmsc || "",
+                    "mmsproxy": a.mmsproxy || "",
+                    "protocol": a.protocol || "",
+                    "authentication": a.authentication || ""
+                });
+            }
+        }
+        return own.concat(others);
+    }
+
     OfonoConnMan {
         id: connMan
         objectName: "apnConnMan"
@@ -617,9 +707,12 @@ BasePage {
         }
     }
 
-    // ofono's context types (src/gprs.c) and how they are shown
-    readonly property var contextTypes: ["internet", "mms", "wap", "ims", "supl", "ia"]
-    readonly property var contextTypeLabels: ["Internet", "MMS", "WAP", "IMS", "SUPL", "Initial attach"]
+    // ofono's context types (src/gprs.c) and how they are shown. "xcap" is
+    // the access point the modem reaches the operator's XCAP server through,
+    // for call forwarding, waiting, barring and caller ID on LTE (LuneOS's
+    // ofono adds it). A type not listed here is shown as it is and left alone.
+    readonly property var contextTypes: ["internet", "mms", "wap", "ims", "supl", "ia", "xcap"]
+    readonly property var contextTypeLabels: ["Internet", "MMS", "WAP", "IMS", "SUPL", "Initial attach", "XCAP"]
     property bool addingContext: false
     // a failed add or remove while the editor is closed
     property string apnError: ""
@@ -882,9 +975,221 @@ BasePage {
         property bool isNew: false
         property string errorText: ""
 
+        // The operator's access points for the type being edited.
+        readonly property var presets: pageRoot.apnChoices(shownType())
+        // What the list shows. Not bound to presets: that is worked out
+        // again whenever a SIM property notifies, which ofono does while
+        // the list is opening, and a ComboBox whose model is replaced while
+        // its popup creates the rows crashes in Qt's text layout (Qt 6.12
+        // on the Radon). So it only changes when the access points do, and
+        // never while the list is open.
+        property var shownPresets: []
+        property var shownLabels: []
+        function syncPresets() {
+            if (presetCombo.popup.visible)
+                return;
+            var labels = presets.map(function(p) { return p.label + " (" + p.apn + ")"; });
+            if (JSON.stringify(labels) === JSON.stringify(shownLabels))
+                return;
+            shownPresets = presets;
+            shownLabels = labels;
+            presetCombo.currentIndex = -1;
+        }
+        onPresetsChanged: syncPresets()
+        // set from a chosen access point; the form has no field for it
+        property string presetAuth: ""
+
+        /*
+         * Saving. ofono refuses every change but Active on an active context
+         * (org.ofono.Error.InUse), so an active one is deactivated first, the
+         * changed properties are written, and it is activated again. "" when
+         * idle, else "deactivating", "writing" or "reactivating".
+         */
+        property string stage: ""
+        readonly property bool saving: stage !== ""
+        property var pending: ({})
+        property int writesLeft: 0
+        property bool writeFailed: false
+        property string writeError: ""
+        property bool reactivate: false
+        property int retries: 0
+        // a deactivation is done once ofono both answered it and reported
+        // the context down, in whichever order those come
+        property bool downSeen: false
+        property bool downAnswered: false
+
+        // The type the form shows: one it does not know stays the context's own
+        function shownType() {
+            return typeCombo.currentIndex >= 0 ? pageRoot.contextTypes[typeCombo.currentIndex]
+                                               : editCtx.type;
+        }
+
+        function desired() {
+            var type = shownType();
+            // Type first: ofono only takes MessageCenter/MessageProxy on an MMS context
+            var keys = ["type"];
+            var v = { "type": type };
+            if (type === "mms") {
+                v.messageCenter = mmsCenterField.text;
+                v.messageProxy = mmsProxyField.text;
+                keys.push("messageCenter", "messageProxy");
+            }
+            v.name = nameField.text;
+            v.accessPointName = apnField.text;
+            v.username = userField.text;
+            v.password = passField.text;
+            keys.push("name", "accessPointName", "username", "password");
+            // none shown: the context's own is one the form does not know, or
+            // had not arrived yet; leave it rather than write IPv4 over it
+            if (protocolCombo.currentIndex >= 0) {
+                v.protocol = ["ip", "ipv6", "dual"][protocolCombo.currentIndex];
+                keys.push("protocol");
+            }
+            if (presetAuth !== "") {
+                v.authMethod = presetAuth;
+                keys.push("authMethod");
+            }
+            var changed = [];
+            for (var i = 0; i < keys.length; i++) {
+                if (editCtx[keys[i]] !== v[keys[i]])
+                    changed.push({ "key": keys[i], "value": v[keys[i]] });
+            }
+            return changed;
+        }
+
+        function save() {
+            errorText = "";
+            retries = 0;
+            pending = desired();
+            if (pending.length === 0) {
+                close();
+                return;
+            }
+            reactivate = editCtx.active;
+            if (editCtx.active)
+                deactivate();
+            else
+                write();
+        }
+        function deactivate() {
+            stage = "deactivating";
+            downSeen = false;
+            downAnswered = false;
+            stageTimer.restart();
+            editCtx.active = false;
+        }
+        function deactivated() {
+            if (downSeen && downAnswered)
+                write();
+        }
+        function write() {
+            stage = "writing";
+            stageTimer.restart();
+            writeFailed = false;
+            writeError = "";
+            writesLeft = pending.length;
+            for (var i = 0; i < pending.length; i++)
+                editCtx[pending[i].key] = pending[i].value;
+        }
+        function written() {
+            if (writeFailed) {
+                // connman may bring the context back up between the
+                // deactivation and the writes; take it down once more
+                var left = desired();
+                if (editCtx.active && retries < 1 && left.length > 0) {
+                    retries++;
+                    pending = left;
+                    deactivate();
+                    return;
+                }
+                errorText = writeError;
+            }
+            if (reactivate) {
+                stage = "reactivating";
+                stageTimer.restart();
+                editCtx.active = true;
+                return;
+            }
+            finish();
+        }
+        function finish() {
+            stageTimer.stop();
+            var ok = errorText === "";
+            stage = "";
+            if (ok)
+                close();
+        }
+
+        Connections {
+            target: editCtx
+            function onActiveChanged() {
+                if (apnEditPopup.stage === "deactivating" && !editCtx.active) {
+                    apnEditPopup.downSeen = true;
+                    apnEditPopup.deactivated();
+                }
+            }
+            function onReportError(errorString) {
+                if (apnEditPopup.stage === "writing") {
+                    apnEditPopup.writeFailed = true;
+                    apnEditPopup.writeError = errorString;
+                } else if (apnEditPopup.stage === "deactivating") {
+                    apnEditPopup.errorText = errorString;
+                    apnEditPopup.finish();
+                } else if (apnEditPopup.stage === "reactivating") {
+                    apnEditPopup.errorText = "Saved, but it did not reconnect: " + errorString;
+                    apnEditPopup.finish();
+                }
+            }
+            function onSetPropertyFinished() {
+                if (apnEditPopup.stage === "deactivating") {
+                    apnEditPopup.downAnswered = true;
+                    apnEditPopup.deactivated();
+                } else if (apnEditPopup.stage === "writing") {
+                    if (--apnEditPopup.writesLeft <= 0)
+                        apnEditPopup.written();
+                } else if (apnEditPopup.stage === "reactivating") {
+                    apnEditPopup.finish();
+                }
+            }
+        }
+        Timer {
+            id: stageTimer
+            interval: 15000
+            onTriggered: {
+                if (apnEditPopup.stage === "deactivating")
+                    apnEditPopup.errorText = "The access point did not disconnect, so it could not be changed.";
+                else if (apnEditPopup.stage === "writing")
+                    apnEditPopup.errorText = "oFono did not answer.";
+                apnEditPopup.finish();
+            }
+        }
+
+        // Fill the form from one of the operator's access points.
+        function applyPreset(p) {
+            nameField.text = p.label;
+            apnField.text = p.apn;
+            userField.text = p.user;
+            passField.text = p.password;
+            var proto = { "ip": 0, "ipv4": 0, "ipv6": 1, "ipv4v6": 2, "dual": 2 }[p.protocol];
+            // The database rarely names one. ofono's provisiontool, Sailfish
+            // and Droidian all take IPv4/IPv6 then for an internet access
+            // point, and some networks refuse IPv4 alone (Lebara NL on KPN
+            // answers it with an unspecified error).
+            if (proto === undefined && (typeCombo.currentIndex === 0 || typeCombo.currentIndex === 5))
+                proto = 2;
+            if (proto !== undefined)
+                protocolCombo.currentIndex = proto;
+            // the database rarely names one; then ofono's own stays
+            presetAuth = ["none", "pap", "chap"].indexOf(p.authentication) >= 0 ? p.authentication : "";
+            if (typeCombo.currentIndex === 1) {
+                mmsCenterField.text = p.mmsc;
+                mmsProxyField.text = p.mmsproxy;
+            }
+        }
+
         modal: true
         focus: true
-        closePolicy: Popup.CloseOnEscape
+        closePolicy: saving ? Popup.NoAutoClose : Popup.CloseOnEscape
 
         width: Math.min(parent.width - Units.gu(4), Units.gu(46))
         // keyboardTop: the window's height, or where the on-screen keys start
@@ -898,7 +1203,11 @@ BasePage {
 
         onOpened: {
             errorText = "";
-            typeCombo.currentIndex = Math.max(0, pageRoot.contextTypes.indexOf(editCtx.type));
+            stage = "";
+            presetAuth = "";
+            presetCombo.currentIndex = -1;
+            // not Internet for a type the form does not know: Save would write it
+            typeCombo.currentIndex = pageRoot.contextTypes.indexOf(editCtx.type);
             mmsCenterField.text = editCtx.messageCenter;
             mmsProxyField.text = editCtx.messageProxy;
             nameField.text = editCtx.name;
@@ -906,8 +1215,6 @@ BasePage {
             userField.text = editCtx.username;
             passField.text = editCtx.password;
             protocolCombo.currentIndex = ["ip", "ipv6", "dual"].indexOf(editCtx.protocol);
-            if (protocolCombo.currentIndex === -1)
-                protocolCombo.currentIndex = 0;
         }
 
         // The form is taller than a fixed-height popup can always guarantee
@@ -961,6 +1268,7 @@ BasePage {
                         objectName: "apnTypeCombo"
                         Layout.fillWidth: true
                         model: pageRoot.contextTypeLabels
+                        displayText: currentIndex < 0 ? editCtx.type : currentText
 
                         delegate: ItemDelegate {
                             width: typeCombo.width
@@ -968,6 +1276,55 @@ BasePage {
                             font.weight: typeCombo.currentIndex === index ? Font.DemiBold : Font.Normal
                             checked: typeCombo.currentIndex === index
                         }
+                        onActivated: presetCombo.currentIndex = -1
+                    }
+
+                    // Only there when the database knows this SIM's operator.
+                    Label {
+                        Layout.fillWidth: true
+                        visible: apnEditPopup.shownLabels.length > 0
+                        text: "Operator's access points"
+                        color: Colors.secondaryText
+                        font.pixelSize: FontUtils.sizeToPixels("small")
+                    }
+                    ComboBox {
+                        id: presetCombo
+                        objectName: "apnPresetCombo"
+                        Layout.fillWidth: true
+                        visible: apnEditPopup.shownLabels.length > 0
+                        model: apnEditPopup.shownLabels
+                        currentIndex: -1
+                        displayText: currentIndex < 0 ? "Choose one to fill in the fields" : currentText
+                        // a change that came while the list was open
+                        popup.onClosed: apnEditPopup.syncPresets()
+
+                        delegate: ItemDelegate {
+                            id: presetRow
+                            objectName: "apnPresetRow" + index
+                            width: presetCombo.width
+                            text: modelData
+                            font.weight: presetCombo.currentIndex === index ? Font.DemiBold : Font.Normal
+                            checked: presetCombo.currentIndex === index
+                            // Not the style's text: that elides, and an access
+                            // point's name and APN are often too long for one
+                            // line. Qt 6.12 crashed (QTextLine::textStart in
+                            // positionInlineImages, on the Radon) eliding it
+                            // while the row was still being built and its width
+                            // still followed the checkmark's. Wrapped instead,
+                            // with a width that does not depend on the indicator.
+                            contentItem: Text {
+                                objectName: "apnPresetRowText"
+                                text: presetRow.text
+                                font: presetRow.font
+                                color: presetRow.enabled ? "#333333" : "#646464"
+                                wrapMode: Text.Wrap
+                                textFormat: Text.PlainText
+                                rightPadding: Units.gu(4)
+                                horizontalAlignment: Text.AlignLeft
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                        }
+                        onActivated: (index) => apnEditPopup.applyPreset(apnEditPopup.shownPresets[index])
                     }
 
                     Label {
@@ -1004,6 +1361,7 @@ BasePage {
                     }
                     FormTextField {
                         id: userField
+                        objectName: "apnUserField"
                         Layout.fillWidth: true
                         height: Units.gu(5)
                     }
@@ -1016,6 +1374,7 @@ BasePage {
                     }
                     FormTextField {
                         id: passField
+                        objectName: "apnPassField"
                         Layout.fillWidth: true
                         height: Units.gu(5)
                         echoMode: TextInput.Password
@@ -1029,8 +1388,10 @@ BasePage {
                     }
                     ComboBox {
                         id: protocolCombo
+                        objectName: "apnProtocolCombo"
                         Layout.fillWidth: true
                         model: ["IPv4", "IPv6", "IPv4/IPv6"]
+                        displayText: currentIndex < 0 ? "Unchanged" : currentText
 
                         delegate: ItemDelegate {
                             width: protocolCombo.width
@@ -1078,6 +1439,16 @@ BasePage {
             }
 
             Label {
+                objectName: "apnSavingText"
+                Layout.fillWidth: true
+                visible: apnEditPopup.saving
+                text: apnEditPopup.reactivate ? "Saving; mobile data reconnects..." : "Saving..."
+                wrapMode: Text.Wrap
+                color: Colors.secondaryText
+                font.pixelSize: FontUtils.sizeToPixels("small")
+            }
+
+            Label {
                 objectName: "apnErrorText"
                 Layout.fillWidth: true
                 visible: apnEditPopup.errorText !== ""
@@ -1094,6 +1465,7 @@ BasePage {
                 Button {
                     objectName: "apnCancelButton"
                     Layout.fillWidth: true
+                    enabled: !apnEditPopup.saving
                     text: "Cancel"
                     LuneOSButton.mainColor: LuneOSButton.secondaryColor
                     onClicked: {
@@ -1106,6 +1478,7 @@ BasePage {
                     objectName: "apnDeleteButton"
                     Layout.fillWidth: true
                     visible: !apnEditPopup.isNew
+                    enabled: !apnEditPopup.saving
                     text: "Delete"
                     LuneOSButton.mainColor: LuneOSButton.negativeColor
                     onClicked: {
@@ -1118,22 +1491,9 @@ BasePage {
                     objectName: "apnSaveButton"
                     Layout.fillWidth: true
                     text: "Save"
+                    enabled: !apnEditPopup.saving
                     LuneOSButton.mainColor: LuneOSButton.affirmativeColor
-                    onClicked: {
-                        // ofono refuses a type change on an active context; the rest still applies
-                        if (editCtx.type !== pageRoot.contextTypes[typeCombo.currentIndex])
-                            editCtx.type = pageRoot.contextTypes[typeCombo.currentIndex];
-                        if (typeCombo.currentIndex === 1) {
-                            editCtx.messageCenter = mmsCenterField.text;
-                            editCtx.messageProxy = mmsProxyField.text;
-                        }
-                        editCtx.name = nameField.text;
-                        editCtx.accessPointName = apnField.text;
-                        editCtx.username = userField.text;
-                        editCtx.password = passField.text;
-                        editCtx.protocol = ["ip", "ipv6", "dual"][protocolCombo.currentIndex];
-                        apnEditPopup.close();
-                    }
+                    onClicked: apnEditPopup.save()
                 }
             }
         }
