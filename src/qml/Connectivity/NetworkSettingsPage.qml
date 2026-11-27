@@ -155,16 +155,27 @@ BasePage {
             Column {
                 width: parent.width
 
+                /*
+                 * Only a tap writes these: the getstatus subscription also
+                 * sets checked, and writing every change back echoed the
+                 * service's own updates to it. Mid-connect telephonyd still
+                 * reported mobile data off, the echo turned it off again,
+                 * and one tap ended disconnected.
+                 */
                 LabelAndSwitch {
                     id: dataUsageSwitch
+                    objectName: "dataUsageSwitch"
                     label: "Mobile data"
+                    onToggled: pageRoot.setDataUsage(checked)
                 }
                 HorizontalSeparator {
                     width: parent.width
                 }
                 LabelAndSwitch {
                     id: roamingAllowedSwitch
+                    objectName: "roamingAllowedSwitch"
                     label: "Data roaming"
+                    onToggled: pageRoot.setRoamingAllowed(checked)
                 }
 
                 Column {
@@ -1566,12 +1577,12 @@ BasePage {
                   _handleSetSuccess, _handleSetError);
     }
 
-    onRoamingAllowedChanged: {
-        var roamguard = roamingAllowed ? "disable" : "enable"
+    function setRoamingAllowed(allowed) {
+        var roamguard = allowed ? "disable" : "enable"
         luna.call("luna://com.palm.wan/set", '{"roamguard": "'+roamguard+'"}', _handleSetSuccess, _handleSetError);
     }
-    onDataUsageChanged: {
-        var disablewan = dataUsage ? "off" : "on"
+    function setDataUsage(enabled) {
+        var disablewan = enabled ? "off" : "on"
         luna.call("luna://com.palm.wan/set", '{"disablewan": "'+disablewan+'"}', _handleSetSuccess, _handleSetError);
     }
 }
