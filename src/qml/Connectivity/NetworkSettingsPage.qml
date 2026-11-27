@@ -534,6 +534,15 @@ BasePage {
             }
         }
 
+        PhoneInfoSection {
+            objectName: "phoneInfoSection"
+            width: parent.width
+            sims: pageRoot.sims
+            subscribe: function(uri, json, onReply, onError) {
+                return pageRoot.luna.subscribe(uri, json, onReply, onError);
+            }
+        }
+
         ExplanationText {
             text: "Switching to manual carrier selection opens a scan of " +
                   "nearby networks to choose from. When editing an access " +
