@@ -541,6 +541,9 @@ BasePage {
             subscribe: function(uri, json, onReply, onError) {
                 return pageRoot.luna.subscribe(uri, json, onReply, onError);
             }
+            call: function(uri, json, onReply, onError) {
+                return pageRoot.luna.call(uri, json, onReply, onError);
+            }
         }
 
         ExplanationText {

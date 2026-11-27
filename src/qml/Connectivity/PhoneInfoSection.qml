@@ -32,6 +32,11 @@ import LuneOS.Forms 1.0
  * simListQuery (the page's, passed in as sims), the rest from
  * networkStatusQuery for each SIM. A telephonyd from before IMS was
  * reported leaves the IMS rows at "Not reported" rather than "No".
+ *
+ * The signal in dBm and dB comes from cellInfoQuery, asked every few
+ * seconds while the section is on screen: asking keeps the modem measuring,
+ * which costs battery, so it is not asked while hidden or in the
+ * background. A telephonyd or modem without it shows the bars alone.
  */
 GroupBox {
     id: section
@@ -40,6 +45,13 @@ GroupBox {
     property var sims: []
     // As LunaService.subscribe, giving back a call with cancel()
     property var subscribe: null
+    // As LunaService.call
+    property var call: null
+    // whether the section is on screen; the page's, when it can tell
+    property bool shown: visible && Qt.application.state === Qt.ApplicationActive
+
+    // cellInfoQuery's cells per simId, as last heard
+    property var cells: ({})
 
     // networkStatusQuery's extended object per simId, as last heard
     property var statuses: ({})
@@ -77,6 +89,41 @@ GroupBox {
         }
     }
 
+    function wfcPreferenceName(preference) {
+        switch (preference) {
+        case "wifi":      return "Wi-Fi preferred";
+        case "cellular":  return "Mobile network preferred";
+        case "wifi-only": return "Wi-Fi only";
+        default:          return "Unknown";
+        }
+    }
+
+    function cellTypeName(type) {
+        switch (type) {
+        case "gsm":   return "GSM";
+        case "wcdma": return "UMTS";
+        case "lte":   return "LTE";
+        case "nr":    return "NR";
+        default:      return "";
+        }
+    }
+
+    // A serving cell's measurements; prefixed with its radio when there are
+    // more of them, as LTE and NR at once on 5G NSA
+    function cellRows(cell, prefixed) {
+        var rows = [];
+        var prefix = prefixed && cellTypeName(cell.type) !== "" ? cellTypeName(cell.type) + " " : "";
+        if (cell.rssi !== undefined)
+            rows.push({"rowLabel": prefix + "RSSI", "rowValue": cell.rssi + " dBm"});
+        if (cell.rsrp !== undefined)
+            rows.push({"rowLabel": prefix + "RSRP", "rowValue": cell.rsrp + " dBm"});
+        if (cell.rsrq !== undefined)
+            rows.push({"rowLabel": prefix + "RSRQ", "rowValue": cell.rsrq + " dB"});
+        if (cell.sinr !== undefined)
+            rows.push({"rowLabel": prefix + "SINR", "rowValue": (Math.round(cell.sinr * 10) / 10) + " dB"});
+        return rows;
+    }
+
     // What calls go over: what the status bar's VoWiFi and VoLTE say
     function callsOver(status) {
         if (status.vowifi === true)
@@ -105,6 +152,9 @@ GroupBox {
                    "rowValue": status.state === "service" ? technologyName(status.technology) : "No service"});
         // telephonyd's 0-5 bars, the status bar's scale
         rows.push({"rowLabel": "Signal", "rowValue": (sim.bars !== undefined ? sim.bars : 0) + "/5"});
+        var serving = cells[sim.simId] || [];
+        for (var c = 0; c < serving.length; c++)
+            rows = rows.concat(cellRows(serving[c], serving.length > 1));
         rows.push({"rowLabel": "Calls over", "rowValue": callsOver(status)});
 
         var ims = status.ims;
@@ -114,6 +164,9 @@ GroupBox {
         }
         rows.push({"rowLabel": "IMS", "rowValue": ims.registered ? "Registered" : "Not registered"});
         rows.push({"rowLabel": "IMS over", "rowValue": bearerName(ims)});
+        // a setting: shown registered or not, left out where not reported
+        if (ims.wfcPreference !== undefined)
+            rows.push({"rowLabel": "Wi-Fi calling", "rowValue": wfcPreferenceName(ims.wfcPreference)});
         rows.push({"rowLabel": "Voice over IMS", "rowValue": yesNo(ims.voiceCapable)});
         rows.push({"rowLabel": "SMS over IMS", "rowValue": yesNo(ims.smsCapable)});
         return rows;
@@ -129,6 +182,39 @@ GroupBox {
         else
             delete copy[simId];
         statuses = copy;
+    }
+
+    function _heardCells(simId, message) {
+        var response = message && message.payload ? JSON.parse(message.payload) : null;
+        var copy = Object.assign({}, cells);
+        if (response && response.returnValue && response.extended && Array.isArray(response.extended.cells))
+            copy[simId] = response.extended.cells;
+        else
+            delete copy[simId];
+        cells = copy;
+    }
+
+    function _askCells() {
+        if (!call)
+            return;
+        for (var i = 0; i < sims.length; i++) {
+            if (!sims[i].powered)
+                continue;
+            let n = Number(sims[i].simId);
+            call("luna://com.palm.telephony/cellInfoQuery", JSON.stringify({"simId": n}),
+                 function(message) { section._heardCells(n, message); },
+                 function(error) { section._heardCells(n, null); });
+        }
+    }
+
+    // telephonyd keeps the modem measuring 30 s after the last time
+    Timer {
+        id: cellTimer
+        interval: 5000
+        repeat: true
+        triggeredOnStart: true
+        running: section.shown && section.call !== null && section.sims.length > 0
+        onTriggered: section._askCells()
     }
 
     // One subscription per SIM, kept while the SIM is listed

@@ -44,11 +44,21 @@ Item {
         return { "cancel": function() { entry.cancelled = true; } };
     }
 
+    // cellInfoQuery calls as made: { uri, args, reply, error }
+    property var calls: []
+
+    function fakeCall(uri, json, onReply, onError) {
+        calls = calls.concat([{ "uri": uri, "args": JSON.parse(json), "reply": onReply, "error": onError }]);
+    }
+
     Component {
         id: sectionComponent
         PhoneInfoSection {
             width: root.width
             subscribe: root.fakeSubscribe
+            call: root.fakeCall
+            // the test window is not an active application to Qt
+            shown: false
         }
     }
 
@@ -73,6 +83,7 @@ Item {
         function init() {
             root.subscriptions = {};
             root.subscribeCount = 0;
+            root.calls = [];
             section = createTemporaryObject(sectionComponent, root);
             verify(section !== null, "the section did not load");
         }
@@ -222,12 +233,99 @@ Item {
             tryVerify(function() { return onPage.sims.length > 0; }, 2000, "the SIM list");
             compare(onPage.sims, page.sims);
             verify(onPage.visible);
+            // the page's LunaService, for cellInfoQuery
+            verify(typeof onPage.call === "function", "no call for cellInfoQuery");
             var simId = onPage.sims[0].simId;
             tryVerify(function() { return onPage.statuses[simId] !== undefined; }, 2000, "networkStatusQuery");
             var row = findChild(onPage, "phoneInfo-" + simId + "-Operator");
             verify(row !== null);
             compare(row.value, "Test Carrier");
             compare(findChild(onPage, "phoneInfo-" + simId + "-IMS").value, "Not reported");
+        }
+
+        // The Brax3's: Wi-Fi preferred while on LTE
+        function test_wfc_preference() {
+            section.sims = [sim(0)];
+            answer(0, registered());
+            // from an extension without it: not shown
+            compare(value(0, "Wi-Fi calling"), null);
+
+            var names = { "wifi": "Wi-Fi preferred", "cellular": "Mobile network preferred",
+                          "wifi-only": "Wi-Fi only", "": "Unknown", "later": "Unknown" };
+            for (var preference in names) {
+                answer(0, registered({ "ims": { "registered": true, "voiceCapable": true, "smsCapable": true,
+                                                "bearer": "cellular", "wfcPreference": preference } }));
+                compare(value(0, "Wi-Fi calling"), names[preference], preference);
+            }
+
+            // a setting: shown while IMS is not registered too
+            answer(0, registered({ "volte": false, "ims": { "registered": false, "voiceCapable": false,
+                "smsCapable": false, "bearer": "", "wfcPreference": "wifi-only" } }));
+            compare(value(0, "IMS"), "Not registered");
+            compare(value(0, "Wi-Fi calling"), "Wi-Fi only");
+        }
+
+        function answerCells(index, cells) {
+            root.calls[index].reply({ "payload": JSON.stringify({ "returnValue": true,
+                "extended": { "simId": root.calls[index].args.simId, "cells": cells } }) });
+        }
+
+        // The Brax3's serving LTE cell, as telephonyd converts it
+        function test_signal_values() {
+            section.sims = [sim(0), sim(1, {"powered": false})];
+            answer(0, registered());
+            compare(root.calls.length, 0, "asked while not on screen");
+
+            section.shown = true;
+            // at once, for the powered SIM only
+            tryVerify(function() { return root.calls.length === 1; }, 1000, "cellInfoQuery");
+            compare(root.calls[0].uri, "luna://com.palm.telephony/cellInfoQuery");
+            compare(root.calls[0].args.simId, 0);
+            compare(value(0, "RSRP"), null);
+
+            answerCells(0, [{ "type": "lte", "rssi": -91, "rsrp": -98, "rsrq": -7, "sinr": 0 }]);
+            compare(value(0, "Signal"), "3/5");
+            compare(value(0, "RSSI"), "-91 dBm");
+            compare(value(0, "RSRP"), "-98 dBm");
+            compare(value(0, "RSRQ"), "-7 dB");
+            compare(value(0, "SINR"), "0 dB");
+
+            // and again while shown
+            tryVerify(function() { return root.calls.length >= 2; }, 7000, "asked again");
+            // LTE and NR at once, NR without SINR; the measurements follow the signal row
+            answerCells(1, [{ "type": "lte", "rsrp": -101 }, { "type": "nr", "rsrp": -88, "rsrq": -11, "sinr": 12.5 }]);
+            compare(value(0, "RSRP"), null);
+            compare(value(0, "LTE RSRP"), "-101 dBm");
+            compare(value(0, "NR RSRP"), "-88 dBm");
+            compare(value(0, "NR RSRQ"), "-11 dB");
+            compare(value(0, "NR SINR"), "12.5 dB");
+            compare(value(0, "LTE SINR"), null);
+
+            // off screen: no more asking
+            section.shown = false;
+            var asked = root.calls.length;
+            wait(5500);
+            compare(root.calls.length, asked);
+
+            // a failed query, or none from an older telephonyd: bars alone
+            root.calls[asked - 1].error({});
+            compare(value(0, "NR RSRP"), null);
+            compare(value(0, "Signal"), "3/5");
+        }
+
+        // A modem that reports no cells, or values it did not measure
+        function test_signal_partial() {
+            section.sims = [sim(0)];
+            answer(0, registered());
+            section.shown = true;
+            tryVerify(function() { return root.calls.length === 1; }, 1000, "cellInfoQuery");
+            answerCells(0, []);
+            compare(value(0, "RSRP"), null);
+            answerCells(0, [{ "type": "gsm", "rssi": -73 }]);
+            compare(value(0, "RSSI"), "-73 dBm");
+            compare(value(0, "RSRP"), null);
+            root.calls[0].reply({ "payload": JSON.stringify({ "returnValue": false }) });
+            compare(value(0, "RSSI"), null);
         }
 
         function test_destruction_cancels() {
