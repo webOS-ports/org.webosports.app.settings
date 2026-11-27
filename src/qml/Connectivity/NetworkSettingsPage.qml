@@ -144,6 +144,18 @@ BasePage {
     // LabelAndSelector in this app, rather than reintroducing the "ComboBox
     // is blind to an array-of-objects model without an explicit delegate"
     // bug this session already chased down once (see VpnProfilePopup.qml).
+    // The line under a slot's name in the Dual SIM section. telephonyd has no
+    // operator for an empty slot, or for a SIM without a network.
+    function simSummary(sim) {
+        if (sim.present === false)
+            return "No SIM";
+        if (!sim.operatorName)
+            return "No service";
+        // telephonyd reports 0-5 bars (ofono's 0-100 Strength / 20),
+        // the scale of the status bar's rssi-0 .. rssi-5 icons
+        return sim.operatorName + " \u00b7 " + (sim.bars !== undefined ? sim.bars : 0) + "/5";
+    }
+
     function simNames() {
         return pageRoot.sims.map(function(s) { return s.name; });
     }
@@ -501,10 +513,9 @@ BasePage {
                                     font.pixelSize: FontUtils.sizeToPixels("16pt")
                                 }
                                 Label {
-                                    text: modelData.operatorName + " · " +
-                                          // telephonyd reports 0-5 bars (ofono's 0-100 Strength / 20),
-                                          // the scale of the status bar's rssi-0 .. rssi-5 icons
-                                          modelData.bars + "/5"
+                                    readonly property var sim: modelData
+                                    objectName: "dualSimSummary-" + sim.simId
+                                    text: pageRoot.simSummary(sim)
                                     color: Colors.secondaryText
                                     font.pixelSize: FontUtils.sizeToPixels("small")
                                 }

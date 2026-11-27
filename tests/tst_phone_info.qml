@@ -225,6 +225,44 @@ Item {
 
         // On the page, from the SIM list to luneos-components' stand-in
         // telephonyd, whose networkStatusQuery knows nothing of IMS
+        // the Dual SIM section's line under each slot's name
+        function test_sim_summary() {
+            var page = createTemporaryObject(pageComponent, root);
+            verify(page !== null, "the page did not load");
+            // an empty slot: telephonyd has no operator or bars for it
+            compare(page.simSummary({"simId": 0, "name": "SIM 1", "present": false, "bars": 0}), "No SIM");
+            compare(page.simSummary({"simId": 0, "name": "SIM 1", "present": false,
+                                     "operatorName": "Stale", "bars": 3}), "No SIM");
+            // a SIM without a network
+            compare(page.simSummary({"simId": 1, "name": "SIM 2", "present": true, "bars": 0}), "No service");
+            compare(page.simSummary({"simId": 1, "name": "SIM 2", "present": true,
+                                     "operatorName": "", "bars": 0}), "No service");
+            // a SIM on a network
+            compare(page.simSummary({"simId": 1, "name": "SIM 2", "present": true,
+                                     "operatorName": "simyo", "bars": 2}), "simyo \u00b7 2/5");
+            compare(page.simSummary({"simId": 1, "name": "SIM 2", "present": true,
+                                     "operatorName": "simyo"}), "simyo \u00b7 0/5");
+            // a telephonyd that does not say whether a SIM is there
+            compare(page.simSummary({"simId": 1, "name": "SIM 2",
+                                     "operatorName": "simyo", "bars": 2}), "simyo \u00b7 2/5");
+
+            // what the section shows for the stand-in's SIMs
+            tryVerify(function() { return page.sims.length > 0; }, 2000, "the SIM list");
+            for (var i = 0; i < page.sims.length; i++) {
+                var label = findChild(page, "dualSimSummary-" + page.sims[i].simId);
+                verify(label !== null, "no summary for SIM " + page.sims[i].simId);
+                compare(label.text, page.simSummary(page.sims[i]));
+                verify(label.text.indexOf("undefined") < 0, label.text);
+            }
+
+            // the Brax3's slots: SIM 1 empty, SIM 2 on a network
+            page.sims = [{"simId": 0, "name": "SIM 1", "present": false, "bars": 0},
+                         {"simId": 1, "name": "SIM 2", "present": true,
+                          "operatorName": "simyo", "bars": 2}];
+            tryCompare(findChild(page, "dualSimSummary-0"), "text", "No SIM");
+            tryCompare(findChild(page, "dualSimSummary-1"), "text", "simyo \u00b7 2/5");
+        }
+
         function test_on_the_page() {
             var page = createTemporaryObject(pageComponent, root);
             verify(page !== null, "the page did not load");
