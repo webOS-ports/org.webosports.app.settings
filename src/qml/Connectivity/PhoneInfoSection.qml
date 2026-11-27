@@ -37,6 +37,11 @@ import LuneOS.Forms 1.0
  * seconds while the section is on screen: asking keeps the modem measuring,
  * which costs battery, so it is not asked while hidden or in the
  * background. A telephonyd or modem without it shows the bars alone.
+ *
+ * When telephonyd goes away its subscriptions end with it: serviceAvailable
+ * (the page's watch on the bus) false clears what was heard and ends the
+ * calls, and true again subscribes afresh. That covers a page opened before
+ * telephonyd was up too: the bus then reports it gone, then there.
  */
 GroupBox {
     id: section
@@ -52,6 +57,8 @@ GroupBox {
 
     // cellInfoQuery's cells per simId, as last heard
     property var cells: ({})
+    // telephonyd on the bus; true while not known
+    property bool serviceAvailable: true
 
     // networkStatusQuery's extended object per simId, as last heard
     property var statuses: ({})
@@ -173,8 +180,13 @@ GroupBox {
     }
 
     function _heard(simId, message) {
-        if (!message || !message.payload)
+        if (!message || !message.payload) {
+            // the subscription is over
+            var gone = Object.assign({}, statuses);
+            delete gone[simId];
+            statuses = gone;
             return;
+        }
         var response = JSON.parse(message.payload);
         var copy = Object.assign({}, statuses);
         if (response.returnValue && response.extended)
@@ -246,15 +258,28 @@ GroupBox {
         _calls = calls;
     }
 
-    onSimsChanged: _follow()
-    onSubscribeChanged: _follow()
-    Component.onCompleted: _follow()
-    Component.onDestruction: {
+    function _cancelAll() {
         for (var id in _calls) {
             if (_calls[id] && _calls[id].cancel)
                 _calls[id].cancel();
         }
+        _calls = {};
     }
+
+    onServiceAvailableChanged: {
+        if (!serviceAvailable) {
+            _cancelAll();
+            statuses = {};
+            cells = {};
+        } else {
+            _follow();
+        }
+    }
+
+    onSimsChanged: _follow()
+    onSubscribeChanged: _follow()
+    Component.onCompleted: _follow()
+    Component.onDestruction: _cancelAll()
 
     Column {
         width: parent.width

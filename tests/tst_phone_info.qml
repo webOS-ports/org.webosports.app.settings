@@ -241,6 +241,33 @@ Item {
             verify(row !== null);
             compare(row.value, "Test Carrier");
             compare(findChild(onPage, "phoneInfo-" + simId + "-IMS").value, "Not reported");
+
+            // the page follows telephonyd on the bus
+            tryVerify(function() { return page.telephonyStatus.known; }, 2000, "telephonyd's status");
+            verify(onPage.serviceAvailable);
+
+            // telephonyd goes: the section lets go of what it heard
+            var oldSims = page.sims;
+            compare(page._telephonyCalls.length, 2);
+            page.telephonyStatus._available = false;
+            verify(!onPage.serviceAvailable);
+            verify(page.telephonyStatus.wentAway);
+            compare(onPage.statuses[simId], undefined);
+
+            // back: the page asks again, the SIM list comes anew (the
+            // stand-in answers at once), and the section subscribes afresh
+            page.telephonyStatus._available = true;
+            verify(onPage.serviceAvailable);
+            verify(!page.telephonyStatus.wentAway);
+            tryVerify(function() { return page.sims !== oldSims; }, 2000, "the SIM list asked again");
+            compare(page.sims.length, oldSims.length);
+            tryVerify(function() { return onPage.statuses[simId] !== undefined; }, 2000, "networkStatusQuery again");
+
+            // and not when it was there all along
+            oldSims = page.sims;
+            page.telephonyStatus.availableChanged();
+            wait(100);
+            verify(page.sims === oldSims);
         }
 
         // The Brax3's: Wi-Fi preferred while on LTE
@@ -326,6 +353,74 @@ Item {
             compare(value(0, "RSRP"), null);
             root.calls[0].reply({ "payload": JSON.stringify({ "returnValue": false }) });
             compare(value(0, "RSSI"), null);
+        }
+
+        // telephonyd restarts: its subscriptions end, and are made again
+        // once it is back on the bus
+        function test_service_restart() {
+            section.sims = [sim(0), sim(1)];
+            answer(0, registered());
+            answer(1, registered({ "networkName": "Other" }));
+            var before = root.subscriptions;
+            compare(root.subscribeCount, 2);
+
+            // gone: nothing left of what it said, the subscriptions ended
+            section.serviceAvailable = false;
+            compare(value(0, "Network"), "Not reported");
+            compare(value(1, "Operator"), null);
+            verify(before[0].cancelled);
+            verify(before[1].cancelled);
+            compare(root.subscribeCount, 2);
+
+            // back: subscribed afresh, one per SIM, and its answers count
+            section.serviceAvailable = true;
+            compare(root.subscribeCount, 4);
+            verify(root.subscriptions[0] !== before[0]);
+            verify(!root.subscriptions[0].cancelled);
+            compare(root.subscriptions[1].args.simId, 1);
+            answer(0, registered({ "vowifi": true,
+                "ims": { "registered": true, "voiceCapable": true, "smsCapable": true, "bearer": "wifi" } }));
+            compare(value(0, "Calls over"), "Wi-Fi (VoWiFi)");
+
+            // available again without having gone: nothing new
+            section.serviceAvailable = true;
+            compare(root.subscribeCount, 4);
+        }
+
+        // The hub ends a subscription with an error when the service goes,
+        // or the page opened before telephonyd was up: subscribe again once
+        // it is there
+        function test_subscription_error_then_back() {
+            section.sims = [sim(0)];
+            answer(0, registered());
+            root.subscriptions[0].error({ "payload": "{}" });
+            compare(value(0, "Network"), "Not reported");
+            compare(root.subscribeCount, 1);
+
+            section.serviceAvailable = false;
+            section.serviceAvailable = true;
+            compare(root.subscribeCount, 2);
+            answer(0, registered());
+            compare(value(0, "IMS"), "Registered");
+        }
+
+        // The cells go with the service, and are asked again after
+        function test_service_restart_cells() {
+            section.sims = [sim(0)];
+            answer(0, registered());
+            section.shown = true;
+            tryVerify(function() { return root.calls.length === 1; }, 1000, "cellInfoQuery");
+            answerCells(0, [{ "type": "lte", "rsrp": -98 }]);
+            compare(value(0, "RSRP"), "-98 dBm");
+
+            section.serviceAvailable = false;
+            compare(value(0, "RSRP"), null);
+
+            // back, registered again: no cells from before the restart
+            section.serviceAvailable = true;
+            answer(0, registered());
+            compare(value(0, "Network"), "LTE (4G)");
+            compare(value(0, "RSRP"), null);
         }
 
         function test_destruction_cancels() {

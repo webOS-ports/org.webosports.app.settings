@@ -32,6 +32,7 @@ import "../Common"
 // looks like it should work.
 import QOfono 0.2
 import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Network Settings, the cellular/mobile counterpart to the separate WiFi and
@@ -113,6 +114,30 @@ BasePage {
         retrieveProperties();
         loadApnDatabase();
     }
+
+    // telephonyd (com.palm.telephony and com.palm.wan) on the bus. Its
+    // subscriptions end when it goes; when it is back, from a restart or
+    // because it was not up yet when the page opened, ask again.
+    ServiceStatus {
+        id: telephonyStatus
+
+        property bool wentAway: false
+
+        serviceName: "com.palm.telephony"
+        onKnownChanged: if (known && !available) wentAway = true
+        onAvailableChanged: {
+            if (!available) {
+                wentAway = true;
+            } else if (wentAway) {
+                wentAway = false;
+                pageRoot.retrieveProperties();
+            }
+        }
+    }
+    readonly property alias telephonyStatus: telephonyStatus
+
+    // the subscriptions retrieveProperties() made, ended before it asks again
+    property var _telephonyCalls: []
 
     // LabelAndSelector's ComboBox has no textRole of its own - plain names
     // for the model keep it working the same way it does for every other
@@ -544,6 +569,7 @@ BasePage {
             call: function(uri, json, onReply, onError) {
                 return pageRoot.luna.call(uri, json, onReply, onError);
             }
+            serviceAvailable: !telephonyStatus.known || telephonyStatus.available
         }
 
         ExplanationText {
@@ -1515,12 +1541,19 @@ BasePage {
      * Bindings with LuneOS settings
      */
     function retrieveProperties() {
-        luna.subscribe("luna://com.palm.wan/getstatus", '{"subscribe": true}', _handleWanStatus, _handleGetError);
+        for (var i = 0; i < _telephonyCalls.length; i++) {
+            if (_telephonyCalls[i] && _telephonyCalls[i].cancel)
+                _telephonyCalls[i].cancel();
+        }
+
+        var calls = [];
+        calls.push(luna.subscribe("luna://com.palm.wan/getstatus", '{"subscribe": true}', _handleWanStatus, _handleGetError));
 
         luna.call("luna://com.palm.telephony/ratQuery", "{}", _handleRatQuery, _handleRatUnavailable);
 
-        luna.subscribe("luna://com.palm.telephony/simListQuery",
-                        JSON.stringify({"subscribe": true}), _handleSimList, _handleSimListUnavailable);
+        calls.push(luna.subscribe("luna://com.palm.telephony/simListQuery",
+                        JSON.stringify({"subscribe": true}), _handleSimList, _handleSimListUnavailable));
+        _telephonyCalls = calls;
     }
     function _handleWanStatus(message) {
         if(message && message.payload) {
