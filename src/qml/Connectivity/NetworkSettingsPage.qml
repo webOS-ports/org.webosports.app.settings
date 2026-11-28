@@ -32,6 +32,7 @@ import "../Common"
 // looks like it should work.
 import QOfono 0.2
 import LuneOS.Forms 1.0
+import LuneOS.System 1.0
 
 /*
  * Network Settings, the cellular/mobile counterpart to the separate WiFi and
@@ -114,11 +115,47 @@ BasePage {
         loadApnDatabase();
     }
 
+    // telephonyd (com.palm.telephony and com.palm.wan) on the bus. Its
+    // subscriptions end when it goes; when it is back, from a restart or
+    // because it was not up yet when the page opened, ask again.
+    ServiceStatus {
+        id: telephonyStatus
+
+        property bool wentAway: false
+
+        serviceName: "com.palm.telephony"
+        onKnownChanged: if (known && !available) wentAway = true
+        onAvailableChanged: {
+            if (!available) {
+                wentAway = true;
+            } else if (wentAway) {
+                wentAway = false;
+                pageRoot.retrieveProperties();
+            }
+        }
+    }
+    readonly property alias telephonyStatus: telephonyStatus
+
+    // the subscriptions retrieveProperties() made, ended before it asks again
+    property var _telephonyCalls: []
+
     // LabelAndSelector's ComboBox has no textRole of its own - plain names
     // for the model keep it working the same way it does for every other
     // LabelAndSelector in this app, rather than reintroducing the "ComboBox
     // is blind to an array-of-objects model without an explicit delegate"
     // bug this session already chased down once (see VpnProfilePopup.qml).
+    // The line under a slot's name in the Dual SIM section. telephonyd has no
+    // operator for an empty slot, or for a SIM without a network.
+    function simSummary(sim) {
+        if (sim.present === false)
+            return "No SIM";
+        if (!sim.operatorName)
+            return "No service";
+        // telephonyd reports 0-5 bars (ofono's 0-100 Strength / 20),
+        // the scale of the status bar's rssi-0 .. rssi-5 icons
+        return sim.operatorName + " \u00b7 " + (sim.bars !== undefined ? sim.bars : 0) + "/5";
+    }
+
     function simNames() {
         return pageRoot.sims.map(function(s) { return s.name; });
     }
@@ -476,10 +513,9 @@ BasePage {
                                     font.pixelSize: FontUtils.sizeToPixels("16pt")
                                 }
                                 Label {
-                                    text: modelData.operatorName + " · " +
-                                          // telephonyd reports 0-5 bars (ofono's 0-100 Strength / 20),
-                                          // the scale of the status bar's rssi-0 .. rssi-5 icons
-                                          modelData.bars + "/5"
+                                    readonly property var sim: modelData
+                                    objectName: "dualSimSummary-" + sim.simId
+                                    text: pageRoot.simSummary(sim)
                                     color: Colors.secondaryText
                                     font.pixelSize: FontUtils.sizeToPixels("small")
                                 }
@@ -532,6 +568,19 @@ BasePage {
                         {"data": pageRoot.sims[index].simId})
                 }
             }
+        }
+
+        PhoneInfoSection {
+            objectName: "phoneInfoSection"
+            width: parent.width
+            sims: pageRoot.sims
+            subscribe: function(uri, json, onReply, onError) {
+                return pageRoot.luna.subscribe(uri, json, onReply, onError);
+            }
+            call: function(uri, json, onReply, onError) {
+                return pageRoot.luna.call(uri, json, onReply, onError);
+            }
+            serviceAvailable: !telephonyStatus.known || telephonyStatus.available
         }
 
         ExplanationText {
@@ -1503,12 +1552,19 @@ BasePage {
      * Bindings with LuneOS settings
      */
     function retrieveProperties() {
-        luna.subscribe("luna://com.palm.wan/getstatus", '{"subscribe": true}', _handleWanStatus, _handleGetError);
+        for (var i = 0; i < _telephonyCalls.length; i++) {
+            if (_telephonyCalls[i] && _telephonyCalls[i].cancel)
+                _telephonyCalls[i].cancel();
+        }
+
+        var calls = [];
+        calls.push(luna.subscribe("luna://com.palm.wan/getstatus", '{"subscribe": true}', _handleWanStatus, _handleGetError));
 
         luna.call("luna://com.palm.telephony/ratQuery", "{}", _handleRatQuery, _handleRatUnavailable);
 
-        luna.subscribe("luna://com.palm.telephony/simListQuery",
-                        JSON.stringify({"subscribe": true}), _handleSimList, _handleSimListUnavailable);
+        calls.push(luna.subscribe("luna://com.palm.telephony/simListQuery",
+                        JSON.stringify({"subscribe": true}), _handleSimList, _handleSimListUnavailable));
+        _telephonyCalls = calls;
     }
     function _handleWanStatus(message) {
         if(message && message.payload) {
